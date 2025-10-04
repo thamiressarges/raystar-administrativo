@@ -12,6 +12,12 @@ export default createGlobalStyle`
         color: ${({theme}) => theme.COLORS.BLACK};
     }
 
+    body, input, button, textarea {
+        font-family: "Poppins", sans-serif;
+        font-size: 16px;
+        outline: none;
+    }
+
     a {
         text-decoration: none;
     }
