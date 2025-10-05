@@ -4,13 +4,13 @@ import { ThemeProvider } from 'styled-components'
 import GlobalStyles from './styles/global';
 import {theme} from './styles/theme';
 
-import { ForgotPassword } from './pages/ForgotPassword';
+import { Routes } from './pages/routes';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <GlobalStyles />
-      <ForgotPassword />
+      <Routes />
     </ThemeProvider>
   </StrictMode>,
 )
