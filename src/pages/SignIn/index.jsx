@@ -1,5 +1,6 @@
 import {Container, Form, Options, Background} from './styles';
 import {FiMail, FiLock} from 'react-icons/fi';
+import { Link } from 'react-router-dom'; 
 
 import {Input} from '../../components/Input';
 import {Button} from '../../components/Button';
@@ -31,7 +32,7 @@ export function SignIn(){
                         Lembrar
                     </label>
 
-                    <a href="#">Esqueceu a sua senha?</a>
+                    <Link to="/forgotpassword">Esqueceu a sua senha?</Link>
                 </Options>
 
                 <Button title="Entrar"/>

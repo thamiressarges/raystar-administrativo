@@ -1,5 +1,6 @@
 import {Container, Form, Background} from './styles';
 import {FiLock} from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 import {Input} from '../../components/Input';
 import {Button} from '../../components/Button';
@@ -24,7 +25,7 @@ export function ForgotPassword(){
 
                 <Button title="Recuperar Senha"/>
 
-                <a href="#">Voltar</a>
+                <Link to="/">Voltar</Link>
             </Form>
 
             <Background />
