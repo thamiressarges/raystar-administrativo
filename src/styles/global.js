@@ -30,4 +30,11 @@ export default createGlobalStyle`
     button:hover, a:hover {
         filter: brightness(0.9)
     }
+
+    ul, li {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
 `;

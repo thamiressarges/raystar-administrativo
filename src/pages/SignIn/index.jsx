@@ -1,12 +1,19 @@
 import {Container, Form, Options, Background} from './styles';
 import {FiMail, FiLock} from 'react-icons/fi';
-import { Link } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom';  
 
 import {Input} from '../../components/Input';
 import {Button} from '../../components/Button';
 
 
 export function SignIn(){
+
+    const navigate = useNavigate(); 
+
+    function handleSignIn() {
+        navigate('/order'); 
+    }
+
     return(
         <Container>
             
@@ -16,13 +23,13 @@ export function SignIn(){
 
                 <Input
                     placeholder="E-mail"
-                    type="text"
+                    type="email"
                     icon={FiMail}
                 />
 
                 <Input
                     placeholder="Senha"
-                    type="text"
+                    type="password"
                     icon={FiLock}
                 />
 
@@ -35,7 +42,7 @@ export function SignIn(){
                     <Link to="/forgotpassword">Esqueceu a sua senha?</Link>
                 </Options>
 
-                <Button title="Entrar"/>
+                <Button title="Entrar" onClick={handleSignIn}/>
             </Form>
 
             <Background />

@@ -8,6 +8,8 @@ export const Container = styled.div`
     background-color: ${({theme}) => theme.COLORS.WHITE};
     color: ${({theme}) => theme.COLORS.BLACK};
 
+    border: 0.5px solid ${({theme}) => theme.COLORS.GRAY_300};
+
     margin-bottom: 8px;
     border-radius: 10px;
 

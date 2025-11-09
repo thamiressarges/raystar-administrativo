@@ -1,16 +1,21 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { ThemeProvider } from 'styled-components'
-import GlobalStyles from './styles/global';
-import {theme} from './styles/theme';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { ThemeProvider } from 'styled-components';
+import { MenuProvider } from './contexts/MenuContext';
 
-import { Routes } from './pages/routes';
+import { theme } from './styles/theme';
+import GlobalStyle from './styles/global';
+import { Routes } from './pages/routes'; 
 
-createRoot(document.getElementById('root')).render(
+const root = createRoot(document.getElementById('root'));
+
+root.render(
   <StrictMode>
-    <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      <Routes />
+    <ThemeProvider theme={theme}> 
+      <GlobalStyle /> 
+      <MenuProvider>
+        <Routes />
+      </MenuProvider>
     </ThemeProvider>
   </StrictMode>,
-)
+);
