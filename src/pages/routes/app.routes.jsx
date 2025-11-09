@@ -7,6 +7,7 @@ import {Clients} from '../Clients';
 import {Category} from '../Category';
 import { Product } from '../Products';
 import {Settings} from '../Settings';
+import { OrderDetails } from '../OrderDetails';
  
 
 export function AppRoutes(){
@@ -19,6 +20,7 @@ export function AppRoutes(){
             <Route path='/category' element={<Category/>} />
             <Route path='/products' element={<Product/>} />
             <Route path='/settings' element={<Settings/>} />
+            <Route path='/orderDetails' element={<OrderDetails/>}/>
         </Routes>
     )
 }

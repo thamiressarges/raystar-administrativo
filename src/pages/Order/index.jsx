@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
     Container,
@@ -19,6 +20,8 @@ import { useMenu } from '../../contexts/MenuContext';
 export function Order() {
 
     const { isMenuOpen } = useMenu();
+
+    const navigate = useNavigate();
 
     const orderHeader = ["Cliente", "Preço", "Status", "Data"];
     const orderDataKeys = ["client", "price", "status", "date"];
@@ -41,6 +44,11 @@ export function Order() {
         setCurrentPage(pageNumber);
     };
 
+    const handleDetailsClick = () => {
+        // Navega para a rota de detalhes, SEM ID.
+        navigate('/orderDetails');
+    };
+
     return (
         <Container $isopen={isMenuOpen}>
             <Brand />
@@ -56,6 +64,7 @@ export function Order() {
                     data={data}
                     headers={orderHeader}
                     dataKeys={orderDataKeys}
+                    onDetailsClick={handleDetailsClick}
                 />
 
                 <PaginationWrapper>

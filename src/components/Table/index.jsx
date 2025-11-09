@@ -1,7 +1,7 @@
 import { Container, TableStyled } from "./styles";
 import { Button } from "../../components/Button";
 
-export function Table({ data, headers, dataKeys }) {
+export function Table({ data, headers, dataKeys, onDetailsClick }) {
   return (
     <Container>
       <TableStyled>
@@ -25,6 +25,7 @@ export function Table({ data, headers, dataKeys }) {
                 <Button 
                   title="DETALHES" 
                   isTableButton // Aplica os estilos compactos da tabela
+                  onClick={onDetailsClick}
                 />
               </td>
             </tr>
