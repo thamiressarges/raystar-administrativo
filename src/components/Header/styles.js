@@ -17,5 +17,13 @@ export const Container = styled.header`
 
     > span {
         font-weight: bold;
+        cursor: pointer;
+        color: ${({ theme }) => theme.COLORS.BLACK}; 
+        text-decoration: none;
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 0.7;
+        }
     }
 `;
