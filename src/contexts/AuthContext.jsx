@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../firebase";
+// 1. IMPORTAÇÃO CORRETA: Traz o 'auth' do seu novo arquivo supabase.js
+import { auth } from "../services/supabase"; 
+// 2. REMOÇÃO: Não precisamos mais do firebase
+// import { onAuthStateChanged, signOut } from "firebase/auth";
+// import { auth } from "../firebase";
 
 // Criando o contexto
 const AuthContext = createContext();
@@ -13,23 +16,52 @@ export function useAuth() {
 // Criando o provider para gerenciar o estado global
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null); // Supabase usa 'session'
   const [loading, setLoading] = useState(true);
 
-  // Observando o estado no Firebase
+  // Observando o estado no SUPABASE
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    setLoading(true);
+    
+    // 3. OBTÉM SESSÃO ATUAL: Pega a sessão se o usuário já estiver logado
+    auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // 4. OBSERVA MUDANÇAS: Ouve eventos de LOGIN e LOGOUT
+    const { data: authListener } = auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    // Limpa o "ouvinte"
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  // Função para fazer o logout
-  const logout = () => signOut(auth);
+  // 5. FUNÇÃO DE LOGIN: Centralizada no Contexto
+  const login = async (email, password) => {
+    const { data, error } = await auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+    if (error) throw error; // Joga o erro para a página de SignIn tratar
+    return data;
+  };
+
+  // 6. FUNÇÃO DE LOGOUT: Migrada
+  const logout = () => auth.signOut();
 
   const value = {
     user,
+    session, // Exporte a sessão, é útil
+    login,   // Exporte a função de login
     logout,
     loading,
   };

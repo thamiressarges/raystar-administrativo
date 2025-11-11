@@ -8,6 +8,7 @@ import { Product } from "../Products";
 import { Settings } from "../Settings";
 import { OrderDetails } from "../OrderDetails";
 //import { ClientDetails } from "../ClientDetails";
+import {CategoryDetails} from '../CategoryDetails';
 import { PrivateRoute } from "../../components/PrivateRoute/PrivateRoute";
 
 export function AppRoutes(){
@@ -24,6 +25,7 @@ export function AppRoutes(){
       <Route path="/products" element={<PrivateRoute><Product /></PrivateRoute>} />
       <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
       <Route path="/orderDetails" element={<PrivateRoute><OrderDetails /></PrivateRoute>} />
+      <Route path="/categoryDetails/:id" element={<PrivateRoute><CategoryDetails /></PrivateRoute>} />
     </Routes>
   )
 }
