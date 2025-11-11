@@ -6,17 +6,22 @@ export const StyledToastContainer = styled(ToastContainer)`
     border-radius: 12px;
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
+    background: #FFFFFF;
+    color: #333;
   }
 
   .Toastify__toast--success {
-    background: #4caf50};
+    color: #4caf50;
+    
+    .Toastify__progress-bar {
+      background: #4caf50;
+    }
   }
 
   .Toastify__toast--error {
-    background: #f44336};
-  }
-
-  .Toastify__progress-bar {
-    background: #000};
+    color: #f44336;
+    .Toastify__progress-bar {
+      background: #f44336;
+    }
   }
 `;
