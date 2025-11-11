@@ -16,16 +16,15 @@ export function Table({ data, headers, dataKeys, onDetailsClick }) {
         <tbody>
             {data.map((item, index) => (
             <tr key={index}>
-             {/* NOVIDADE: Mapeia sobre as chaves (dataKeys) para renderizar as células */}
              {dataKeys.map((key) => (
-               <td key={key}>{item[key]}</td> // Acessa o valor dinamicamente pela chave
+               <td key={key}>{item[key]}</td>
              ))}
 
              <td>
                 <Button 
                   title="DETALHES" 
-                  isTableButton // Aplica os estilos compactos da tabela
-                  onClick={onDetailsClick}
+                  isTableButton
+                  onClick={() => onDetailsClick(item)} 
                 />
               </td>
             </tr>
