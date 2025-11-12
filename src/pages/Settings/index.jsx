@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import {
     Container,
     Content,
@@ -18,65 +19,198 @@ import { Brand } from '../../components/Brand';
 import { Menu } from '../../components/Menu';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
+import { Loading } from '../../components/Loading';
 import { FiTrash2, FiPlus, FiEdit2 } from 'react-icons/fi';
 
 import { useMenu } from '../../contexts/MenuContext';
+import { StoreApi } from '../../services/storeApi';
 
 export function Settings() {
     const { isMenuOpen } = useMenu();
     const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const [lojaDados, setLojaDados] = useState({
-        nome: 'Minha Loja',
-        email: 'contato@minhaloja.com.br',
-        cnpj: '00.000.000/0000-00',
-        cep: '00000-000',
-        numero: '123',
-        complemento: 'Sala 101',
-        bairro: 'Centro',
-        cidade: 'São Paulo'
+    // Estados
+    const [storeId, setStoreId] = useState(null); 
+    const [originalData, setOriginalData] = useState(null); 
+    const [editedName, setEditedName] = useState('');
+    const [editedEmail, setEditedEmail] = useState('');
+    const [editedCnpj, setEditedCnpj] = useState('');
+    const [editedPhones, setEditedPhones] = useState([]);
+    const [editedSocial, setEditedSocial] = useState({ instagram: '', facebook: '' });
+    const [editedAddress, setEditedAddress] = useState({
+        cep: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: ''
     });
 
-    const [phones, setPhones] = useState([
-        '(11) 98765-4321',
-        '(11) 3456-7890'
-    ]);
+    const loadStoreData = async () => {
+        setLoading(true);
+        try {
+            const data = await StoreApi.getStoreSettings();
+            
+            setOriginalData(data); 
+            setStoreId(data.id);
+            setEditedName(data.name || '');
+            setEditedEmail(data.email || '');
+            setEditedCnpj(data.cnpj || '');
+            setEditedPhones(data.phones || []); 
+            setEditedAddress({
+                cep: data.address?.cep || '',
+                numero: data.address?.numero || '',
+                complemento: data.address?.complemento || '',
+                bairro: data.address?.bairro || '',
+                cidade: data.address?.cidade || ''
+            });
+            setEditedSocial({
+                instagram: data.social_media?.instagram || '',
+                facebook: data.social_media?.facebook || ''
+            });
+
+        } catch (err) {
+            toast.error("Falha ao carregar dados da loja: " + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadStoreData();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setLojaDados(prev => ({ ...prev, [name]: value }));
+        
+        const setters = {
+            nome: setEditedName,
+            email: setEditedEmail,
+            cnpj: setEditedCnpj,
+        };
+
+        if (setters[name]) {
+            setters[name](value);
+        }
+    };
+
+    const handleAddressChange = (e) => {
+        const { name, value } = e.target;
+        setEditedAddress(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSocialChange = (e) => {
+        const { name, value } = e.target;
+        setEditedSocial(prev => ({ ...prev, [name]: value }));
     };
 
     const handlePhoneChange = (e, index) => {
-        const newPhones = [...phones];
+        const newPhones = [...editedPhones];
         newPhones[index] = e.target.value;
-        setPhones(newPhones);
+        setEditedPhones(newPhones);
     };
 
     const addPhone = () => {
-        setPhones([...phones, '']);
+        setEditedPhones([...editedPhones, '']);
     };
 
     const removePhone = (indexToRemove) => {
-        setPhones(phones.filter((_, index) => index !== indexToRemove));
+        setEditedPhones(editedPhones.filter((_, index) => index !== indexToRemove));
+    };
+
+    const handleCepChange = async (e) => {
+        let cep = e.target.value.replace(/\D/g, ''); 
+        setEditedAddress(prev => ({ ...prev, cep: cep }));
+
+        if (cep.length === 8) {
+            setLoading(true);
+            try {
+                const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const data = await response.json();
+                
+                if (data.erro) {
+                    toast.warn("CEP não encontrado.");
+                } else {
+                    setEditedAddress(prev => ({
+                        ...prev,
+                        bairro: data.bairro,
+                        cidade: data.localidade,
+                    }));
+                    toast.success("Endereço preenchido!");
+                }
+            } catch (err) {
+                toast.error("Erro ao buscar CEP.");
+            } finally {
+                setLoading(false);
+            }
+        }
     };
 
     const handleEdit = () => setIsEditing(true);
+    
     const handleCancel = () => {
+        if (originalData) {
+            setEditedName(originalData.name || '');
+            setEditedEmail(originalData.email || '');
+            setEditedCnpj(originalData.cnpj || '');
+            setEditedPhones(originalData.phones || []);
+            setEditedAddress(originalData.address || { cep: '', numero: '', complemento: '', bairro: '', cidade: '' });
+            setEditedSocial(originalData.social_media || { instagram: '', facebook: '' });
+        }
         setIsEditing(false);
     };
-    const handleSave = () => {
-        setIsEditing(false);
+    
+    const handleSave = async () => {
+        if (!storeId) {
+            toast.error("Erro: ID da loja não encontrado.");
+            return;
+        }
+        
+        setLoading(true);
+        try {
+            const updates = {
+                name: editedName,
+                email: editedEmail,
+                cnpj: editedCnpj,
+                phones: editedPhones,        
+                address: editedAddress,      
+                social_media: editedSocial 
+            };
+            
+            await StoreApi.updateStoreSettings(storeId, updates);
+            
+            await loadStoreData(); 
+            
+            setIsEditing(false);
+            toast.success("Loja atualizada com sucesso!");
+
+        } catch (err) {
+            toast.error("Erro ao salvar: " + err.message);
+        } finally {
+            setLoading(false);
+        }
     };
+
+    if (loading && !originalData) {
+        return (
+             <Container $isopen={isMenuOpen}>
+                <Brand />
+                <Header />
+                <Menu />
+                <Loading />
+            </Container>
+        );
+    }
 
     return (
         <Container $isopen={isMenuOpen}>
+            {loading && <Loading />} 
             <Brand />
             <Header />
             <Menu />
 
             <Content>
-                <Form>
+                <Form onSubmit={(e) => e.preventDefault()}>
                     <FormHeader>
                         <h2>Configurações da Loja</h2>
                         <ActionButtons>
@@ -110,11 +244,11 @@ export function Settings() {
                         {isEditing ? (
                             <Input
                                 name="nome"
-                                value={lojaDados.nome}
+                                value={editedName}
                                 onChange={handleChange}
                             />
                         ) : (
-                            <InfoDisplay>{lojaDados.nome}</InfoDisplay>
+                            <InfoDisplay>{editedName}</InfoDisplay>
                         )}
                     </InputWrapper>
 
@@ -124,11 +258,12 @@ export function Settings() {
                             {isEditing ? (
                                 <Input
                                     name="email"
-                                    value={lojaDados.email}
+                                    type="email"
+                                    value={editedEmail}
                                     onChange={handleChange}
                                 />
                             ) : (
-                                <InfoDisplay>{lojaDados.email}</InfoDisplay>
+                                <InfoDisplay>{editedEmail}</InfoDisplay>
                             )}
                         </InputWrapper>
                         <InputWrapper>
@@ -136,53 +271,56 @@ export function Settings() {
                             {isEditing ? (
                                 <Input
                                     name="cnpj"
-                                    value={lojaDados.cnpj}
+                                    value={editedCnpj}
                                     onChange={handleChange}
                                 />
                             ) : (
-                                <InfoDisplay>{lojaDados.cnpj}</InfoDisplay>
+                                <InfoDisplay>{editedCnpj}</InfoDisplay>
                             )}
                         </InputWrapper>
                     </InfoGroup>
 
+                    <SectionHeader>
+                        <h4>Endereço</h4>
+                    </SectionHeader>
                     <InfoGroup>
                         <InputWrapper>
                             <label>CEP</label>
                             {isEditing ? (
                                 <Input
                                     name="cep"
-                                    value={lojaDados.cep}
-                                    onChange={handleChange}
+                                    value={editedAddress.cep}
+                                    onChange={handleCepChange} 
+                                    maxLength={9} 
                                 />
                             ) : (
-                                <InfoDisplay>{lojaDados.cep}</InfoDisplay>
+                                <InfoDisplay>{editedAddress.cep}</InfoDisplay>
                             )}
                         </InputWrapper>
                         <InputWrapper>
-                            <label>Número da Rua</label>
+                            <label>Número</label>
                             {isEditing ? (
                                 <Input
                                     name="numero"
-                                    value={lojaDados.numero}
-                                    onChange={handleChange}
+                                    value={editedAddress.numero}
+                                    onChange={handleAddressChange}
                                 />
                             ) : (
-                                <InfoDisplay>{lojaDados.numero}</InfoDisplay>
+                                <InfoDisplay>{editedAddress.numero}</InfoDisplay>
                             )}
                         </InputWrapper>
                     </InfoGroup>
-
                     <InfoGroup>
                         <InputWrapper>
                             <label>Complemento</label>
                             {isEditing ? (
                                 <Input
                                     name="complemento"
-                                    value={lojaDados.complemento}
-                                    onChange={handleChange}
+                                    value={editedAddress.complemento}
+                                    onChange={handleAddressChange}
                                 />
                             ) : (
-                                <InfoDisplay>{lojaDados.complemento}</InfoDisplay>
+                                <InfoDisplay>{editedAddress.complemento}</InfoDisplay>
                             )}
                         </InputWrapper>
                         <InputWrapper>
@@ -190,25 +328,24 @@ export function Settings() {
                             {isEditing ? (
                                 <Input
                                     name="bairro"
-                                    value={lojaDados.bairro}
-                                    onChange={handleChange}
+                                    value={editedAddress.bairro}
+                                    onChange={handleAddressChange}
                                 />
                             ) : (
-                                <InfoDisplay>{lojaDados.bairro}</InfoDisplay>
+                                <InfoDisplay>{editedAddress.bairro}</InfoDisplay>
                             )}
                         </InputWrapper>
                     </InfoGroup>
-
                     <InputWrapper>
                         <label>Cidade</label>
                         {isEditing ? (
                             <Input
                                 name="cidade"
-                                value={lojaDados.cidade}
-                                onChange={handleChange}
+                                value={editedAddress.cidade}
+                                onChange={handleAddressChange}
                             />
                         ) : (
-                            <InfoDisplay>{lojaDados.cidade}</InfoDisplay>
+                            <InfoDisplay>{editedAddress.cidade}</InfoDisplay>
                         )}
                     </InputWrapper>
 
@@ -222,13 +359,14 @@ export function Settings() {
                         )}
                     </SectionHeader>
 
-                    {phones.map((phone, index) => (
+                    {editedPhones.map((phone, index) => (
                         <ContactRow key={index}>
                             {isEditing ? (
                                 <>
                                     <Input
                                         value={phone}
                                         onChange={(e) => handlePhoneChange(e, index)}
+                                        placeholder="(00) 90000-0000"
                                     />
                                     <button
                                         type="button"
@@ -243,6 +381,38 @@ export function Settings() {
                             )}
                         </ContactRow>
                     ))}
+
+                    <SectionHeader>
+                        <h4>Redes Sociais</h4>
+                    </SectionHeader>
+                    <InfoGroup>
+                        <InputWrapper>
+                            <label>Instagram</label>
+                            {isEditing ? (
+                                <Input
+                                    name="instagram"
+                                    value={editedSocial.instagram}
+                                    onChange={handleSocialChange}
+                                    placeholder="@sua_loja"
+                                />
+                            ) : (
+                                <InfoDisplay>{editedSocial.instagram}</InfoDisplay>
+                            )}
+                        </InputWrapper>
+                        <InputWrapper>
+                            <label>Facebook</label>
+                            {isEditing ? (
+                                <Input
+                                    name="facebook"
+                                    value={editedSocial.facebook}
+                                    onChange={handleSocialChange}
+                                    placeholder="facebook.com/sua_loja"
+                                />
+                            ) : (
+                                <InfoDisplay>{editedSocial.facebook}</InfoDisplay>
+                            )}
+                        </InputWrapper>
+                    </InfoGroup>
 
                 </Form>
             </Content>
