@@ -4,11 +4,12 @@ import { ForgotPassword } from "../ForgotPassword";
 import { Order } from "../Order"; 
 import { Clients } from "../Clients"; 
 import { Category } from "../Category";
-import { Product } from "../Products";
+import { Products } from "../Products";
 import { Settings } from "../Settings";
 import { OrderDetails } from "../OrderDetails";
-//import { ClientDetails } from "../ClientDetails";
+import { ProductsDetails } from '../ProductsDetails';
 import {CategoryDetails} from '../CategoryDetails';
+import { NewProduct } from '../NewProduct'
 import { PrivateRoute } from "../../components/PrivateRoute/PrivateRoute";
 
 export function AppRoutes(){
@@ -22,10 +23,12 @@ export function AppRoutes(){
       <Route path="/order" element={<PrivateRoute><Order /></PrivateRoute>} />
       <Route path="/clients" element={<PrivateRoute><Clients /></PrivateRoute>} />
       <Route path="/category" element={<PrivateRoute><Category /></PrivateRoute>} />
-      <Route path="/products" element={<PrivateRoute><Product /></PrivateRoute>} />
+      <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
       <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
       <Route path="/orderDetails" element={<PrivateRoute><OrderDetails /></PrivateRoute>} />
       <Route path="/categoryDetails/:id" element={<PrivateRoute><CategoryDetails /></PrivateRoute>} />
+      <Route path="/productDetails/:id" element={<PrivateRoute><ProductsDetails></ProductsDetails></PrivateRoute>} />
+      <Route path="/products/new" element={<PrivateRoute><NewProduct /></PrivateRoute>} />
     </Routes>
   )
 }
