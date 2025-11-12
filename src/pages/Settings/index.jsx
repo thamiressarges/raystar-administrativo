@@ -139,7 +139,7 @@ export function Settings() {
                     toast.success("Endereço preenchido!");
                 }
             } catch (err) {
-                toast.error("Erro ao buscar CEP.");
+                toast.error("Erro ao buscar CEP." + err);
             } finally {
                 setLoading(false);
             }
