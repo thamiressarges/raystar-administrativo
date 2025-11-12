@@ -56,7 +56,7 @@ export const Content = styled.div`
     overflow-y: auto; 
 `;
 
-export const PaginationWrapper = styled.div`
+export const PaginationContainer = styled.div`
     display: flex;
     justify-content: center;
     width: 100%;

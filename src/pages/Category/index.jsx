@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiPlus, FiBox } from "react-icons/fi"; 
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FiPlus} from "react-icons/fi"; 
 import { toast } from 'react-toastify'; 
 
 import { CategoryModal } from "../../components/CategoryModel"; 
@@ -11,7 +11,7 @@ import {
     Container,
     Search as SearchArea,
     Content,
-    PaginationWrapper,
+    PaginationContainer,
     SearchAndActionButton,
     AddButton,
     EmptyState 
@@ -29,6 +29,7 @@ import { useMenu } from '../../contexts/MenuContext';
 export function Category(){
     const { isMenuOpen } = useMenu();
     const navigate = useNavigate();
+    const location = useLocation();
 
     // ESTADOS
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,7 +39,6 @@ export function Category(){
     const [currentPage, setCurrentPage] = useState(1); 
     const ITEMS_PER_PAGE = 10;
     const [searchTerm, setSearchTerm] = useState("");
-    //Guarda a pesquisa real que vai para a API
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
     const categoryHeaders = ["Categoria", "Quantidade"];
@@ -46,7 +46,7 @@ export function Category(){
 
     const handleNewCategory = () => setIsModalOpen(true);
     
-    // 2. Funçaõ para buscar os dados
+    // 2. Buscando os dados
     async function loadCategories(search = "") { 
         try {
             setLoading(true); 
@@ -90,26 +90,22 @@ export function Category(){
         navigate(`/categoryDetails/${category.id}`); 
     };
 
-    // 4. Lógica para evitar chamadas a api a cada tecla
+    // Evita chamadas a api a cada tecla
     useEffect(() => {
-        // Cria um timer
         const timerId = setTimeout(() => {
-            // Só atualiza o termo de busca da API 500ms depois que o usuário parar de digitar
             setDebouncedSearchTerm(searchTerm);
         }, 500);
 
-        // Limpa o timer se o usuário digitar de novo
         return () => {
             clearTimeout(timerId);
         };
     }, [searchTerm]);
 
-    // 5. Roda a busca quando o 'debouncedSearchTerm' mudar
     useEffect(() => {
         loadCategories(debouncedSearchTerm);
-    }, [debouncedSearchTerm]);
+    }, [debouncedSearchTerm, location]); 
 
-    // Lógica de Paginação 
+    // Paginação 
     const totalPages = Math.ceil(allCategories.length / ITEMS_PER_PAGE);
     const categoriesForThisPage = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -121,7 +117,6 @@ export function Category(){
         setCurrentPage(page);
     };
 
-    // Variável para saber se o usuário está pesquisando
     const isSearching = searchTerm.length > 0;
 
     return(
@@ -147,21 +142,17 @@ export function Category(){
 
             <Content>
                 
-                {/* Se a lista (filtrada) estiver vazia E não estiver carregando... */}
                 {categoriesForThisPage.length === 0 && !loading ? (
-                    // Se estiver vazia porque o usuário pesquisou
                     isSearching ? (
                         <EmptyState>
                             <p>Nenhuma categoria encontrada com o nome "{searchTerm}"</p>
                         </EmptyState>
                     ) : (
-                    // Se estiver vazia por que não tem cadastro
                         <EmptyState>
                             <p>Nenhuma categoria cadastrada</p>
                         </EmptyState>
                     )
                 ) : (
-                    // Caso contrário, mostra a tabela
                     <>
                         <Table 
                             data={categoriesForThisPage} 
@@ -171,15 +162,14 @@ export function Category(){
                             loading={loading}
                         />
 
-                        {/* Só mostra a paginação se tiver itens */}
                         {categoriesForThisPage.length > 0 && (
-                            <PaginationWrapper>
+                            <PaginationContainer>
                                 <Pagination
                                     totalPages={totalPages || 1}
                                     currentPage={currentPage}
                                     onPageChange={handlePageChange}
                                 />
-                            </PaginationWrapper>
+                            </PaginationContainer>
                         )}
                     </>
                 )}
