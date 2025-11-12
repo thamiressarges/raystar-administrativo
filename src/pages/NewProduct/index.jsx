@@ -29,7 +29,7 @@ export function NewProduct() {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [isAvailable, setIsAvailable] = useState(true);
-    const [price, setPrice] = useState(0);
+    const [price, setPrice] = useState("");
     
     const [variations, setVariations] = useState([]); 
     const [isVariationModalOpen, setIsVariationModalOpen] = useState(false);
@@ -46,7 +46,7 @@ export function NewProduct() {
                 const list = await CategoryApi.list({ limit: 200 }); 
                 setCategories(list);
             } catch (err) {
-                toast.error("Erro ao carregar as categorias.");
+                toast.error("Erro ao carregar as categorias." + err);
             }
         }
         loadCategories();
