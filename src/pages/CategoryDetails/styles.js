@@ -12,7 +12,7 @@ export const Container = styled.div`
   background: ${({ theme }) => theme.COLORS.GRAY_100};
 `;
 
-export const PageWrapper = styled.div`
+export const PageContainer = styled.div`
   grid-area: content;
   padding: 24px 64px 48px;
   overflow-y: auto; 
@@ -241,3 +241,4 @@ export const SaveButton = styled.button`
     cursor: not-allowed;
   }
 `;
+
