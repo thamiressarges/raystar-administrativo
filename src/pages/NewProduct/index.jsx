@@ -157,7 +157,7 @@ export function NewProduct() {
             <Header />
             <Menu />
 
-            <S.PageWrapper>
+            <S.PageContainer>
                 <S.HeaderBar>
                     <S.Title>
                         <S.BackLink onClick={() => navigate("/products")}>
@@ -314,7 +314,7 @@ export function NewProduct() {
                     )}
                 </S.Section>
 
-            </S.PageWrapper>
+            </S.PageContainer>
 
             <AddVariationModal
                 isOpen={isVariationModalOpen}
