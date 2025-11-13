@@ -18,6 +18,7 @@ export const Form = styled.form`
 
     width: 100%;
     max-width: 600px;
+    min-width: 600px; 
 
     > h1 {
         font-size: 48px;
@@ -26,9 +27,38 @@ export const Form = styled.form`
 
     > h2 {
         font-size: 24px;
-        margin-top: 50px;
+        margin-top: 24px; 
         margin-bottom: 24px;
     }
+`;
+
+export const Toggle = styled.div`
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  background: ${({ theme }) => theme.COLORS.GRAY_100};
+  border-radius: 10px;
+  padding: 4px;
+  margin-top: 50px;
+  
+  > button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    color: ${({ theme }) => theme.COLORS.GRAY_700};
+    transition: all 0.2s ease-in-out;
+
+    &.active {
+      background: #FFFFFF;
+      color: ${({ theme }) => theme.COLORS.BLACK};
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+  }
 `;
 
 export const Options = styled.div`
@@ -86,7 +116,7 @@ export const Options = styled.div`
 `;
 
 export const Background = styled.div`
-  flex: 1;
-  background: url(${background}) no-repeat center center;
-  background-size: cover;
+    flex: 1;
+    background: url(${background}) no-repeat center center;
+    background-size: cover;
 `;

@@ -1,109 +1,159 @@
 import { useState, useEffect } from "react";
-import { Container, Form, Options, Background } from "./styles";
-import { FiMail, FiLock } from "react-icons/fi";
-import { Link, useNavigate } from "react-router-dom";
+import { Container, Form, Options, Background, Toggle } from "./styles";
+import { FiMail, FiLock, FiUser } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 import { Input } from "../../components/Input";
 import { Button } from "../../components/Button";
-
-// 1. REMOÇÃO: Não precisamos mais do Firebase aqui
-// import { signInWithEmailAndPassword } from "firebase/auth";
-// import { auth } from "../../firebase";
-
-// 2. MODIFICAÇÃO: Pegamos a nova função 'login' do contexto
 import { useAuth } from "../../contexts/AuthContext";
-
+import { supabase } from "../../services/supabase";
 import { toast } from "react-toastify";
 
-export function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const ID_DA_LOJA_FIXO = "00000000-0000-0000-0000-000000000001";
 
-  // 3. MODIFICAÇÃO: Pegamos 'login' e 'user' do contexto
+export function SignIn() {
+  const [isLoginView, setIsLoginView] = useState(true);
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
-  // redireciona automaticamente se já estiver logado (NENHUMA MUDANÇA AQUI)
   useEffect(() => {
     if (user) {
       navigate("/order");
     }
   }, [user, navigate]);
 
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [signUpName, setSignUpName] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+
   async function handleSignIn(e) {
     e.preventDefault();
-
     try {
-      // 4. MODIFICAÇÃO: Chamada de login MUITO mais limpa
-      await login(email, password);
-
-      // ***** SEU CÓDIGO DE TOAST COMPLETO *****
-      toast.success("Login feito com sucesso!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        theme: "colored",
-      });
-      // ***************************************
-
+      await login(loginEmail, loginPassword);
+      toast.success("Login feito com sucesso!");
       navigate("/order");
     } catch (error) {
-      // 5. MODIFICAÇÃO: Tratamento de erro genérico do Supabase
       console.error("Erro ao logar:", error.message);
-
-      let errorMessage = "Erro ao fazer login. Verifique suas credenciais.";
-      
-      // Supabase é mais direto nos erros
+      let msg = "Erro ao fazer login.";
       if (error.message.includes("Invalid login credentials")) {
-        errorMessage = "E-mail ou senha incorretos!";
-      } else if (error.message.includes("Email not confirmed")) {
-         errorMessage = "Por favor, confirme seu e-mail.";
+        msg = "E-mail ou senha incorretos!";
+      } else if (error.message.includes("aguardando aprovação")) {
+        msg = "Sua conta está aguardando aprovação.";
+      }
+      toast.error(msg);
+    }
+  }
+
+  async function handleSignUp(e) {
+    e.preventDefault();
+    if (!signUpName || !signUpEmail || !signUpPassword) {
+      return toast.warn("Preencha nome, e-mail e senha.");
+    }
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: signUpEmail,
+        password: signUpPassword,
+        options: {
+          data: {
+            name: signUpName,
+            store_id: ID_DA_LOJA_FIXO 
+          }
+        }
+      });
+
+      if (error) {
+        throw error;
       }
 
-      // ***** SEU CÓDIGO DE TOAST COMPLETO *****
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        theme: "colored",
-      });
-      // ***************************************
+      toast.success("Solicitação enviada! Confirme seu e-mail e aguarde a aprovação.");
+      setIsLoginView(true);
+
+    } catch (error) {
+      console.error("Erro ao cadastrar:", error.message);
+      let msg = error.message;
+      if (msg.includes("User already registered")) {
+        msg = "Este e-mail já está cadastrado.";
+      }
+      toast.error(msg);
     }
   }
 
   return (
-    // NENHUMA MUDANÇA NECESSÁRIA NO JSX (return)
     <Container>
-      <Form onSubmit={handleSignIn}>
+      <Form>
         <h1>RayStar</h1>
-        <h2>Faça seu login</h2>
+        <Toggle>
+          <button 
+            className={isLoginView ? 'active' : ''}
+            onClick={() => setIsLoginView(true)}
+            type="button"
+          >
+            Entrar
+          </button>
+          <button 
+            className={!isLoginView ? 'active' : ''}
+            onClick={() => setIsLoginView(false)}
+            type="button"
+          >
+            Criar Conta
+          </button>
+        </Toggle>
 
-        <Input
-          placeholder="E-mail"
-          type="email"
-          icon={FiMail}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        {isLoginView && (
+          <>
+            <h2>Faça seu login</h2>
+            <Input
+              placeholder="E-mail"
+              type="email"
+              icon={FiMail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+            />
+            <Input
+              placeholder="Senha"
+              type="password"
+              icon={FiLock}
+              onChange={(e) => setLoginPassword(e.target.value)}
+            />
+            <Options>
+              <label>
+                <input type="checkbox" /> Lembrar
+              </label>
+              <a href="#">Esqueceu a sua senha?</a>
+            </Options>
+            <Button title="Entrar" type="submit" onClick={handleSignIn} />
+          </>
+        )}
 
-        <Input
-          placeholder="Senha"
-          type="password"
-          icon={FiLock}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {!isLoginView && (
+          <>
+            <h2>Solicitar Acesso de Admin</h2>
+            <Input
+              placeholder="Nome Completo"
+              type="text"
+              icon={FiUser}
+              onChange={(e) => setSignUpName(e.target.value)}
+            />
+            <Input
+              placeholder="E-mail"
+              type="email"
+              icon={FiMail}
+              onChange={(e) => setSignUpEmail(e.target.value)}
+            />
+            <Input
+              placeholder="Senha"
+              type="password"
+              icon={FiLock}
+              onChange={(e) => setSignUpPassword(e.target.value)}
+            />
 
-        <Options>
-          <label>
-            <input type="checkbox" />
-            Lembrar
-          </label>
+            <Button title="Enviar Solicitação" type="submit" onClick={handleSignUp} />
+          </>
+        )}
 
-          <Link to="/forgotpassword">Esqueceu a sua senha?</Link>
-        </Options>
-
-        <Button title="Entrar" type="submit" />
       </Form>
-
       <Background />
     </Container>
   );
