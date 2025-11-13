@@ -12,7 +12,7 @@ export const Container = styled.div`
   background: ${({ theme }) => theme.COLORS.GRAY_100};
 `;
 
-export const PageContainer = styled.div`
+export const PageWrapper = styled.div`
   grid-area: content;
   padding: 24px 64px 48px;
   overflow-y: auto; 
@@ -189,7 +189,7 @@ export const ThumbnailList = styled.div`
 
 const ThumbnailBase = styled.div`
   width: 60px;   
-  height: 60px;  
+  height: 60px;   
   border-radius: 8px;
   flex-shrink: 0; 
   border: 2px solid transparent;
