@@ -1,74 +1,105 @@
-import { createContext, useContext, useEffect, useState } from "react";
-// 1. IMPORTAÇÃO CORRETA: Traz o 'auth' do seu novo arquivo supabase.js
-import { auth } from "../services/supabase"; 
-// 2. REMOÇÃO: Não precisamos mais do firebase
-// import { onAuthStateChanged, signOut } from "firebase/auth";
-// import { auth } from "../firebase";
+import { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "../services/supabase";
 
-// Criando o contexto
-const AuthContext = createContext();
+const AuthContext = createContext({});
 
-// Criando um hook para usar o contexto
-export function useAuth() {
-  return useContext(AuthContext);
-}
-
-// Criando o provider para gerenciar o estado global
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null); // Supabase usa 'session'
+  const [user, setUser] = useState(null); 
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Observando o estado no SUPABASE
-  useEffect(() => {
-    setLoading(true);
-    
-    // 3. OBTÉM SESSÃO ATUAL: Pega a sessão se o usuário já estiver logado
-    auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+  async function login(email, password) {
+    const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
+    
+    if (sessionError) {
+      throw sessionError;
+    }
 
-    // 4. OBSERVA MUDANÇAS: Ouve eventos de LOGIN e LOGOUT
-    const { data: authListener } = auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+    const { data: profile, error: profileError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("uid", sessionData.user.id)
+      .single();
+
+    if (profileError) {
+      await supabase.auth.signOut();
+      throw new Error("Perfil não encontrado.");
+    }
+
+    if (profile.status === 'pending') {
+      await supabase.auth.signOut();
+      throw new Error("Sua conta está aguardando aprovação.");
+    }
+
+    setUser(sessionData.user);
+    setUserProfile(profile);
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setUserProfile(null);
+  }
+
+  useEffect(() => {
+    async function loadUser() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        const { data: profile } = await supabase
+          .from("users")
+          .select("*")
+          .eq("uid", session.user.id)
+          .single();
+        
+        if (profile && profile.status === 'active') {
+          setUser(session.user);
+          setUserProfile(profile);
+        } else {
+          await logout();
+        }
+      }
+      setLoading(false);
+    }
+    loadUser();
+
+    const { data: { subscription: listener } } = supabase.auth.onAuthStateChange(
+      (event) => {
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setUserProfile(null);
+        } else if (event === 'SIGNED_IN') {
+          loadUser();
+        }
       }
     );
 
-    // Limpa o "ouvinte"
     return () => {
-      authListener.subscription.unsubscribe();
+      listener?.unsubscribe();
     };
   }, []);
 
-  // 5. FUNÇÃO DE LOGIN: Centralizada no Contexto
-  const login = async (email, password) => {
-    const { data, error } = await auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-    if (error) throw error; // Joga o erro para a página de SignIn tratar
-    return data;
-  };
-
-  // 6. FUNÇÃO DE LOGOUT: Migrada
-  const logout = () => auth.signOut();
-
-  const value = {
-    user,
-    session, // Exporte a sessão, é útil
-    login,   // Exporte a função de login
-    logout,
-    loading,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        userProfile,
+        isSuperAdmin: userProfile?.permissions?.includes('super_admin'),
+        login,
+        logout,
+        loading,
+        supabase,
+      }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  return context;
 }
