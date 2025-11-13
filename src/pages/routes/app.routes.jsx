@@ -10,6 +10,7 @@ import { OrderDetails } from "../OrderDetails";
 import { ProductsDetails } from '../ProductsDetails';
 import {CategoryDetails} from '../CategoryDetails';
 import { NewProduct } from '../NewProduct'
+import { Profile } from "../Profile";
 import { PrivateRoute } from "../../components/PrivateRoute/PrivateRoute";
 
 export function AppRoutes(){
@@ -29,6 +30,7 @@ export function AppRoutes(){
       <Route path="/categoryDetails/:id" element={<PrivateRoute><CategoryDetails /></PrivateRoute>} />
       <Route path="/productDetails/:id" element={<PrivateRoute><ProductsDetails></ProductsDetails></PrivateRoute>} />
       <Route path="/products/new" element={<PrivateRoute><NewProduct /></PrivateRoute>} />
+      <Route path="/profile" element={<PrivateRoute><Profile/></PrivateRoute>}/>
     </Routes>
   )
 }
