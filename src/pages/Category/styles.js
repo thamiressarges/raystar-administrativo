@@ -16,7 +16,7 @@ export const Container = styled.div`
 
 export const Search = styled.div`
     grid-area: search;
-    padding: 20px 80px;
+    padding: 24px 64px 0; 
 `;
 
 export const SearchAndActionButton = styled.div`
@@ -24,6 +24,7 @@ export const SearchAndActionButton = styled.div`
     align-items: center;
     gap: 16px;
     width: 100%;
+    
     > *:first-child {
         flex-grow: 1;
     }
@@ -32,27 +33,29 @@ export const SearchAndActionButton = styled.div`
 export const AddButton = styled.button`
     width: 48px;
     height: 48px;
-    background: #000;
-    color: #fff;
+    background-color: ${({ theme }) => theme.COLORS.PRIMARY};
+    color: ${({ theme }) => theme.COLORS.WHITE};
     border: none;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-
-    svg {
-        stroke: #fff;
-    }
+    transition: background-color 0.2s;
 
     &:hover {
-        opacity: 0.9;
+        background-color: ${({ theme }) => theme.COLORS.PRIMARY_HOVER};
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 `;
 
 export const Content = styled.div`
     grid-area: content;
-    padding: 0 80px;
+    padding: 24px 64px 48px;
     overflow-y: auto; 
 `;
 
@@ -60,8 +63,7 @@ export const PaginationContainer = styled.div`
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-top: 20px;
-    padding-bottom: 20px;
+    margin-top: 24px;
 `;
 
 export const EmptyState = styled.div`
@@ -69,15 +71,12 @@ export const EmptyState = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding-top: 60px;
-    padding-bottom: 60px;
+    padding: 60px 0;
     text-align: center;
-
-    color: '#9CA3AF'; 
 
     p {
         font-size: 18px;
         font-weight: 500;
-        color: #6B7280;
+        color: ${({ theme }) => theme.COLORS.GRAY_400};
     }
 `;

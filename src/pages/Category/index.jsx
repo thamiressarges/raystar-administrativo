@@ -1,11 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { FiPlus} from "react-icons/fi"; 
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FiPlus } from "react-icons/fi"; 
 import { toast } from 'react-toastify'; 
 
-import { CategoryModal } from "../../components/CategoryModel"; 
+import { useMenu } from '../../contexts/MenuContext';
+import { useDebounce } from '../../hooks/useDebounce';
 import { CategoryApi } from "../../services/categoryApi"; 
+
+import { CategoryModal } from "../../components/CategoryModel"; 
 import { Loading } from '../../components/Loading';
+import { Header } from '../../components/Header';
+import { SearchInput } from '../../components/SearchInput';
+import { Table } from '../../components/Table';
+import { Pagination } from '../../components/Pagination';
+import { Brand } from '../../components/Brand';
+import { Menu } from '../../components/Menu';
 
 import {
     Container,
@@ -17,107 +26,76 @@ import {
     EmptyState 
 } from "./styles"; 
 
-import {Header} from '../../components/Header';
-import { SearchInput } from '../../components/SearchInput';
-import {Table} from '../../components/Table';
-import {Pagination} from '../../components/Pagination';
-import {Brand} from '../../components/Brand';
-import {Menu} from '../../components/Menu';
-
-import { useMenu } from '../../contexts/MenuContext';
-
-export function Category(){
+export function Category() {
     const { isMenuOpen } = useMenu();
     const navigate = useNavigate();
-    const location = useLocation();
 
-    // ESTADOS
+    // Estados de UI
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [allCategories, setAllCategories] = useState([]); 
-    const [loading, setLoading] = useState(false); 
-    const storeId = "main"; 
+    const [loading, setLoading] = useState(false);
+    
+    // Estados de Dados
+    const [categories, setCategories] = useState([]); 
     const [currentPage, setCurrentPage] = useState(1); 
     const ITEMS_PER_PAGE = 10;
+
+    // Estados de Busca
     const [searchTerm, setSearchTerm] = useState("");
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-    const categoryHeaders = ["Categoria", "Quantidade"];
-    const categoryDataKeys = ["name", "quantity"]; 
+    const tableHeaders = ["Categoria", "Quantidade"];
+    const tableDataKeys = ["name", "quantity"]; 
 
-    const handleNewCategory = () => setIsModalOpen(true);
-    
-    // 2. Buscando os dados
-    async function loadCategories(search = "") { 
+    // Função de carregamento memorizada para reuso
+    const loadCategories = useCallback(async (search = "") => {
         try {
             setLoading(true); 
             const list = await CategoryApi.list({ 
-                storeId, 
                 limit: 50, 
                 searchTerm: search 
             }); 
             
-            const tableData = list.map(c => ({
-                id: c.id,
-                name: c.name,
-                quantity: c.quantity ?? 0, 
-                ...c 
+            // Tratamento de dados para a tabela
+            const formattedList = list.map(c => ({
+                ...c,
+                quantity: c.quantity ?? 0 
             }));
 
-            setAllCategories(tableData);
-            setCurrentPage(1); 
-        } catch (e) {
-             console.error("Erro ao buscar categorias:", e);
-             toast.error("Erro ao buscar categorias: " + e.message);
+            setCategories(formattedList);
+            setCurrentPage(1); // Reseta para a primeira página ao filtrar
+        } catch (error) {
+             console.error(error);
+             toast.error("Não foi possível carregar as categorias.");
         } finally {
             setLoading(false); 
         }
-    }
-    
+    }, []);
+
+    // Efeito único para monitorar a busca (já com debounce)
+    useEffect(() => {
+        loadCategories(debouncedSearchTerm);
+    }, [debouncedSearchTerm, loadCategories]);
+
     const handleCreateCategory = async (payload) => {
         try {
             setLoading(true); 
             await CategoryApi.create(payload); 
             toast.success(`Categoria "${payload.name}" criada com sucesso!`);
-            loadCategories();
-        } catch (e) {
-            console.error("Erro ao criar categoria:", e);
-            toast.error("Erro ao criar categoria: " + e.message);
+            loadCategories(debouncedSearchTerm); // Recarrega mantendo a busca atual
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao criar categoria: " + error.message);
             setLoading(false); 
         } 
     };
 
-    const handleDetailsClick = (category) => {
-        navigate(`/categoryDetails/${category.id}`); 
-    };
-
-    // Evita chamadas a api a cada tecla
-    useEffect(() => {
-        const timerId = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 500);
-
-        return () => {
-            clearTimeout(timerId);
-        };
-    }, [searchTerm]);
-
-    useEffect(() => {
-        loadCategories(debouncedSearchTerm);
-    }, [debouncedSearchTerm, location]); 
-
-    // Paginação 
-    const totalPages = Math.ceil(allCategories.length / ITEMS_PER_PAGE);
-    const categoriesForThisPage = useMemo(() => {
+    // Lógica de Paginação no Frontend
+    const paginatedCategories = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        const endIndex = startIndex + ITEMS_PER_PAGE;
-        return allCategories.slice(startIndex, endIndex);
-    }, [allCategories, currentPage, ITEMS_PER_PAGE]);
+        return categories.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [categories, currentPage]);
 
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
-    };
-
-    const isSearching = searchTerm.length > 0;
+    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
 
     return(
         <Container $isopen={isMenuOpen}>
@@ -134,40 +112,37 @@ export function Category(){
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <AddButton onClick={handleNewCategory} disabled={loading}>
+                    <AddButton onClick={() => setIsModalOpen(true)} disabled={loading}>
                         <FiPlus size={24} />
                     </AddButton>
                 </SearchAndActionButton>
             </SearchArea>
 
             <Content>
-                
-                {categoriesForThisPage.length === 0 && !loading ? (
-                    isSearching ? (
-                        <EmptyState>
-                            <p>Nenhuma categoria encontrada com o nome "{searchTerm}"</p>
-                        </EmptyState>
-                    ) : (
-                        <EmptyState>
-                            <p>Nenhuma categoria cadastrada</p>
-                        </EmptyState>
-                    )
+                {!loading && categories.length === 0 ? (
+                    <EmptyState>
+                        <p>
+                            {searchTerm 
+                                ? `Nenhuma categoria encontrada para "${searchTerm}"` 
+                                : "Nenhuma categoria cadastrada."}
+                        </p>
+                    </EmptyState>
                 ) : (
                     <>
                         <Table 
-                            data={categoriesForThisPage} 
-                            headers={categoryHeaders}
-                            dataKeys={categoryDataKeys}
-                            onDetailsClick={handleDetailsClick} 
+                            data={paginatedCategories} 
+                            headers={tableHeaders}
+                            dataKeys={tableDataKeys}
+                            onDetailsClick={(item) => navigate(`/categoryDetails/${item.id}`)} 
                             loading={loading}
                         />
 
-                        {categoriesForThisPage.length > 0 && (
+                        {totalPages > 1 && (
                             <PaginationContainer>
                                 <Pagination
-                                    totalPages={totalPages || 1}
+                                    totalPages={totalPages}
                                     currentPage={currentPage}
-                                    onPageChange={handlePageChange}
+                                    onPageChange={setCurrentPage}
                                 />
                             </PaginationContainer>
                         )}
