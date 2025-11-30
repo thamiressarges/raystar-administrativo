@@ -5,7 +5,7 @@ export function Loading() {
   return (
     <Overlay>
       <Spinner>
-        <FiLoader size={40} />
+        <FiLoader size={48} />
       </Spinner>
     </Overlay>
   );
