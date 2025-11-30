@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { FiMail, FiX } from 'react-icons/fi';
 
-import { supabase } from '../../services/supabase';
+import { UserApi } from '../../services/userApi';
 import { Input } from '../Input';
 import { Button } from '../Button';
 import { Overlay, ModalContainer } from './styles';
@@ -18,18 +18,11 @@ export function ForgotPasswordModal({ onClose }) {
 
         setLoading(true);
         try {
-            const redirectUrl = `${window.location.origin}/reset-password`;
-
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: redirectUrl,
-            });
-
-            if (error) throw error;
-
+            await UserApi.recoverPassword(email);
             toast.success("E-mail enviado! Verifique sua caixa de entrada.");
             onClose(); 
         } catch (error) {
-            console.error("Erro ao recuperar senha:", error);
+            console.error(error);
             toast.error("Erro ao enviar e-mail. Tente novamente mais tarde.");
         } finally {
             setLoading(false);

@@ -22,7 +22,7 @@ export const ModalContainer = styled.div`
   gap: 24px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   animation: slideUp 0.3s ease-out;
-  margin: 20px; /* Margem de segurança para telas muito pequenas (mobile) */
+  margin: 20px;
 
   @keyframes slideUp {
     from { transform: translateY(20px); opacity: 0; }
