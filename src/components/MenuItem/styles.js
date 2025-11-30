@@ -6,18 +6,17 @@ export const Item = styled.a`
 
     display: flex;
     align-items: center;
-
     justify-content: ${({ $isopen }) => $isopen ? 'flex-start' : 'center'};
-    
-    padding-left: ${({ $isopen }) => $isopen ? '15px' : '0'};
+    padding-left: ${({ $isopen }) => $isopen ? '16px' : '0'};
 
-    color: ${({theme}) => theme.COLORS.WHITE};
+    color: ${({ theme }) => theme.COLORS.WHITE};
     text-decoration: none;
+    transition: background-color 0.2s;
 
     > svg {
-        color: ${({theme}) => theme.COLORS.WHITE};
-        font-size: 24px;
-        margin-right: ${({ $isopen }) => $isopen ? '8px' : '0'};
+        color: ${({ theme }) => theme.COLORS.WHITE};
+        font-size: 22px;
+        margin-right: ${({ $isopen }) => $isopen ? '12px' : '0'};
         flex-shrink: 0; 
     }
 
@@ -25,10 +24,10 @@ export const Item = styled.a`
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        font-size: 15px;
     }
 
     &:hover {
-        background-color: #1a1a1a;
-        cursor: pointer;
+        background-color: ${({ theme }) => theme.COLORS.PRIMARY_HOVER};
     }
 `;
