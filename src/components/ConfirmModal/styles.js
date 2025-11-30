@@ -9,6 +9,7 @@ export const ToastConfirmContainer = styled.div`
     margin: 0;
     font-size: 15px;
     font-weight: 500;
+    color: ${({ theme }) => theme.COLORS.GRAY_800};
   }
 
   div {
@@ -25,22 +26,23 @@ export const ToastButton = styled.button`
   cursor: pointer;
   transition: all 0.2s;
   flex-grow: 1; 
+  font-size: 14px;
 `;
 
 export const ToastButtonConfirm = styled(ToastButton)`
-  background: #EF4444; 
-  color: white;
+  background: ${({ theme }) => theme.COLORS.DANGER}; 
+  color: ${({ theme }) => theme.COLORS.WHITE};
 
   &:hover {
-    background: #DC2626;
+    background: ${({ theme }) => theme.COLORS.DANGER_HOVER};
   }
 `;
 
 export const ToastButtonCancel = styled(ToastButton)`
-  background: #E5E7EB; 
-  color: #374151;
+  background: ${({ theme }) => theme.COLORS.GRAY_200}; 
+  color: ${({ theme }) => theme.COLORS.GRAY_700};
 
   &:hover {
-    background: #D1D5DB;
+    background: ${({ theme }) => theme.COLORS.GRAY_300};
   }
 `;

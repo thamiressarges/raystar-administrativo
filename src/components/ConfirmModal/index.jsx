@@ -11,7 +11,6 @@ export function ConfirmModal({
     confirmText = "Confirmar" 
 }) {
   
-  // Função que roda a confirmação e fecha o toast
   const handleConfirm = () => {
     onConfirm(); 
     closeToast(); 
