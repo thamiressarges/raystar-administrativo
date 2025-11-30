@@ -1,38 +1,53 @@
 export const theme = {
   COLORS: {
-    BLACK: "#000000",
     WHITE: "#FFFFFF",
-    
-    GRAY_100: "#F3F4F6", 
-    GRAY_200: "#E5E7EB", 
-    GRAY_300: "#D1D5DB", 
-    GRAY_500: "#6B7280", 
-    GRAY_700: "#374151", 
-    GRAY_800: "#1F2937", 
-    GRAY_900: "#111827", 
+    BLACK: "#000000",
 
-    PRIMARY: "#000000",        
-    PRIMARY_HOVER: "#1a1a1a",  
-    
-    BLUE: "#2563EB",           
-    BLUE_LIGHT: "#EFF6FF",     
-    BLUE_BORDER: "#BFDBFE",
-    
-    GREEN: "#10B981",          
-    GREEN_DARK: "#059669",
-    GREEN_LIGHT: "#ECFFEF",
-    GREEN_BORDER: "#CFF1D2",
-    
-    RED: "#EF4444",            
-    RED_DARK: "#DC2626",
-    RED_LIGHT: "#FFF1F2",
-    RED_BORDER: "#FFCACA",
-    
-    ORANGE: "#F59E0B",         
-    ORANGE_LIGHT: "#FFFBEB",
-    ORANGE_BORDER: "#FCD34D",
-    
-    PURPLE: "#7C3AED",         
-    PURPLE_LIGHT: "#F6EDFF"
+    GRAY_50:  "#F9FAFB",
+    GRAY_100: "#F3F4F6",
+    GRAY_200: "#E5E7EB",
+    GRAY_300: "#D1D5DB",
+    GRAY_400: "#9CA3AF",
+    GRAY_500: "#6B7280",
+    GRAY_600: "#4B5563",
+    GRAY_700: "#374151",
+    GRAY_800: "#1F2937",
+    GRAY_900: "#111827",
+
+    PRIMARY: "#000000",
+    PRIMARY_HOVER: "#1a1a1a",
+
+    DANGER: "#EF4444",
+    DANGER_HOVER: "#DC2626",
+    DANGER_LIGHT: "#FEE2E2",
+
+    SUCCESS: "#10B981",
+    SUCCESS_HOVER: "#059669",
+    SUCCESS_LIGHT: "#D1FAE5",
+
+    WARNING: "#F59E0B",
+    WARNING_LIGHT: "#FEF3C7",
+
+    INFO: "#3B82F6",
+    INFO_LIGHT: "#DBEAFE",
+
+    BLUE_700: "#1D4ED8",
+
+    PURPLE_100: "#E9D5FF",
+    PURPLE_500: "#7C3AED",
+    PURPLE_800: "#5B21B6",
+    INDIGO_100: "#E0E7FF",
+    INDIGO_800: "#3730A3",
+    AMBER_600: "#D97706",
+    GREEN_600: "#16A34A",
+    GREEN_700: "#15803D",
+
+    OVERLAY: "rgba(0, 0, 0, 0.5)",
+    BORDER: "#E5E7EB",
+  },
+
+  FONTS: {
+    DEFAULT: "'Poppins', sans-serif",
+    SERIF: "'Ibarra Real Nova', serif",
   }
 };

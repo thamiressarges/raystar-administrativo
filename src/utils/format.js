@@ -41,7 +41,6 @@ export const formatDateTime = (dateString) => {
 
 export const formatBirthDate = (dateString) => {
   if (!dateString) return "—";
-  // Trata casos onde a data vem como YYYY-MM-DD string simples (comum em inputs de data)
   if (typeof dateString === 'string' && dateString.includes('-')) {
       const [year, month, day] = dateString.split('-');
       return `${day.substring(0, 2)}/${month}/${year}`;
@@ -94,7 +93,7 @@ export const translateOrderStatus = (status) => {
         'pagamento_confirmado': "Pagamento Aprovado",
         'pago': "Pago",
         
-        // Status de Entrega/Logística
+        // Status de entrega
         'processing': 'Em processamento',
         'preparando_pedido': "Preparando",
         'shipped': 'Enviado',
@@ -114,8 +113,6 @@ export const translateOrderStatus = (status) => {
 
 export const getPaymentMethodName = (paymentObj) => {
     if (!paymentObj) return "Não informado";
-    
-    // Tenta pegar do objeto ou usa a string direta se vier assim
     const form = paymentObj.form || paymentObj; 
     
     const raw = String(form).toLowerCase().trim();
