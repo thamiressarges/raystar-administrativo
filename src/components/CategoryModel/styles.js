@@ -3,33 +3,45 @@ import styled from "styled-components";
 export const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: ${({ theme }) => theme.COLORS.OVERLAY};
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
+  backdrop-filter: blur(2px);
 `;
 
 export const ModalContent = styled.div`
-  background: #fff;
-  width: 600px;
-  padding: 30px;
-  border-radius: 12px;
+  background: ${({ theme }) => theme.COLORS.WHITE};
+  width: 100%;
+  max-width: 500px; /* Largura mais contida para forms pequenos */
+  padding: 32px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease-out;
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
 `;
 
 export const Title = styled.h2`
   text-align: center;
   font-size: 24px;
-  color: #333;
+  color: ${({ theme }) => theme.COLORS.GRAY_900};
+  font-weight: 700;
+  margin: 0;
 `;
 
 export const Subtitle = styled.p`
   text-align: center;
-  color: #666;
-  margin-top: -10px;
+  color: ${({ theme }) => theme.COLORS.GRAY_500};
+  font-size: 14px;
+  margin-top: -16px;
 `;
 
 export const FormGroup = styled.div`
@@ -37,50 +49,75 @@ export const FormGroup = styled.div`
   flex-direction: column;
   gap: 8px;
 
-  input,
-  textarea,
-  select {
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 16px;
+  label {
+    font-weight: 600;
+    font-size: 14px;
+    color: ${({ theme }) => theme.COLORS.GRAY_700};
   }
 
-  textarea {
-    height: 120px;
-    resize: none;
+  input,
+  select {
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid ${({ theme }) => theme.COLORS.GRAY_300};
+    font-size: 16px;
+    color: ${({ theme }) => theme.COLORS.GRAY_900};
+    background-color: ${({ theme }) => theme.COLORS.WHITE};
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: ${({ theme }) => theme.COLORS.PRIMARY};
+    }
+
+    &::placeholder {
+      color: ${({ theme }) => theme.COLORS.GRAY_400};
+    }
   }
 `;
 
 export const Footer = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
+  justify-content: flex-end; /* Padrão de botões à direita */
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 24px;
+  border-top: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
 `;
 
 export const CancelButton = styled.button`
-  width: 48%;
+  flex: 1;
+  max-width: 140px;
   padding: 12px;
   border-radius: 8px;
-  background: #eee;
+  background: ${({ theme }) => theme.COLORS.GRAY_100};
+  color: ${({ theme }) => theme.COLORS.GRAY_700};
   border: none;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
 
   &:hover {
-    background: #ddd;
+    background: ${({ theme }) => theme.COLORS.GRAY_200};
+    color: ${({ theme }) => theme.COLORS.GRAY_900};
   }
 `;
 
 export const SaveButton = styled.button`
-  width: 48%;
+  flex: 1;
+  max-width: 160px;
   padding: 12px;
   border-radius: 8px;
   border: none;
-  background: #000;
-  color: #fff;
+  background: ${({ theme }) => theme.COLORS.SUCCESS}; /* Verde do tema */
+  color: ${({ theme }) => theme.COLORS.WHITE};
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
 
   &:hover {
-    opacity: 0.9;
+    background: ${({ theme }) => theme.COLORS.SUCCESS_HOVER};
+    transform: translateY(-1px);
   }
 `;
