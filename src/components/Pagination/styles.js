@@ -10,19 +10,18 @@ export const Container = styled.div`
 `;
 
 export const PaginationButton = styled.button`
-    background-color: ${({ theme, $isactive }) => $isactive ? theme.COLORS.BLACK : theme.COLORS.WHITE};
-    color: ${({ theme, $isactive }) => $isactive ? theme.COLORS.WHITE : theme.COLORS.BLACK};
+    background-color: ${({ theme, $isactive }) => $isactive ? theme.COLORS.PRIMARY : theme.COLORS.WHITE};
+    color: ${({ theme, $isactive }) => $isactive ? theme.COLORS.WHITE : theme.COLORS.GRAY_700};
     border: none;
     padding: 8px 16px;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-
     margin: 0;
 
     &:not(:last-child) {
-        border-right: 1px solid rgba(0,0,0,0.2);
+        border-right: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
     }
 
     &:first-child {
@@ -36,7 +35,7 @@ export const PaginationButton = styled.button`
     }
 
     &:hover {
-        background-color: ${({ theme, $isactive }) => $isactive ? theme.COLORS.BLACK : theme.COLORS.GRAY_100};
-        color: ${({ theme, $isactive }) => $isactive ? theme.COLORS.WHITE : theme.COLORS.BLACK};
+        background-color: ${({ theme, $isactive }) => $isactive ? theme.COLORS.PRIMARY_HOVER : theme.COLORS.GRAY_100};
+        color: ${({ theme, $isactive }) => $isactive ? theme.COLORS.WHITE : theme.COLORS.GRAY_900};
     }
 `;
