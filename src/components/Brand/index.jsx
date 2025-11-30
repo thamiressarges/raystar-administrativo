@@ -9,7 +9,7 @@ export function Brand(){
         <Container $isopen={isMenuOpen}>
             {isMenuOpen && <h1>RayStar</h1>}
             
-            <button onClick={toggleMenu}>
+            <button type="button" onClick={toggleMenu} aria-label="Alternar menu">
                 {isMenuOpen ? <IoIosArrowBack /> : <IoIosArrowForward />}
             </button>
         </Container>
