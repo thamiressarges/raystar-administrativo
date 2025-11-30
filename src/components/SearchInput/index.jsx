@@ -1,12 +1,12 @@
-import { Container, SearchButton } from './styles';
 import { FiSearch } from 'react-icons/fi';
+import { Container, SearchButton } from './styles';
 
 export function SearchInput({ placeholder, ...rest }) {
   return (
     <Container>
       <input type="text" placeholder={placeholder} {...rest} />
-      <SearchButton>
-        <FiSearch size={18} color="#fff" />
+      <SearchButton type="button">
+        <FiSearch size={18} />
       </SearchButton>
     </Container>
   );
