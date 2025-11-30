@@ -4,24 +4,45 @@ import { ToastContainer } from "react-toastify";
 export const StyledToastContainer = styled(ToastContainer)`
   .Toastify__toast {
     border-radius: 12px;
-    font-family: 'Poppins', sans-serif;
     font-weight: 500;
-    background: #FFFFFF;
-    color: #333;
+    background: ${({ theme }) => theme.COLORS.WHITE};
+    color: ${({ theme }) => theme.COLORS.GRAY_700};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   .Toastify__toast--success {
-    color: #4caf50;
+    color: ${({ theme }) => theme.COLORS.SUCCESS};
     
+    svg {
+        fill: ${({ theme }) => theme.COLORS.SUCCESS};
+    }
+
     .Toastify__progress-bar {
-      background: #4caf50;
+      background: ${({ theme }) => theme.COLORS.SUCCESS};
     }
   }
 
   .Toastify__toast--error {
-    color: #f44336;
+    color: ${({ theme }) => theme.COLORS.DANGER};
+
+    svg {
+        fill: ${({ theme }) => theme.COLORS.DANGER};
+    }
+
     .Toastify__progress-bar {
-      background: #f44336;
+      background: ${({ theme }) => theme.COLORS.DANGER};
+    }
+  }
+
+  .Toastify__toast--warning {
+    color: ${({ theme }) => theme.COLORS.WARNING};
+
+    svg {
+        fill: ${({ theme }) => theme.COLORS.WARNING};
+    }
+
+    .Toastify__progress-bar {
+      background: ${({ theme }) => theme.COLORS.WARNING};
     }
   }
 `;
