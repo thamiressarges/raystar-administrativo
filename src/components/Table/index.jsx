@@ -1,7 +1,15 @@
 import { Container, TableStyled } from "./styles";
-import { Button } from "../../components/Button";
+import { Button } from "../Button";
 
-export function Table({ data, headers, dataKeys, onDetailsClick }) {
+export function Table({ data, headers, dataKeys, onDetailsClick, loading }) {
+  if (loading) {
+    return (
+      <Container>
+        <p style={{ padding: '20px', textAlign: 'center', color: '#999' }}>Carregando dados...</p>
+      </Container>
+    );
+  }
+
   return (
     <Container>
       <TableStyled>
@@ -10,6 +18,8 @@ export function Table({ data, headers, dataKeys, onDetailsClick }) {
             {headers.map((header, index) => (
                <th key={index}>{header}</th>
             ))}
+            {/* Coluna vazia para o botão de ações */}
+            <th></th>
           </tr>
         </thead>
 
@@ -22,7 +32,7 @@ export function Table({ data, headers, dataKeys, onDetailsClick }) {
 
              <td>
                 <Button 
-                  title="DETALHES" 
+                  title="Detalhes" 
                   isTableButton
                   onClick={() => onDetailsClick(item)} 
                 />
