@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { toast } from 'react-toastify'; 
+import { validateVariationForm } from "../../utils/validators"; // Importando nosso validador
+
 import { 
   Overlay, 
   ModalContent, 
@@ -12,90 +14,99 @@ import {
 } from "./styles"; 
 
 export function AddVariationModal({ isOpen, onClose, onSubmit }) {
-
-    // Estados
     const [tamanho, setTamanho] = useState("");
     const [cor, setCor] = useState("");
-    const [estoque, setEstoque] = useState(1);
+    const [estoque, setEstoque] = useState("");
     const [preco, setPreco] = useState("");
 
     if (!isOpen) return null;
 
     const handleSave = (e) => {
         e.preventDefault(); 
-        
-        // Validando os campos
-        if (!tamanho || !cor || !estoque || !preco) {
-            toast.warn("Preencha todos os campos da variação!");
+        const formData = { tamanho, cor, estoque, preco };
+        const { isValid, error } = validateVariationForm(formData);
+
+        if (!isValid) {
+            toast.warn(error);
             return;
         }
 
-        // Montando o objeto da nova variação
-        const payload = { 
-            id: `temp-${Date.now()}`,
-            tamanho, 
-            cor, 
-            estoque: Number(estoque), 
-            preco: parseFloat(preco)
-        };
-        
-        // Enviando os dados para a página pai
-        if (onSubmit) {
-            onSubmit(payload); 
-        }
+        try {
+            const payload = { 
+                id: `temp-${Date.now()}`,
+                tamanho: tamanho.trim(), 
+                cor: cor.trim(), 
+                estoque: Number(estoque), 
+                preco: Number(preco)
+            };
+            
+            if (onSubmit) {
+                onSubmit(payload); 
+            }
 
-        // Limpaando os campos e fechando o modal
-        setTamanho("");
-        setCor("");
-        setEstoque(1);
-        setPreco("");
-        onClose(); 
+            setTamanho("");
+            setCor("");
+            setEstoque("");
+            setPreco("");
+            onClose();
+            
+        } catch (error) {
+            console.error("[AddVariationModal] Erro ao processar:", error);
+            toast.error("Ocorreu um erro ao adicionar. Tente novamente.");
+        }
     };
 
     return (
         <Overlay onClick={onClose}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
-                <Title>Adicionar Nova Variação</Title>
+                <Title>Nova Variação</Title>
 
                 <form onSubmit={handleSave}>
                     <FormRow>
                         <FormGroup>
-                            <label>Tamanho *</label>
+                            <label htmlFor="tamanho">Tamanho</label>
                             <input 
+                                id="tamanho"
                                 type="text" 
-                                placeholder="Ex: P" 
+                                placeholder="Ex: P, M, G, 42" 
                                 value={tamanho} 
                                 onChange={(e) => setTamanho(e.target.value)} 
+                                autoComplete="off"
                             />
                         </FormGroup>
 
                         <FormGroup>
-                            <label>Cor *</label>
+                            <label htmlFor="cor">Cor</label>
                             <input 
+                                id="cor"
                                 type="text" 
-                                placeholder="Ex: Preto" 
+                                placeholder="Ex: Preto, Azul Marinho" 
                                 value={cor} 
                                 onChange={(e) => setCor(e.target.value)} 
+                                autoComplete="off"
                             />
                         </FormGroup>
 
                         <FormGroup className="small"> 
-                            <label>Estoque *</label>
+                            <label htmlFor="estoque">Estoque</label>
                             <input 
+                                id="estoque"
                                 type="number" 
-                                min="0"
+                                min="1" 
+                                placeholder="0"
                                 value={estoque} 
                                 onChange={(e) => setEstoque(e.target.value)} 
                             />
                         </FormGroup>
 
                         <FormGroup className="small">
-                            <label>Preço *</label>
+                            <label htmlFor="preco">Preço (R$)</label>
                             <input 
+                                id="preco"
                                 type="number" 
                                 step="0.01" 
-                                min="0"
-                                placeholder="Ex: 89.90" 
+                                min="0.01"
+                                placeholder="0,00" 
                                 value={preco} 
                                 onChange={(e) => setPreco(e.target.value)} 
                             />
@@ -103,8 +114,12 @@ export function AddVariationModal({ isOpen, onClose, onSubmit }) {
                     </FormRow>
 
                     <Footer>
-                        <CancelButton type="button" onClick={onClose}>Cancelar</CancelButton>
-                        <SaveButton type="submit">Adicionar Variação</SaveButton>
+                        <CancelButton type="button" onClick={onClose}>
+                            Cancelar
+                        </CancelButton>
+                        <SaveButton type="submit">
+                            Adicionar
+                        </SaveButton>
                     </Footer>
                 </form>
             </ModalContent>
