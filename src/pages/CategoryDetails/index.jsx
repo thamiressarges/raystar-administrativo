@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { FiChevronLeft, FiEdit2, FiBox, FiTrash2 } from "react-icons/fi";
 
 import { CategoryApi } from "../../services/categoryApi";
 import { CategoryModal } from "../../components/CategoryModel";
 import { Loading } from '../../components/Loading';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { Header } from "../../components/Header";
+import { Brand } from "../../components/Brand";
+import { Menu } from "../../components/Menu";
+import { useMenu } from "../../contexts/MenuContext";
 
 import {
     Container,
@@ -27,14 +32,6 @@ import {
     DeleteButton,
 } from "./styles";
 
-import { Header } from "../../components/Header";
-import { Brand } from "../../components/Brand";
-import { Menu } from "../../components/Menu";
-import { useMenu } from "../../contexts/MenuContext";
-
-import { FiChevronLeft, FiEdit2, FiBox, FiTrash2 } from "react-icons/fi";
-
-
 export function CategoryDetails() {
     const navigate = useNavigate();
     const { id: categoryId } = useParams();
@@ -45,7 +42,7 @@ export function CategoryDetails() {
     const [loadingPage, setLoadingPage] = useState(true);
     const [isEditOpen, setIsEditOpen] = useState(false);
 
-    async function loadDetails() {
+    const loadDetails = useCallback(async () => {
         if (!categoryId || categoryId === "undefined") {
             toast.error("ID da categoria inválido!");
             navigate("/category");
@@ -54,7 +51,7 @@ export function CategoryDetails() {
         try {
             setLoadingPage(true);
             const response = await CategoryApi.getDetails({ categoryId });
-            const data = response.category;
+            const data = response.category || response; 
             
             if (!data || !data.id) throw new Error("Categoria não encontrada.");
             
@@ -64,18 +61,16 @@ export function CategoryDetails() {
             });
 
         } catch (err) {
-            console.error("Erro ao carregar detalhes:", err);
-            toast.error("Erro ao carregar categoria: " + err.message);
+            console.error(err);
+            toast.error("Erro ao carregar categoria.");
         } finally {
             setLoadingPage(false);
         }
-    }
+    }, [categoryId, navigate]);
 
     useEffect(() => {
         loadDetails();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [categoryId]);
-
+    }, [loadDetails]);
 
     const handleEdit = async (payload) => {
         if (!category) return;
@@ -89,8 +84,8 @@ export function CategoryDetails() {
             await loadDetails();
             toast.success("Categoria atualizada com sucesso!");
         } catch (err) {
-            console.error("Erro ao editar categoria:", err);
-            toast.error("Erro ao editar categoria: " + err.message);
+            console.error(err);
+            toast.error("Erro ao editar categoria.");
         } finally {
             setLoading(false);
         }
@@ -102,11 +97,11 @@ export function CategoryDetails() {
         try {
             setLoading(true);
             await CategoryApi.delete({ categoryId: category.id });
-            toast.success(`Categoria "${category.name}" e seus produtos foram deletados!`);
-            window.location.href = "/category";
+            toast.success(`Categoria deletada com sucesso!`);
+            navigate("/category");
         } catch (err) {
-            console.error("Erro ao deletar categoria:", err);
-            toast.error("Erro ao deletar: " + err.message);
+            console.error(err);
+            toast.error("Erro ao deletar categoria.");
             setLoading(false);
         }
     };
@@ -115,7 +110,7 @@ export function CategoryDetails() {
         if (!category) return;
 
         const productCount = category.quantity || 0;
-        const message = `Deletar "${category.name}"? ISSO DELETARÁ TODOS OS ${productCount} PRODUTOS VINCULADOS A ELA!`;
+        const message = `Deletar "${category.name}"? Atenção: Isso pode afetar os ${productCount} produtos vinculados!`;
 
         toast.warn(
             ({ closeToast }) => (
@@ -123,19 +118,16 @@ export function CategoryDetails() {
                     closeToast={closeToast}
                     onConfirm={confirmDelete}
                     message={message}
-                    confirmText="Deletar"
+                    confirmText="Sim, Deletar"
                 />
             ),
             {
                 autoClose: false,
                 closeOnClick: false,
                 draggable: false,
-                theme: "light",
-                style: { background: "#fff", color: "#333" }
             }
         );
     };
-
 
     return (
         <Container $isopen={isMenuOpen}>
@@ -150,42 +142,37 @@ export function CategoryDetails() {
                     <>
                         <HeaderBar>
                             <BackLink onClick={() => navigate("/category")}>
-                                <FiChevronLeft />
+                                <FiChevronLeft /> Voltar
                             </BackLink>
-                            <Title>{category.name}</Title>
                         </HeaderBar>
+                        
+                        <div style={{ marginBottom: 24 }}>
+                            <Title>{category.name}</Title>
+                        </div>
 
                         <Section>
                             <SectionHeader>
                                 <SectionTitle>Configurações</SectionTitle>
                             </SectionHeader>
                             <InfoRow>
-                                <label>Disponibilidade</label>
-                                <StatusText $isActive={category.availability === 'active'}>
-                                    {category.availability === 'active' ? 'Ativado' : 'Desativado'}
+                                <label>Status atual:</label>
+                               <StatusText $isActive={category.is_active}>
+                                    {category.is_active ? 'Ativa' : 'Inativa'}
                                 </StatusText>
                             </InfoRow>
-
-                            <InfoRow>
-                                <label>Descrição</label>
-                                <p>
-                                    {category.description || 'Nenhuma descrição cadastrada.'}
-                                </p>
-                            </InfoRow>
-
                             <ActionsRow>
                                 <EditButton onClick={() => setIsEditOpen(true)} disabled={loading}>
                                     <FiEdit2 /> Editar
                                 </EditButton>
                                 <DeleteButton onClick={handleDelete} disabled={loading}>
-                                    <FiTrash2 /> Deletar
+                                    <FiTrash2 /> Excluir
                                 </DeleteButton>
                             </ActionsRow>
                         </Section>
 
                         <Section>
                             <SectionHeader>
-                                <SectionTitle>Produtos ({category.quantity ?? 0})</SectionTitle>
+                                <SectionTitle>Produtos Vinculados ({category.quantity})</SectionTitle>
                             </SectionHeader>
                             <ScrollArea>
                                 <ProductsTable>
@@ -194,14 +181,16 @@ export function CategoryDetails() {
                                             category.products.map((product) => (
                                                 <Tr key={product.id}>
                                                     <Td style={{ width: 46 }}>
-                                                        <FiBox size={20} />
+                                                        <FiBox size={20} color="#6B7280" />
                                                     </Td>
                                                     <Td>{product.title}</Td> 
                                                 </Tr>
                                             ))
                                         ) : (
                                             <Tr>
-                                                <Td colSpan={2} style={{ padding: 16 }}>Nenhum produto vinculado.</Td>
+                                                <Td colSpan={2} style={{ padding: 24, textAlign: "center", color: "#9CA3AF" }}>
+                                                    Nenhum produto vinculado a esta categoria.
+                                                </Td>
                                             </Tr>
                                         )}
                                     </tbody>
