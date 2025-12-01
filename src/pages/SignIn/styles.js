@@ -7,7 +7,7 @@ export const Container = styled.div`
   align-items: stretch;
 `;
 
-export const Form = styled.form`
+export const Form = styled.div`
   padding: 0 136px;
   display: flex;
   flex-direction: column;
@@ -19,13 +19,11 @@ export const Form = styled.form`
   max-width: 700px;
   background-color: ${({ theme }) => theme.COLORS.WHITE};
 
-  /* Ajustes para Tablets e Notebooks menores */
   @media (max-width: 1024px) {
     padding: 0 60px;
     max-width: 500px;
   }
 
-  /* Ajustes para Mobile */
   @media (max-width: 768px) {
     padding: 0 30px;
     max-width: 100%;
@@ -37,7 +35,7 @@ export const Form = styled.form`
     color: ${({ theme }) => theme.COLORS.BLACK};
   }
 
-  > h2 {
+  h2 {
     font-size: 24px;
     margin-top: 24px;
     margin-bottom: 24px;
@@ -111,4 +109,13 @@ export const Background = styled.div`
   @media (max-width: 768px) {
     display: none;
   }
+`;
+
+export const ErrorText = styled.span`
+  color: ${({ theme }) => theme.COLORS.DANGER};
+  font-size: 12px;
+  display: block;
+  text-align: left;
+  margin-top: 4px;
+  margin-left: 4px;
 `;

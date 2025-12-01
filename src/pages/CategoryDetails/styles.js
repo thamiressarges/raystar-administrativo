@@ -1,51 +1,5 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-`;
-
-export const PageContainer = styled.div`
-  padding: 24px 64px 48px;
-  flex: 1;
-  overflow-y: auto; 
-`;
-
-export const HeaderBar = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-`;
-
-export const BackLink = styled.button`
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: ${({ theme }) => theme.COLORS.GRAY_500};
-    transition: color 0.2s;
-
-    &:hover {
-        color: ${({ theme }) => theme.COLORS.GRAY_900};
-    }
-
-    svg {
-        font-size: 24px;
-    }
-`;
-
-export const Title = styled.h1`
-    font-size: 28px;
-    margin: 0;
-    color: ${({ theme }) => theme.COLORS.GRAY_900};
-    font-weight: 700;
-`;
-
 export const Section = styled.section`
     background: ${({ theme }) => theme.COLORS.WHITE};
     border-radius: 16px;

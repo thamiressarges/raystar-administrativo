@@ -1,96 +1,63 @@
-import { useState, useEffect } from "react";
-import { toast } from 'react-toastify'; 
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { categorySchema } from "../../utils/schemas";
+
 import { 
-    Overlay, 
-    ModalContent, 
-    Title, 
-    Subtitle, 
-    FormGroup, 
-    Footer, 
-    CancelButton, 
-    SaveButton 
+    Overlay, ModalContent, Title, Subtitle, FormGroup, Footer, CancelButton, SaveButton 
 } from "./styles"; 
 
 export function CategoryModal({ isOpen, onClose, type = "create", data = null, onSubmit }) {
-    const [name, setName] = useState("");
-    const [isActive, setIsActive] = useState(true);
+    const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm({
+        resolver: zodResolver(categorySchema),
+        defaultValues: { name: "", is_active: true }
+    });
 
     useEffect(() => {
-        if (isOpen) {
-            if (type === "edit" && data) {
-                setName(data.name || "");
-                setIsActive(data.is_active ?? true);
-            } else {
-                setName("");
-                setIsActive(true);
-            }
+        if (isOpen && data) {
+            setValue("name", data.name);
+            setValue("is_active", data.is_active);
+        } else {
+            reset();
         }
-    }, [type, data, isOpen]); 
+    }, [isOpen, data, setValue, reset]);
+
+    const handleFormSubmit = async (formData) => {
+        await onSubmit(formData);
+        onClose();
+    };
 
     if (!isOpen) return null;
-
-    const handleSave = (e) => {
-        e.preventDefault(); 
-        
-        const cleanName = name.trim();
-
-        if (!cleanName) {
-            toast.warn("Por favor, preencha o nome da categoria.");
-            return;
-        }
-        
-        const payload = { 
-            name: cleanName,
-            is_active: isActive,
-        };
-
-        onSubmit(payload);
-        onClose(); 
-    };
 
     return (
         <Overlay onClick={onClose}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
                 <Title>{type === "edit" ? "Editar Categoria" : "Nova Categoria"}</Title>
+                <Subtitle>Preencha os dados abaixo</Subtitle>
 
-                <Subtitle>
-                    {type === "edit"
-                        ? "Atualize as informações da categoria abaixo"
-                        : "Preencha os dados para criar uma nova categoria"}
-                </Subtitle>
-
-                <form onSubmit={handleSave}>
+                <form onSubmit={handleSubmit(handleFormSubmit)}>
                     <FormGroup>
-                        <label htmlFor="categoryName">Nome *</label>
+                        <label>Nome *</label>
                         <input
-                            id="categoryName"
-                            type="text"
-                            placeholder="Ex: Blusas, Acessórios..."
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            autoComplete="off"
+                            {...register("name")}
+                            placeholder="Ex: Roupas"
                             autoFocus
                         />
+                        {errors.name && <span style={{color:'red', fontSize: 12}}>{errors.name.message}</span>}
                     </FormGroup>
 
                     <FormGroup>
-                        <label htmlFor="categoryStatus">Status</label>
-                        <select
-                            id="categoryStatus"
-                            value={isActive ? "active" : "inactive"}
-                            onChange={(e) => setIsActive(e.target.value === "active")}
-                        >
-                            <option value="active">Ativa (Visível na loja)</option>
-                            <option value="inactive">Inativa (Oculta)</option>
+                        <label>Status</label>
+                        <select {...register("is_active", { setValueAs: v => v === "true" })}>
+                            <option value="true">Ativa</option>
+                            <option value="false">Inativa</option>
                         </select>
                     </FormGroup>
 
                     <Footer>
-                        <CancelButton type="button" onClick={onClose}>
-                            Cancelar
-                        </CancelButton>
-                        <SaveButton type="submit">
-                            {type === "edit" ? "Salvar Alterações" : "Criar Categoria"}
+                        <CancelButton type="button" onClick={onClose}>Cancelar</CancelButton>
+                        <SaveButton type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Salvando..." : (type === "edit" ? "Salvar" : "Criar")}
                         </SaveButton>
                     </Footer>
                 </form>

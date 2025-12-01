@@ -5,20 +5,14 @@ export const Container = styled.div`
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 24px;
 `;
 
 export const SearchArea = styled.div`
     width: 100%;
-    padding: 32px 80px 0;
-`;
-
-export const Content = styled.div`
-    width: 100%;
-    padding: 0 80px 20px;
-
+    padding: 32px 64px 0;
+    
     @media (max-width: 768px) {
-        padding: 0 20px 20px;
+        padding: 20px 20px 0;
     }
 `;
 

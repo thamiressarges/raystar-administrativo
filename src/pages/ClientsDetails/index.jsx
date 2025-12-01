@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "../../services/supabase";
 import { toast } from 'react-toastify'; 
+import { FiUser, FiPhone, FiMapPin, FiTrash2, FiChevronLeft } from "react-icons/fi";
+
+import { UserApi } from "../../services/userApi";
+import { Loading } from "../../components/Loading"; 
+import { ConfirmModal } from "../../components/ConfirmModal"; 
+import { formatBirthDate, formatPhone, formatCPF } from "../../utils/format";
+
+import { PageContainer, PageHeader, PageTitle, BackButton } from "../../styles/commonStyles";
 
 import {
-  Container,
-  HeaderBar,     
-  BackLink,      
-  Title,         
   Card,
   CardTitle,
   InfoGrid,
@@ -19,18 +22,6 @@ import {
   ErrorMessage
 } from "./styles"; 
 
-import { Loading } from "../../components/Loading"; 
-import { ConfirmModal } from "../../components/ConfirmModal"; 
-import { formatBirthDate, formatPhone, formatCPF } from "../../utils/format";
-
-import {
-  FiUser,
-  FiPhone,
-  FiMapPin,
-  FiTrash2,
-  FiChevronLeft
-} from "react-icons/fi";
-
 export function ClientsDetails() {
   const { id } = useParams(); 
   const navigate = useNavigate();
@@ -39,55 +30,35 @@ export function ClientsDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchClientDetails = useCallback(async () => {
-    if (!id) {
-      setError("ID do cliente não fornecido.");
-      setIsLoading(false);
-      return;
-    }
-
+  const loadClient = useCallback(async () => {
+    if (!id) return;
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('users')
-        .select('*') 
-        .eq('uid', id)
-        .single(); 
-
-      if (error) {
-        throw error;
-      }
-
+      const data = await UserApi.getClientById(id);
+      
       if (data) {
         setClient(data);
       } else {
         setError("Cliente não encontrado.");
       }
-
     } catch (err) {
       setError(err.message);
+      toast.error("Erro ao carregar detalhes.");
     } finally {
       setIsLoading(false);
     }
   }, [id]);
 
   useEffect(() => {
-    fetchClientDetails();
-  }, [fetchClientDetails]);
+    loadClient();
+  }, [loadClient]);
 
   const confirmDeleteClient = async () => {
-    setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({ is_deleted: true, status: 'deleted' })
-        .eq('uid', id);
-      
-      if (error) throw error;
-
+      setIsLoading(true);
+      await UserApi.deleteClient(id);
       toast.success("Cliente deletado com sucesso!");
       navigate("/clients"); 
-
     } catch (err) {
       toast.error(`Erro ao deletar: ${err.message}`);
       setIsLoading(false);
@@ -97,56 +68,49 @@ export function ClientsDetails() {
   const handleDeleteClient = () => {
     if (!client) return;
 
-    const message = `Tem certeza que deseja deletar o cliente ${client.name}? Esta ação é irreversível.`;
-
     toast.warn(
         ({ closeToast }) => (
             <ConfirmModal
                 closeToast={closeToast}
                 onConfirm={confirmDeleteClient}
-                message={message}
+                message={`Tem certeza que deseja deletar o cliente ${client.name}?`}
                 confirmText="Sim, Deletar"
             />
         ),
-        {
-            autoClose: false,
-            closeOnClick: false,
-            draggable: false,
-            theme: "light",
-        }
+        { autoClose: false, closeOnClick: false }
     );
   };
 
-  if (isLoading && !client) {
-    return <Loading />;
-  }
+  if (isLoading && !client) return <Loading />;
 
   if (error) {
     return (
-      <Container> 
-        <HeaderBar> 
-          <BackLink onClick={() => navigate("/clients")}>
-            <FiChevronLeft /> Voltar
-          </BackLink>
-          <Title>Erro</Title>
-        </HeaderBar>
+      <PageContainer> 
+        <PageHeader> 
+          <PageTitle>
+            <BackButton onClick={() => navigate("/clients")}>
+                <FiChevronLeft />
+            </BackButton>
+            Erro
+          </PageTitle>
+        </PageHeader>
         <Card>
-          <ErrorMessage>Falha ao carregar cliente: {error}</ErrorMessage>
+          <ErrorMessage>Falha ao carregar: {error}</ErrorMessage>
         </Card>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container>
-      {(isLoading && client) && <Loading />}
-
-      <HeaderBar>
-        <BackLink onClick={() => navigate("/clients")}>
-          <FiChevronLeft /> Voltar
-        </BackLink>
-        <Title>Detalhes do Cliente</Title>
-      </HeaderBar>
+    <PageContainer>
+      <PageHeader>
+        <PageTitle>
+            <BackButton onClick={() => navigate("/clients")}>
+                <FiChevronLeft />
+            </BackButton>
+            Detalhes do Cliente
+        </PageTitle>
+      </PageHeader>
       
       <Card>
         <CardTitle>
@@ -156,11 +120,11 @@ export function ClientsDetails() {
         <InfoGrid>
           <InfoItem>
             <InfoLabel>Nome Completo</InfoLabel>
-            <InfoValue>{client.name || 'N/A'}</InfoValue>
+            <InfoValue>{client.name || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>CPF</InfoLabel>
-            <InfoValue>{formatCPF(client.cpf) || 'N/A'}</InfoValue>
+            <InfoValue>{formatCPF(client.cpf) || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Data de Nascimento</InfoLabel>
@@ -183,11 +147,11 @@ export function ClientsDetails() {
         <InfoGrid>
           <InfoItem>
             <InfoLabel>Telefone</InfoLabel>
-            <InfoValue>{formatPhone(client.phones?.main || client.phones?.[0]) || 'N/A'}</InfoValue>
+            <InfoValue>{formatPhone(client.phones?.main || client.phones?.[0]) || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>E-mail</InfoLabel>
-            <InfoValue>{client.email || 'N/A'}</InfoValue>
+            <InfoValue>{client.email || '—'}</InfoValue>
           </InfoItem>
         </InfoGrid>
       </Card>
@@ -200,31 +164,31 @@ export function ClientsDetails() {
         <InfoGrid>
           <InfoItem>
             <InfoLabel>CEP</InfoLabel>
-            <InfoValue>{client.address?.cep || 'N/A'}</InfoValue>
+            <InfoValue>{client.address?.cep || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Rua/Avenida</InfoLabel>
-            <InfoValue>{client.address?.street || 'N/A'}</InfoValue>
+            <InfoValue>{client.address?.street || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Número</InfoLabel>
-            <InfoValue>{client.address?.number || 'N/A'}</InfoValue>
+            <InfoValue>{client.address?.number || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Bairro</InfoLabel>
-            <InfoValue>{client.address?.neighborhood || 'N/A'}</InfoValue>
+            <InfoValue>{client.address?.neighborhood || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Cidade</InfoLabel>
-            <InfoValue>{client.address?.city || 'N/A'}</InfoValue>
+            <InfoValue>{client.address?.city || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Estado</InfoLabel>
-            <InfoValue>{client.address?.state || 'N/A'}</InfoValue>
+            <InfoValue>{client.address?.state || '—'}</InfoValue>
           </InfoItem>
         </InfoGrid>
       </Card>
 
-    </Container>
+    </PageContainer>
   );
 }

@@ -1,124 +1,164 @@
-// src/services/productApi.js (ARQUIVO COMPLETO E CORRIGIDO)
 import { supabase } from './supabase';
-
-const STORE_ID = "00000000-0000-0000-0000-000000000001";
 
 export const ProductApi = {
 
-    // (Função de Listar - sem alterações)
-    async list({ limit = 50, searchTerm = "" }) {
+    // LISTAR PRODUTOS (Mantive igual, pois lê da tabela products que está ok)
+    async list({ limit = 200, searchTerm = "" }) {
         let query = supabase
             .from('products')
             .select(`
-                id, 
-                title, 
+                id,
+                title,
                 is_available,
-                categories ( name ) 
+                quantity,
+                categories(name)
             `)
-            .eq('store_id', STORE_ID)
-            .limit(limit)
             .order('title', { ascending: true });
 
         if (searchTerm) {
             query = query.ilike('title', `%${searchTerm}%`);
         }
+
         const { data, error } = await query;
         if (error) throw new Error(error.message);
 
-        const products = data.map(product => ({
+        return data.map(product => ({
             id: product.id,
             product: product.title,
-            category: product.categories ? product.categories.name : 'Sem Categoria',
+            category: product.categories?.name || 'Sem Categoria',
             availability: product.is_available ? 'Sim' : 'Não',
-            ...product
+            quantity: product.quantity ?? 0,
         }));
-        return products;
     },
 
-    // (Função de Criar - sem alterações)
-    async create({
-        name,
-        description,
-        price,
-        isAvailable,
-        categoryId,
-        variations,
-        photos
-    }) {
-
-        // CHAMA A RPC CORRIGIDA (com 7 argumentos)
-        const { data, error } = await supabase.rpc('rpc_create_product_with_variations', {
-            name_in: name,
-            description_in: description,
-            price_in: price, // <-- CORRETO
-            is_available_in: isAvailable,
-            category_id_in: categoryId,
-            variations_in: variations,
-            photos_in: photos
-        });
-
-        if (error) {
-            console.error("Erro ao criar produto:", error);
-            throw error;
-        }
-        return data;
-    },
-
-    // (Função de Detalhes - Versão Simples e Correta)
-    async getDetails({ productId }) {
-        // Apenas chama a RPC. A RPC agora retorna os dados formatados!
-        const { data, error } = await supabase.rpc('rpc_get_product_details', {
-            product_id_in: productId
-        });
-
-        if (error) throw new Error(error.message);
-
-        // Retorna os dados DIRETAMENTE
-        return data;
-    },
-
-    // (Função de Update - sem alterações)
-    async update({ productId, updates }) {
-        const { data, error } = await supabase
+    // CRIAR PRODUTO
+    async create(productData) {
+        // 1. Cria o Produto
+        const { data: prod, error: prodError } = await supabase
             .from('products')
-            .update(updates)
-            .eq('id', productId)
+            .insert({
+                title: productData.name,
+                description: productData.description,
+                price: productData.price,
+                is_available: productData.isAvailable,
+                category_id: productData.categoryId,
+                photos: productData.photos,
+                quantity: productData.quantity
+            })
             .select()
             .single();
-        if (error) throw new Error(error.message);
-        return data;
+
+        if (prodError) throw prodError;
+
+        // 2. Se tiver variações, insere na tabela NOVA
+        if (productData.variations && productData.variations.length > 0) {
+            const varsToInsert = productData.variations.map(v => ({
+                product_id: prod.id,
+                tamanho: v.tamanho,
+                cor: v.cor,
+                stock: Number(v.quantity), // Mapeia quantity -> stock
+                price: Number(v.price)
+            }));
+
+            const { error: varError } = await supabase
+                .from('variations')
+                .insert(varsToInsert);
+
+            if (varError) throw varError;
+        }
+
+        return prod;
     },
 
-    // (Função de Delete - sem alterações)
+    // DETALHES DO PRODUTO (CORRIGIDO: Lê direto das tabelas novas)
+    async getDetails({ productId }) {
+        // 1. Busca o Produto
+        const { data: product, error: prodError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('id', productId)
+            .single();
+
+        if (prodError) throw new Error(prodError.message);
+
+        // 2. Busca as Variações na tabela CERTA (variations)
+        const { data: variations, error: varError } = await supabase
+            .from('variations')
+            .select('*')
+            .eq('product_id', productId);
+
+        if (varError) throw new Error(varError.message);
+
+        // 3. Busca Reviews
+        const { data: reviews, error: revError } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('product_id', productId);
+
+        // 4. Retorna tudo formatado para o Front
+        return {
+            product,
+            // Mapeia 'stock' do banco para 'quantity' pro seu Front antigo entender
+            variations: variations.map(v => ({
+                ...v,
+                quantity: v.stock // O segredo: traduz stock -> quantity
+            })),
+            reviews: reviews || []
+        };
+    },
+
+    // UPDATE (Simples update na tabela products)
+    async update({ productId, updates }) {
+        const { error } = await supabase
+            .from('products')
+            .update(updates)
+            .eq('id', productId);
+
+        if (error) {
+            console.error("ERRO AO ATUALIZAR:", error);
+            throw new Error(error.message);
+        }
+        return true;
+    },
+
+    // DELETE
     async delete({ productId }) {
         const { error } = await supabase
             .from('products')
             .delete()
             .eq('id', productId);
+
         if (error) throw new Error(error.message);
         return true;
     },
 
-    // ***************************************************************
-    // **** ⬇️⬇️ NOVA FUNÇÃO ADICIONADA AQUI ⬇️⬇️ ****
-    // ***************************************************************
-
-    /**
-     * Sincroniza (Insere, Atualiza, Deleta) as variações de um produto.
-     * @param {string} productId - O ID do produto
-     * @param {Array} variations - A lista COMPLETA de 'editedVariations'
-     */
+    // SYNC VARIAÇÕES (CORRIGIDO: Apaga e recria na tabela 'variations')
     async syncVariations({ productId, variations }) {
-        const { error } = await supabase.rpc('rpc_sync_variations', {
-            product_id_in: productId,
-            variations_in: variations
-        });
-
-        if (error) {
-            console.error("Erro ao sincronizar variações:", error);
-            throw error;
-        }
+        // 1. Apaga as variações antigas desse produto
+        const { error: delError } = await supabase
+            .from('variations')
+            .delete()
+            .eq('product_id', productId);
         
+        if (delError) throw delError;
+
+        // 2. Se tiver novas, insere
+        if (variations && variations.length > 0) {
+            const varsToInsert = variations.map(v => ({
+                product_id: productId,
+                tamanho: v.tamanho,
+                cor: v.cor,
+                stock: Number(v.quantity), // Traduz quantity -> stock
+                price: Number(v.price)
+            }));
+
+            const { error: insError } = await supabase
+                .from('variations')
+                .insert(varsToInsert);
+            
+            if (insError) throw insError;
+        }
+
         return true;
     }
 };

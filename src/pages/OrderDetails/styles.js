@@ -1,49 +1,13 @@
 import styled, { css } from "styled-components";
 
-export const Container = styled.div`
-  width: 100%;
-  padding: 24px 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding-bottom: 60px;
-
-  @media (max-width: 768px) {
-    padding: 20px;
-  }
-`;
-
-export const HeaderBar = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 24px;
-`;
-
-export const Title = styled.h1`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 22px;
-  color: ${({ theme }) => theme.COLORS.GRAY_900};
-
-  div {
-    display: flex;
-    flex-direction: column;
-  }
-`;
-
 export const DateInfo = styled.div`
   text-align: right;
-
   small {
     display: block;
     color: ${({ theme }) => theme.COLORS.GRAY_500};
     font-size: 12px;
     margin-bottom: 2px;
   }
-
   strong {
     font-size: 18px;
     color: ${({ theme }) => theme.COLORS.GRAY_900};
@@ -55,8 +19,6 @@ export const ContentGrid = styled.div`
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-width: 100%;
-  margin: 0;
 `;
 
 export const Section = styled.section`
@@ -87,10 +49,7 @@ export const ClientGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
 
   small {
     color: ${({ theme }) => theme.COLORS.GRAY_500};
@@ -98,7 +57,6 @@ export const ClientGrid = styled.div`
     display: block;
     margin-bottom: 6px;
   }
-
   .clientValue {
     font-weight: 600;
     color: ${({ theme }) => theme.COLORS.GRAY_800};
@@ -109,7 +67,6 @@ export const ClientGrid = styled.div`
 
 export const ItemsList = styled.div`
   width: 100%;
-
   .itemsHead {
     display: grid;
     grid-template-columns: 2fr 100px 150px 150px;
@@ -129,22 +86,10 @@ export const ItemRow = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
   align-items: center;
 
-  &:last-child {
-    border-bottom: none;
-  }
-
-  .qty {
-    text-align: center;
-  }
-
-  .price,
-  .total {
-    text-align: right;
-  }
-
-  .qty,
-  .price,
-  .total {
+  &:last-child { border-bottom: none; }
+  .qty { text-align: center; }
+  .price, .total { text-align: right; }
+  .qty, .price, .total {
     font-weight: 600;
     color: ${({ theme }) => theme.COLORS.GRAY_700};
     font-size: 14px;
@@ -164,7 +109,6 @@ export const ItemDetails = styled.div`
     background: ${({ theme }) => theme.COLORS.GRAY_50};
     border: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
   }
-
   strong {
     font-size: 14px;
     color: ${({ theme }) => theme.COLORS.GRAY_900};
@@ -177,10 +121,7 @@ export const DeliveryGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-bottom: 24px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
 
   small {
     color: ${({ theme }) => theme.COLORS.GRAY_500};
@@ -188,7 +129,6 @@ export const DeliveryGrid = styled.div`
     display: block;
     margin-bottom: 6px;
   }
-
   .delValue {
     font-weight: 600;
     color: ${({ theme }) => theme.COLORS.GRAY_800};
@@ -224,7 +164,6 @@ export const PickupCard = styled.div`
     justify-content: center;
     border-radius: 50%;
   }
-
   .info {
     strong {
       color: ${({ theme }) => theme.COLORS.BLUE_700};
@@ -232,60 +171,20 @@ export const PickupCard = styled.div`
       display: block;
       margin-bottom: 4px;
     }
-    p {
-      color: ${({ theme }) => theme.COLORS.INFO};
-      font-size: 14px;
-      margin: 0;
-    }
+    p { color: ${({ theme }) => theme.COLORS.INFO}; font-size: 14px; margin: 0; }
   }
 `;
 
 const bannerColors = {
-  pickup: css`
-    background: ${({ theme }) => theme.COLORS.INFO_LIGHT};
-    border: 1px solid ${({ theme }) => theme.COLORS.INFO};
-    color: ${({ theme }) => theme.COLORS.BLUE_700};
-  `,
-  entregue: css`
-    background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT};
-    border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS};
-    color: ${({ theme }) => theme.COLORS.GREEN_700};
-  `,
-  pago: css`
-    background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT};
-    border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS};
-    color: ${({ theme }) => theme.COLORS.GREEN_700};
-  `,
-  enviado: css`
-    background: ${({ theme }) => theme.COLORS.INDIGO_100};
-    border: 1px solid ${({ theme }) => theme.COLORS.INDIGO_800};
-    color: ${({ theme }) => theme.COLORS.INDIGO_800};
-  `,
-  processando: css`
-    background: ${({ theme }) => theme.COLORS.PURPLE_100};
-    border: 1px solid ${({ theme }) => theme.COLORS.PURPLE_500};
-    color: ${({ theme }) => theme.COLORS.PURPLE_800};
-  `,
-  cancelado: css`
-    background: ${({ theme }) => theme.COLORS.DANGER_LIGHT};
-    border: 1px solid ${({ theme }) => theme.COLORS.DANGER};
-    color: ${({ theme }) => theme.COLORS.DANGER};
-  `,
-  aguardando_confirmacao: css`
-    background: ${({ theme }) => theme.COLORS.WARNING_LIGHT};
-    border: 1px solid ${({ theme }) => theme.COLORS.WARNING};
-    color: ${({ theme }) => theme.COLORS.AMBER_600};
-  `,
-  aguardando_pagamento: css`
-    background: ${({ theme }) => theme.COLORS.WARNING_LIGHT};
-    border: 1px solid ${({ theme }) => theme.COLORS.WARNING};
-    color: ${({ theme }) => theme.COLORS.AMBER_600};
-  `,
-  default: css`
-    background: ${({ theme }) => theme.COLORS.GRAY_50};
-    border: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
-    color: ${({ theme }) => theme.COLORS.GRAY_700};
-  `,
+  pickup: css` background: ${({ theme }) => theme.COLORS.INFO_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.INFO}; color: ${({ theme }) => theme.COLORS.BLUE_700}; `,
+  entregue: css` background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS}; color: ${({ theme }) => theme.COLORS.GREEN_700}; `,
+  pago: css` background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS}; color: ${({ theme }) => theme.COLORS.GREEN_700}; `,
+  enviado: css` background: ${({ theme }) => theme.COLORS.INDIGO_100}; border: 1px solid ${({ theme }) => theme.COLORS.INDIGO_800}; color: ${({ theme }) => theme.COLORS.INDIGO_800}; `,
+  processando: css` background: ${({ theme }) => theme.COLORS.PURPLE_100}; border: 1px solid ${({ theme }) => theme.COLORS.PURPLE_500}; color: ${({ theme }) => theme.COLORS.PURPLE_800}; `,
+  cancelado: css` background: ${({ theme }) => theme.COLORS.DANGER_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.DANGER}; color: ${({ theme }) => theme.COLORS.DANGER}; `,
+  aguardando_confirmacao: css` background: ${({ theme }) => theme.COLORS.WARNING_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.WARNING}; color: ${({ theme }) => theme.COLORS.AMBER_600}; `,
+  aguardando_pagamento: css` background: ${({ theme }) => theme.COLORS.WARNING_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.WARNING}; color: ${({ theme }) => theme.COLORS.AMBER_600}; `,
+  default: css` background: ${({ theme }) => theme.COLORS.GRAY_50}; border: 1px solid ${({ theme }) => theme.COLORS.GRAY_200}; color: ${({ theme }) => theme.COLORS.GRAY_700}; `,
 };
 
 export const StatusBanner = styled.div`
@@ -304,13 +203,9 @@ export const StatusBanner = styled.div`
     justify-content: center;
     font-size: 20px;
   }
-
   .content {
     flex: 1;
-    strong {
-      font-weight: 700;
-      font-size: 15px;
-    }
+    strong { font-weight: 700; font-size: 15px; }
   }
 `;
 
@@ -345,11 +240,7 @@ export const ButtonsRow = styled.div`
   gap: 12px;
   margin-top: 24px;
   flex-wrap: wrap;
-
-  & > button {
-    flex: 1;
-    min-width: 140px;
-  }
+  & > button { flex: 1; min-width: 140px; }
 `;
 
 const BaseButton = styled.button`
@@ -364,33 +255,13 @@ const BaseButton = styled.button`
   gap: 8px;
   transition: all 0.2s;
   font-size: 14px;
-
-  &:hover {
-    filter: brightness(0.95);
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
+  &:hover { filter: brightness(0.95); transform: translateY(-1px); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 `;
 
-export const PrimaryButton = styled(BaseButton)`
-  background: ${({ theme }) => theme.COLORS.SUCCESS};
-  color: ${({ theme }) => theme.COLORS.WHITE};
-`;
-
-export const SecondaryButton = styled(BaseButton)`
-  background: ${({ theme }) => theme.COLORS.DANGER};
-  color: ${({ theme }) => theme.COLORS.WHITE};
-`;
-
-export const RouteButton = styled(BaseButton)`
-  background: ${({ theme }) => theme.COLORS.BLUE_700};
-  color: ${({ theme }) => theme.COLORS.WHITE};
-`;
+export const PrimaryButton = styled(BaseButton)` background: ${({ theme }) => theme.COLORS.SUCCESS}; color: ${({ theme }) => theme.COLORS.WHITE}; `;
+export const SecondaryButton = styled(BaseButton)` background: ${({ theme }) => theme.COLORS.DANGER}; color: ${({ theme }) => theme.COLORS.WHITE}; `;
+export const RouteButton = styled(BaseButton)` background: ${({ theme }) => theme.COLORS.BLUE_700}; color: ${({ theme }) => theme.COLORS.WHITE}; `;
 
 export const QrModalOverlay = styled.div`
   position: fixed;
@@ -413,21 +284,7 @@ export const QrModal = styled.div`
   flex-direction: column;
   align-items: center;
 
-  img {
-    width: 100%;
-    border-radius: 8px;
-  }
-
-  h3 {
-    margin-bottom: 12px;
-    color: ${({ theme }) => theme.COLORS.GRAY_900};
-    text-align: center;
-  }
-
-  p {
-    font-size: 13px;
-    color: ${({ theme }) => theme.COLORS.GRAY_500};
-    text-align: center;
-    margin-bottom: 16px;
-  }
+  img { width: 100%; border-radius: 8px; }
+  h3 { margin-bottom: 12px; color: ${({ theme }) => theme.COLORS.GRAY_900}; text-align: center; }
+  p { font-size: 13px; color: ${({ theme }) => theme.COLORS.GRAY_500}; text-align: center; margin-bottom: 16px; }
 `;

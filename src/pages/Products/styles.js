@@ -5,12 +5,11 @@ export const Container = styled.div`
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 24px;
 `;
 
 export const SearchArea = styled.div`
     width: 100%;
-    padding: 32px 80px 0;
+    padding: 32px 64px 0;
 
     @media (max-width: 768px) {
         padding: 20px 20px 0;
@@ -48,24 +47,6 @@ export const AddButton = styled.button`
     &:hover {
         background-color: ${({ theme }) => theme.COLORS.PRIMARY_HOVER};
     }
-`;
-
-export const Content = styled.div`
-    width: 100%;
-    padding: 0 80px 20px;
-    flex: 1;
-
-    @media (max-width: 768px) {
-        padding: 0 20px 20px;
-    }
-`;
-
-export const PaginationContainer = styled.div`
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-top: 20px;
-    padding-bottom: 20px;
 `;
 
 export const EmptyState = styled.div`

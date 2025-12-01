@@ -1,21 +1,10 @@
-// src/services/categoryApi.js (ARQUIVO COMPLETO E CORRIGIDO)
 import { supabase } from './supabase';
 
-// ID da Loja (ajuste se for dinâmico)
-const STORE_ID = "00000000-0000-0000-0000-000000000001";
-
-// (Não precisamos mais importar a ProductApi aqui)
-
 export const CategoryApi = {
-
-    /**
-     * Lista todas as categorias com contagem de produtos
-     */
     async list({ searchTerm = "", limit = 50 }) {
         let query = supabase
             .from('categories')
-            .select('id, name, products(count)')
-            .eq('store_id', STORE_ID)
+            .select('id, name, is_active, products(count)')
             .limit(limit);
 
         if (searchTerm) {
@@ -25,75 +14,34 @@ export const CategoryApi = {
         const { data, error } = await query;
         if (error) throw error;
 
+        // Retornamos dados puros. A formatação visual fica no componente.
         return data.map(c => ({
             id: c.id,
             name: c.name,
-            quantity: c.products[0]?.count || 0,
+            is_active: c.is_active, 
+            quantity: c.products?.[0]?.count || 0
         }));
     },
 
-    /**
-     * Busca os detalhes de UMA categoria e seus produtos
-     */
     async getDetails({ categoryId }) {
-        const { data, error } = await supabase.rpc('rpc_get_category_details', {
-            category_id_in: categoryId
-        });
-        
+        // Se você usar RPC ou query direta, mantenha o retorno simples
+        const { data, error } = await supabase.from('categories').select('*').eq('id', categoryId).single();
         if (error) throw error;
-        return data; 
+        return data;
     },
 
-    /**
-     * Cria uma nova categoria
-     */
     async create(payload) {
-        const { data, error } = await supabase
-            .from('categories')
-            .insert({
-                name: payload.name,
-                description: payload.description,
-                availability: payload.availability,
-                store_id: STORE_ID
-            })
-            .single();
-
+        const { error } = await supabase.from('categories').insert(payload);
         if (error) throw error;
-        return data;
     },
 
-    /**
-     * Atualiza uma categoria
-     */
-    async update({ categoryId, name, description, availability }) {
-        const { data, error } = await supabase
-            .from('categories')
-            .update({
-                name,
-                description,
-                availability
-            })
-            .eq('id', categoryId)
-            .eq('store_id', STORE_ID);
-
+    async update({ id, ...updates }) {
+        const { error } = await supabase.from('categories').update(updates).eq('id', id);
         if (error) throw error;
-        return data;
     },
 
-    /**
-     * Deleta uma categoria
-     * (O banco de dados agora cuida da cascata)
-     */
-    async delete({ categoryId }) {
-        const { error } = await supabase
-            .from('categories')
-            .delete()
-            .eq('id', categoryId)
-            .eq('store_id', STORE_ID);
-
+    async delete(id) {
+        const { error } = await supabase.from('categories').delete().eq('id', id);
         if (error) throw error;
-        return true;
-    },
-
-    // **** REMOVIDO: A função 'removeProductFromCategory' foi deletada. ****
+    }
 };

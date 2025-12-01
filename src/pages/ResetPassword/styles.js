@@ -48,11 +48,6 @@ export const Form = styled.form`
     color: ${({ theme }) => theme.COLORS.GRAY_500};
     font-size: 14px;
   }
-
-  > div {
-    margin-bottom: 8px;
-    width: 100%; 
-  }
   
   > button {
     margin-top: 16px;
@@ -68,4 +63,13 @@ export const Background = styled.div`
   @media (max-width: 768px) {
     display: none;
   }
+`;
+
+export const ErrorText = styled.span`
+  color: ${({ theme }) => theme.COLORS.DANGER};
+  font-size: 12px;
+  display: block;
+  text-align: left;
+  margin-top: 4px;
+  margin-left: 4px;
 `;

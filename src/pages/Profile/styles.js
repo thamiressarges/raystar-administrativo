@@ -1,22 +1,5 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-`;
-
-export const Content = styled.div`
-  padding: 40px 64px 48px;
-  max-width: 1120px;
-  margin: 0 auto;
-  width: 100%;
-
-  @media (max-width: 768px) {
-    padding: 20px 20px;
-  }
-`;
-
 export const BackLink = styled.button`
   display: inline-flex;
   align-items: center;
@@ -28,6 +11,7 @@ export const BackLink = styled.button`
   font-size: 16px;
   margin-bottom: 24px;
   color: ${({ theme }) => theme.COLORS.GRAY_700};
+  align-self: flex-start;
 
   &:hover {
     color: ${({ theme }) => theme.COLORS.BLACK};
@@ -43,6 +27,7 @@ export const ProfileCard = styled.div`
   align-items: center;
   gap: 24px;
   margin-bottom: 32px;
+  width: 100%;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -98,6 +83,7 @@ export const Section = styled.section`
   padding: 32px;
   margin-top: 18px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+  width: 100%;
 
   @media (max-width: 768px) {
     padding: 20px;

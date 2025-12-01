@@ -1,72 +1,46 @@
-import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiBox } from "react-icons/fi";
-import { toast } from 'react-toastify';
 
-import {
-    Container,
-    SearchArea,
-    Content,
-    PaginationContainer,
-    SearchAndActionButton,
-    AddButton,
-    EmptyState
-} from './styles';
-
+import { useProducts } from '../../hooks/useProducts';
 import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
 
-import { ProductApi } from '../../services/productApi';
+import { PageContainer } from '../../styles/commonStyles';
+import {
+    Container,
+    SearchArea,
+    SearchAndActionButton,
+    AddButton,
+    EmptyState
+} from './styles';
 
 export function Products() {
     const navigate = useNavigate();
-
-    const [allProducts, setAllProducts] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
-    const ITEMS_PER_PAGE = 10;
+    
+    const { 
+        products, 
+        loading, 
+        currentPage, 
+        setCurrentPage, 
+        totalPages, 
+        searchTerm, 
+        setSearchTerm,
+        hasProducts 
+    } = useProducts();
 
     const productHeaders = ["Produto", "Categoria", "Disponibilidade"];
-    const productDataKeys = ["product", "category", "availability"];
+    const productDataKeys = ["title", "categoryName", "is_available"];
 
-    async function loadProducts(search = "") {
-        try {
-            setLoading(true);
-            const list = await ProductApi.list({ searchTerm: search, limit: 200 });
-            setAllProducts(list);
-            setCurrentPage(1);
-        } catch (e) {
-            toast.error("Erro ao buscar produtos: " + e.message);
-        } finally {
-            setLoading(false);
-        }
-    }
+    // Pequena formatação visual para a tabela
+    const formattedProducts = products.map(p => ({
+        ...p,
+        is_available: p.is_available ? "Sim" : "Não"
+    }));
 
     const handleNewProduct = () => navigate('/products/new');
     const handleDetailsClick = (item) => navigate(`/productDetails/${item.id}`);
-
-    useEffect(() => {
-        const timerId = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 500);
-        return () => clearTimeout(timerId);
-    }, [searchTerm]);
-
-    useEffect(() => {
-        loadProducts(debouncedSearchTerm);
-    }, [debouncedSearchTerm]);
-
-    const productsForThisPage = useMemo(() => {
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        return allProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    }, [allProducts, currentPage]);
-
-    const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
 
     return (
         <Container>
@@ -85,40 +59,37 @@ export function Products() {
                 </SearchAndActionButton>
             </SearchArea>
 
-            <Content>
-                {productsForThisPage.length === 0 && !loading ? (
-                    searchTerm ? (
-                        <EmptyState>
-                            <FiBox />
-                            <p>Nenhum produto encontrado com o nome "{searchTerm}"</p>
-                        </EmptyState>
-                    ) : (
-                        <EmptyState>
-                            <FiBox />
-                            <p>Nenhum produto cadastrado</p>
-                        </EmptyState>
-                    )
+            <PageContainer>
+                {!hasProducts && !loading ? (
+                    <EmptyState>
+                        <FiBox />
+                        <p>
+                            {searchTerm 
+                                ? `Nenhum produto encontrado com o nome "${searchTerm}"` 
+                                : "Nenhum produto cadastrado"}
+                        </p>
+                    </EmptyState>
                 ) : (
                     <>
                         <Table
-                            data={productsForThisPage}
+                            data={formattedProducts}
                             headers={productHeaders}
                             dataKeys={productDataKeys}
                             onDetailsClick={handleDetailsClick}
                             loading={loading}
                         />
                         {totalPages > 0 && (
-                            <PaginationContainer>
+                            <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
                                 <Pagination
-                                    totalPages={totalPages || 1}
+                                    totalPages={totalPages}
                                     currentPage={currentPage}
                                     onPageChange={setCurrentPage}
                                 />
-                            </PaginationContainer>
+                            </div>
                         )}
                     </>
                 )}
-            </Content>
+            </PageContainer>
         </Container>
     );
 }

@@ -1,32 +1,22 @@
 import styled from "styled-components";
 import { Button } from "../../components/Button";
 
-export const Container = styled.div`
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-`;
-
 export const Content = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    padding: 24px 40px 48px;
     width: 100%;
-
-    @media (max-width: 768px) {
-        padding: 20px 20px;
-    }
 `;
 
 export const Form = styled.form`
     background-color: ${({ theme }) => theme.COLORS.WHITE};
     width: 100%;
     max-width: 900px;
-    border-radius: 10px;
+    border-radius: 16px;
     padding: 40px 60px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
 
     @media (max-width: 768px) {
         padding: 24px;
@@ -37,12 +27,15 @@ export const HeaderContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
 
     h2 {
         font-size: 24px;
-        font-weight: 600;
+        font-weight: 700;
         color: ${({ theme }) => theme.COLORS.GRAY_900};
+        margin: 0;
     }
 `;
 
@@ -112,26 +105,27 @@ export const InputWrapper = styled.div`
 
     > label {
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 600;
         color: ${({ theme }) => theme.COLORS.GRAY_700};
     }
 `;
 
 export const InfoDisplay = styled.div`
-    background-color: ${({ theme }) => theme.COLORS.GRAY_100};
+    background-color: ${({ theme }) => theme.COLORS.GRAY_50};
     padding: 0 16px;
     border-radius: 8px;
     font-size: 16px;
-    color: ${({ theme }) => theme.COLORS.GRAY_900};
+    color: ${({ theme }) => theme.COLORS.GRAY_800};
     min-height: 56px;
     display: flex;
     align-items: center;
     width: 100%;
+    border: 1px solid transparent; 
 `;
 
 export const InfoGroup = styled.div`
     display: flex;
-    gap: 16px;
+    gap: 24px;
 
     @media (max-width: 768px) {
         flex-direction: column;
@@ -148,11 +142,14 @@ export const SectionHeader = styled.div`
     justify-content: space-between;
     align-items: center;
     margin-top: 32px;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
+    padding-bottom: 8px;
 
     > h4 {
-        font-size: 20px;
+        font-size: 18px;
         color: ${({ theme }) => theme.COLORS.GRAY_900};
+        margin: 0;
     }
 `;
 
@@ -171,7 +168,7 @@ export const ContactRow = styled.div`
     > .phone-text {
         font-size: 16px;
         color: ${({ theme }) => theme.COLORS.GRAY_900};
-        background-color: ${({ theme }) => theme.COLORS.GRAY_100};
+        background-color: ${({ theme }) => theme.COLORS.GRAY_50};
         padding: 0 16px;
         border-radius: 8px;
         min-height: 56px;
@@ -186,9 +183,14 @@ export const ContactRow = styled.div`
         color: ${({ theme }) => theme.COLORS.DANGER};
         cursor: pointer;
         padding: 8px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         &:hover {
             color: ${({ theme }) => theme.COLORS.DANGER_HOVER};
+            background-color: ${({ theme }) => theme.COLORS.DANGER_LIGHT || '#FEE2E2'};
         }
     }
 `;
@@ -200,11 +202,13 @@ export const ButtonLink = styled.button`
     background: none;
     border: none;
     color: ${({ theme }) => theme.COLORS.BLUE_700};
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
 
     &:hover {
-        opacity: 0.8;
+        background-color: ${({ theme }) => theme.COLORS.INFO_LIGHT || '#DBEAFE'};
     }
 `;

@@ -5,12 +5,11 @@ export const Container = styled.div`
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 24px;
 `;
 
 export const SearchArea = styled.div`
     width: 100%;
-    padding: 32px 80px 0;
+    padding: 32px 64px 0;
 
     .search-wrapper {
         display: flex;
@@ -33,12 +32,10 @@ export const FilterButton = styled.button`
     height: 48px;
     border: none;
     border-radius: 8px;
-
     background-color: ${({ theme }) => theme.COLORS.BLACK};
     display: flex;
     align-items: center;
     justify-content: center;
-
     cursor: pointer;
     transition: 0.2s;
 
@@ -48,16 +45,6 @@ export const FilterButton = styled.button`
 
     &:hover {
         background-color: ${({ theme }) => theme.COLORS.PRIMARY_HOVER};
-    }
-`;
-
-export const Content = styled.div`
-    width: 100%;
-    padding: 0 80px 20px;
-    flex: 1;
-
-    @media (max-width: 768px) {
-        padding: 0 20px 20px;
     }
 `;
 

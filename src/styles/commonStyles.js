@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
+export const PageContainer = styled.div`
   width: 100%;
   padding: 24px 64px 48px;
   display: flex;
@@ -13,13 +13,13 @@ export const Container = styled.div`
   }
 `;
 
-export const HeaderBar = styled.div`
+export const PageHeader = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 32px;
 `;
 
-export const Title = styled.h1`
+export const PageTitle = styled.h1`
   font-size: 28px;
   margin: 0;
   display: flex;
@@ -28,7 +28,7 @@ export const Title = styled.h1`
   color: ${({ theme }) => theme.COLORS.GRAY_900};
 `;
 
-export const BackLink = styled.button`
+export const BackButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;

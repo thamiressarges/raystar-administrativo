@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { FiTrash2, FiPlus, FiEdit2 } from 'react-icons/fi';
 
+import { Input } from '../../components/Input';
+import { Loading } from '../../components/Loading';
+import { StoreApi } from '../../services/storeApi';
+import { PageContainer } from '../../styles/commonStyles';
 import {
-    Container,
     Content,
     Form,
     HeaderContainer,
@@ -19,11 +22,6 @@ import {
     SaveButton,
 } from './styles';
 
-import { Input } from '../../components/Input';
-import { Loading } from '../../components/Loading';
-
-import { StoreApi } from '../../services/storeApi';
-
 export function Settings() {
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -38,11 +36,7 @@ export function Settings() {
     const [editedSocial, setEditedSocial] = useState({ instagram: '', facebook: '' });
 
     const [editedAddress, setEditedAddress] = useState({
-        cep: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
+        cep: '', numero: '', complemento: '', bairro: '', cidade: '',
     });
 
     const loadStoreData = async () => {
@@ -82,14 +76,13 @@ export function Settings() {
         loadStoreData();
     }, []);
 
+    // ... (Handlers mantidos para simplicidade, já que não usamos Hook Form aqui devido à estrutura dinâmica complexa de telefones/endereço aninhado, mas seria o próximo passo ideal)
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const setters = {
-            nome: setEditedName,
-            email: setEditedEmail,
-            cnpj: setEditedCnpj,
-        };
-        if (setters[name]) setters[name](value);
+        if (name === 'nome') setEditedName(value);
+        if (name === 'email') setEditedEmail(value);
+        if (name === 'cnpj') setEditedCnpj(value);
     };
 
     const handleAddressChange = (e) => {
@@ -108,13 +101,9 @@ export function Settings() {
         setEditedPhones(newPhones);
     };
 
-    const addPhone = () => {
-        setEditedPhones((prev) => [...prev, '']);
-    };
-
-    const removePhone = (indexToRemove) => {
-        setEditedPhones(editedPhones.filter((_, idx) => idx !== indexToRemove));
-    };
+    const addPhone = () => setEditedPhones((prev) => [...prev, '']);
+    
+    const removePhone = (index) => setEditedPhones(prev => prev.filter((_, i) => i !== index));
 
     const handleCepChange = async (e) => {
         let cep = e.target.value.replace(/\D/g, '');
@@ -152,28 +141,14 @@ export function Settings() {
             setEditedEmail(originalData.email || '');
             setEditedCnpj(originalData.cnpj || '');
             setEditedPhones(originalData.phones || []);
-
-            setEditedAddress(originalData.address || {
-                cep: '',
-                numero: '',
-                complemento: '',
-                bairro: '',
-                cidade: '',
-            });
-
-            setEditedSocial(originalData.social_media || {
-                instagram: '',
-                facebook: '',
-            });
+            setEditedAddress(originalData.address || { cep: '', numero: '', complemento: '', bairro: '', cidade: '' });
+            setEditedSocial(originalData.social_media || { instagram: '', facebook: '' });
         }
         setIsEditing(false);
     };
 
     const handleSave = async () => {
-        if (!storeId) {
-            toast.error('Erro: ID da loja não encontrado.');
-            return;
-        }
+        if (!storeId) return toast.error('Erro: ID da loja não encontrado.');
 
         const updates = {
             name: editedName,
@@ -188,7 +163,6 @@ export function Settings() {
             setLoading(true);
             await StoreApi.updateStoreSettings(storeId, updates);
             await loadStoreData();
-
             toast.success('Loja atualizada com sucesso!');
             setIsEditing(false);
         } catch (err) {
@@ -198,12 +172,10 @@ export function Settings() {
         }
     };
 
-    if (loading && !originalData) {
-        return <Loading />;
-    }
+    if (loading && !originalData) return <Loading />;
 
     return (
-        <Container>
+        <PageContainer>
             {loading && <Loading />}
 
             <Content>
@@ -213,16 +185,8 @@ export function Settings() {
                         <ActionButtons>
                             {isEditing ? (
                                 <>
-                                    <CancelButton
-                                        title="Cancelar"
-                                        type="button"
-                                        onClick={handleCancel}
-                                    />
-                                    <SaveButton
-                                        title="Salvar"
-                                        type="button"
-                                        onClick={handleSave}
-                                    />
+                                    <CancelButton title="Cancelar" type="button" onClick={handleCancel} />
+                                    <SaveButton title="Salvar" type="button" onClick={handleSave} />
                                 </>
                             ) : (
                                 <IconButton onClick={handleEdit}>
@@ -235,11 +199,7 @@ export function Settings() {
                     <InputWrapper>
                         <label>Nome da Loja</label>
                         {isEditing ? (
-                            <Input
-                                name="nome"
-                                value={editedName}
-                                onChange={handleChange}
-                            />
+                            <Input name="nome" value={editedName} onChange={handleChange} />
                         ) : (
                             <InfoDisplay>{editedName}</InfoDisplay>
                         )}
@@ -249,12 +209,7 @@ export function Settings() {
                         <InputWrapper>
                             <label>Email</label>
                             {isEditing ? (
-                                <Input
-                                    name="email"
-                                    type="email"
-                                    value={editedEmail}
-                                    onChange={handleChange}
-                                />
+                                <Input name="email" type="email" value={editedEmail} onChange={handleChange} />
                             ) : (
                                 <InfoDisplay>{editedEmail}</InfoDisplay>
                             )}
@@ -263,11 +218,7 @@ export function Settings() {
                         <InputWrapper>
                             <label>CNPJ</label>
                             {isEditing ? (
-                                <Input
-                                    name="cnpj"
-                                    value={editedCnpj}
-                                    onChange={handleChange}
-                                />
+                                <Input name="cnpj" value={editedCnpj} onChange={handleChange} />
                             ) : (
                                 <InfoDisplay>{editedCnpj}</InfoDisplay>
                             )}
@@ -282,12 +233,7 @@ export function Settings() {
                         <InputWrapper>
                             <label>CEP</label>
                             {isEditing ? (
-                                <Input
-                                    name="cep"
-                                    value={editedAddress.cep}
-                                    onChange={handleCepChange}
-                                    maxLength={9}
-                                />
+                                <Input name="cep" value={editedAddress.cep} onChange={handleCepChange} maxLength={9} />
                             ) : (
                                 <InfoDisplay>{editedAddress.cep}</InfoDisplay>
                             )}
@@ -296,11 +242,7 @@ export function Settings() {
                         <InputWrapper>
                             <label>Número</label>
                             {isEditing ? (
-                                <Input
-                                    name="numero"
-                                    value={editedAddress.numero}
-                                    onChange={handleAddressChange}
-                                />
+                                <Input name="numero" value={editedAddress.numero} onChange={handleAddressChange} />
                             ) : (
                                 <InfoDisplay>{editedAddress.numero}</InfoDisplay>
                             )}
@@ -311,11 +253,7 @@ export function Settings() {
                         <InputWrapper>
                             <label>Complemento</label>
                             {isEditing ? (
-                                <Input
-                                    name="complemento"
-                                    value={editedAddress.complemento}
-                                    onChange={handleAddressChange}
-                                />
+                                <Input name="complemento" value={editedAddress.complemento} onChange={handleAddressChange} />
                             ) : (
                                 <InfoDisplay>{editedAddress.complemento}</InfoDisplay>
                             )}
@@ -324,11 +262,7 @@ export function Settings() {
                         <InputWrapper>
                             <label>Bairro</label>
                             {isEditing ? (
-                                <Input
-                                    name="bairro"
-                                    value={editedAddress.bairro}
-                                    onChange={handleAddressChange}
-                                />
+                                <Input name="bairro" value={editedAddress.bairro} onChange={handleAddressChange} />
                             ) : (
                                 <InfoDisplay>{editedAddress.bairro}</InfoDisplay>
                             )}
@@ -338,11 +272,7 @@ export function Settings() {
                     <InputWrapper>
                         <label>Cidade</label>
                         {isEditing ? (
-                            <Input
-                                name="cidade"
-                                value={editedAddress.cidade}
-                                onChange={handleAddressChange}
-                            />
+                            <Input name="cidade" value={editedAddress.cidade} onChange={handleAddressChange} />
                         ) : (
                             <InfoDisplay>{editedAddress.cidade}</InfoDisplay>
                         )}
@@ -352,8 +282,7 @@ export function Settings() {
                         <h4>Telefones</h4>
                         {isEditing && (
                             <ButtonLink type="button" onClick={addPhone}>
-                                <FiPlus size={20} />
-                                Adicionar Telefone
+                                <FiPlus size={20} /> Adicionar Telefone
                             </ButtonLink>
                         )}
                     </SectionHeader>
@@ -367,11 +296,7 @@ export function Settings() {
                                         onChange={(e) => handlePhoneChange(e, index)}
                                         placeholder="(00) 90000-0000"
                                     />
-                                    <button
-                                        type="button"
-                                        className="trash-button"
-                                        onClick={() => removePhone(index)}
-                                    >
+                                    <button type="button" className="trash-button" onClick={() => removePhone(index)}>
                                         <FiTrash2 size={20} />
                                     </button>
                                 </>
@@ -389,12 +314,7 @@ export function Settings() {
                         <InputWrapper>
                             <label>Instagram</label>
                             {isEditing ? (
-                                <Input
-                                    name="instagram"
-                                    value={editedSocial.instagram}
-                                    onChange={handleSocialChange}
-                                    placeholder="@sua_loja"
-                                />
+                                <Input name="instagram" value={editedSocial.instagram} onChange={handleSocialChange} placeholder="@sua_loja" />
                             ) : (
                                 <InfoDisplay>{editedSocial.instagram}</InfoDisplay>
                             )}
@@ -403,12 +323,7 @@ export function Settings() {
                         <InputWrapper>
                             <label>Facebook</label>
                             {isEditing ? (
-                                <Input
-                                    name="facebook"
-                                    value={editedSocial.facebook}
-                                    onChange={handleSocialChange}
-                                    placeholder="facebook.com/sua_loja"
-                                />
+                                <Input name="facebook" value={editedSocial.facebook} onChange={handleSocialChange} placeholder="facebook.com/sua_loja" />
                             ) : (
                                 <InfoDisplay>{editedSocial.facebook}</InfoDisplay>
                             )}
@@ -416,6 +331,6 @@ export function Settings() {
                     </InfoGroup>
                 </Form>
             </Content>
-        </Container>
+        </PageContainer>
     );
 }

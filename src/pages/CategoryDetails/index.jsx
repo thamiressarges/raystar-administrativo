@@ -8,12 +8,9 @@ import { CategoryModal } from "../../components/CategoryModel";
 import { Loading } from '../../components/Loading';
 import { ConfirmModal } from '../../components/ConfirmModal';
 
+import { PageContainer, PageHeader, PageTitle, BackButton } from '../../styles/commonStyles';
+
 import {
-    Container,
-    PageContainer,
-    HeaderBar,
-    BackLink,
-    Title,
     Section,
     SectionHeader,
     SectionTitle,
@@ -125,84 +122,81 @@ export function CategoryDetails() {
     };
 
     return (
-        <Container>
+        <PageContainer>
             {(loading || loadingPage) && <Loading />}
 
-            <PageContainer>
-                {!loadingPage && category ? (
-                    <>
-                        <HeaderBar>
-                            <BackLink onClick={() => navigate("/category")}>
-                                <FiChevronLeft /> Voltar
-                            </BackLink>
-                        </HeaderBar>
-                        
-                        <div style={{ marginBottom: 24 }}>
-                            <Title>{category.name}</Title>
-                        </div>
+            {!loadingPage && category ? (
+                <>
+                    <PageHeader>
+                        <PageTitle>
+                            <BackButton onClick={() => navigate("/category")}>
+                                <FiChevronLeft />
+                            </BackButton>
+                            {category.name}
+                        </PageTitle>
+                    </PageHeader>
 
-                        <Section>
-                            <SectionHeader>
-                                <SectionTitle>Configurações</SectionTitle>
-                            </SectionHeader>
-                            <InfoRow>
-                                <label>Status atual:</label>
-                               <StatusText $isActive={category.is_active}>
-                                    {category.is_active ? 'Ativa' : 'Inativa'}
-                                </StatusText>
-                            </InfoRow>
-                            <ActionsRow>
-                                <EditButton onClick={() => setIsEditOpen(true)} disabled={loading}>
-                                    <FiEdit2 /> Editar
-                                </EditButton>
-                                <DeleteButton onClick={handleDelete} disabled={loading}>
-                                    <FiTrash2 /> Excluir
-                                </DeleteButton>
-                            </ActionsRow>
-                        </Section>
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Configurações</SectionTitle>
+                        </SectionHeader>
+                        <InfoRow>
+                            <label>Status atual:</label>
+                            <StatusText $isActive={category.is_active}>
+                                {category.is_active ? 'Ativa' : 'Inativa'}
+                            </StatusText>
+                        </InfoRow>
+                        <ActionsRow>
+                            <EditButton onClick={() => setIsEditOpen(true)} disabled={loading}>
+                                <FiEdit2 /> Editar
+                            </EditButton>
+                            <DeleteButton onClick={handleDelete} disabled={loading}>
+                                <FiTrash2 /> Excluir
+                            </DeleteButton>
+                        </ActionsRow>
+                    </Section>
 
-                        <Section>
-                            <SectionHeader>
-                                <SectionTitle>Produtos Vinculados ({category.quantity})</SectionTitle>
-                            </SectionHeader>
-                            <ScrollArea>
-                                <ProductsTable>
-                                    <tbody>
-                                        {category.products?.length > 0 ? (
-                                            category.products.map((product) => (
-                                                <Tr key={product.id}>
-                                                    <Td style={{ width: 46 }}>
-                                                        <FiBox size={20} color="#6B7280" />
-                                                    </Td>
-                                                    <Td>{product.title}</Td> 
-                                                </Tr>
-                                            ))
-                                        ) : (
-                                            <Tr>
-                                                <Td colSpan={2} style={{ padding: 24, textAlign: "center", color: "#9CA3AF" }}>
-                                                    Nenhum produto vinculado a esta categoria.
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Produtos Vinculados ({category.quantity})</SectionTitle>
+                        </SectionHeader>
+                        <ScrollArea>
+                            <ProductsTable>
+                                <tbody>
+                                    {category.products?.length > 0 ? (
+                                        category.products.map((product) => (
+                                            <Tr key={product.id}>
+                                                <Td style={{ width: 46 }}>
+                                                    <FiBox size={20} color="#6B7280" />
                                                 </Td>
+                                                <Td>{product.title}</Td> 
                                             </Tr>
-                                        )}
-                                    </tbody>
-                                </ProductsTable>
-                            </ScrollArea>
-                        </Section>
-                    </>
-                ) : (
-                    !loadingPage && <Title>Categoria não encontrada.</Title>
-                )}
+                                        ))
+                                    ) : (
+                                        <Tr>
+                                            <Td colSpan={2} style={{ padding: 24, textAlign: "center", color: "#9CA3AF" }}>
+                                                Nenhum produto vinculado a esta categoria.
+                                            </Td>
+                                        </Tr>
+                                    )}
+                                </tbody>
+                            </ProductsTable>
+                        </ScrollArea>
+                    </Section>
+                </>
+            ) : (
+                !loadingPage && <PageTitle>Categoria não encontrada.</PageTitle>
+            )}
 
-                {category && (
-                    <CategoryModal
-                        isOpen={isEditOpen}
-                        onClose={() => setIsEditOpen(false)}
-                        type="edit"
-                        data={category}
-                        onSubmit={handleEdit}
-                    />
-                )}
-            </PageContainer>
-        </Container>
+            {category && (
+                <CategoryModal
+                    isOpen={isEditOpen}
+                    onClose={() => setIsEditOpen(false)}
+                    type="edit"
+                    data={category}
+                    onSubmit={handleEdit}
+                />
+            )}
+        </PageContainer>
     );
 }
