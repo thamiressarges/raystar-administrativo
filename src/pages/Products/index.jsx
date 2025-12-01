@@ -1,101 +1,88 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiBox } from "react-icons/fi";
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
 
-import { 
-    Container, 
-    Search as SearchArea, 
-    Content, 
+import {
+    Container,
+    Search as SearchArea,
+    Content,
     PaginationContainer,
-    SearchAndActionButton, 
+    SearchAndActionButton,
     AddButton,
     EmptyState
 } from './styles';
+
 import { Header } from '../../components/Header';
 import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
 import { Brand } from '../../components/Brand';
 import { Menu } from '../../components/Menu';
-import { useMenu } from '../../contexts/MenuContext';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
+import { useMenu } from '../../contexts/MenuContext';
+
 import { ProductApi } from '../../services/productApi';
 
-export function Products(){
+export function Products() {
     const { isMenuOpen } = useMenu();
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
 
-    // Estados
     const [allProducts, setAllProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-    
-    const ITEMS_PER_PAGE = 10; 
+
+    const ITEMS_PER_PAGE = 10;
 
     const productHeaders = ["Produto", "Categoria", "Disponibilidade"];
-    const productDataKeys = ["product", "category", "availability"]; 
+    const productDataKeys = ["product", "category", "availability"];
 
     async function loadProducts(search = "") {
         try {
-            setLoading(true); 
-            const list = await ProductApi.list({ searchTerm: search, limit: 200 }); 
+            setLoading(true);
+            const list = await ProductApi.list({ searchTerm: search, limit: 200 });
             setAllProducts(list);
-            setCurrentPage(1); 
+            setCurrentPage(1);
         } catch (e) {
-             console.error("Erro ao buscar produtos:", e);
-             toast.error("Erro ao buscar produtos: " + e.message);
+            toast.error("Erro ao buscar produtos: " + e.message);
         } finally {
-            setLoading(false); 
+            setLoading(false);
         }
     }
-    
-    const handleNewProduct = () => {
-        navigate('/products/new');
-    };
 
-    const handleDetailsClick = (item) => {
-        navigate(`/productDetails/${item.id}`);
-    };
-
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
-    };
+    const handleNewProduct = () => navigate('/products/new');
+    const handleDetailsClick = (item) => navigate(`/productDetails/${item.id}`);
 
     useEffect(() => {
         const timerId = setTimeout(() => {
             setDebouncedSearchTerm(searchTerm);
-        }, 500); 
+        }, 500);
         return () => clearTimeout(timerId);
     }, [searchTerm]);
 
     useEffect(() => {
         loadProducts(debouncedSearchTerm);
-    }, [debouncedSearchTerm]); 
+    }, [debouncedSearchTerm]);
 
-    const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
-    
     const productsForThisPage = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        const endIndex = startIndex + ITEMS_PER_PAGE;
-        return allProducts.slice(startIndex, endIndex);
-    }, [allProducts, currentPage, ITEMS_PER_PAGE]);
-    
-    const isSearching = searchTerm.length > 0;
+        return allProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [allProducts, currentPage]);
 
-    return(
+    const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
+
+    return (
         <Container $isopen={isMenuOpen}>
             {loading && <Loading />}
-            
             <Brand />
             <Header />
             <Menu />
 
             <SearchArea>
-                <SearchAndActionButton> 
-                    <SearchInput 
+                <SearchAndActionButton>
+                    <SearchInput
                         placeholder="Pesquise por nome"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -108,34 +95,32 @@ export function Products(){
 
             <Content>
                 {productsForThisPage.length === 0 && !loading ? (
-                    
-                    isSearching ? (
+                    searchTerm ? (
                         <EmptyState>
-                            <FiBox /> 
+                            <FiBox />
                             <p>Nenhum produto encontrado com o nome "{searchTerm}"</p>
                         </EmptyState>
                     ) : (
                         <EmptyState>
-                            <FiBox /> 
+                            <FiBox />
                             <p>Nenhum produto cadastrado</p>
                         </EmptyState>
                     )
                 ) : (
                     <>
-                        <Table 
-                            data={productsForThisPage} 
-                            headers={productHeaders} 
-                            dataKeys={productDataKeys} 
+                        <Table
+                            data={productsForThisPage}
+                            headers={productHeaders}
+                            dataKeys={productDataKeys}
                             onDetailsClick={handleDetailsClick}
-                            loading={loading} 
+                            loading={loading}
                         />
-                    
                         {totalPages > 0 && (
                             <PaginationContainer>
                                 <Pagination
                                     totalPages={totalPages || 1}
                                     currentPage={currentPage}
-                                    onPageChange={handlePageChange}
+                                    onPageChange={setCurrentPage}
                                 />
                             </PaginationContainer>
                         )}
