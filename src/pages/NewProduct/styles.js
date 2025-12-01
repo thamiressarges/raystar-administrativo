@@ -12,6 +12,10 @@ export const Container = styled.div`
   background: ${({ theme }) => theme.COLORS.GRAY_100};
 `;
 
+export const HiddenFileInput = styled.input`
+  display: none;
+`;
+
 export const PageContainer = styled.div`
   grid-area: content;
   padding: 24px 64px 48px;
@@ -32,6 +36,7 @@ export const Title = styled.h1`
   display: flex;
   align-items: center;
   gap: 10px;
+  color: ${({ theme }) => theme.COLORS.GRAY_900};
 `;
 
 export const BackLink = styled.button`
@@ -42,7 +47,12 @@ export const BackLink = styled.button`
   background: transparent;
   font-weight: 600;
   cursor: pointer;
-  font-size: 16px; 
+  font-size: 16px;
+  color: ${({ theme }) => theme.COLORS.GRAY_700};
+
+  &:hover {
+    color: ${({ theme }) => theme.COLORS.BLACK};
+  }
 `;
 
 export const SaveButton = styled.button`
@@ -52,13 +62,13 @@ export const SaveButton = styled.button`
   padding: 10px 14px;
   border: none;
   border-radius: 10px;
-  background: #10B981; 
-  color: #fff;
+  background: ${({ theme }) => theme.COLORS.SUCCESS}; 
+  color: ${({ theme }) => theme.COLORS.WHITE};
   cursor: pointer;
   font-weight: 600;
 
   &:hover { 
-    background: #059669; 
+    background: ${({ theme }) => theme.COLORS.SUCCESS_HOVER}; 
   }
   &:disabled {
     opacity: 0.5;
@@ -66,26 +76,118 @@ export const SaveButton = styled.button`
   }
 `;
 
+export const Input = styled.input`
+  height: 48px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.COLORS.GRAY_300};
+  font-size: 16px;
+  background: ${({ theme }) => theme.COLORS.WHITE};
+  color: ${({ theme }) => theme.COLORS.GRAY_700};
+
+  &:focus {
+    border-color: ${({ theme }) => theme.COLORS.BLUE_700};
+    outline: none;
+  }
+  
+  &[type="date"] {
+    font-family: inherit;
+  }
+`;
+
+export const Textarea = styled.textarea`
+  height: 150px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.COLORS.GRAY_300};
+  font-size: 16px;
+  resize: vertical;
+  background: ${({ theme }) => theme.COLORS.WHITE};
+  color: ${({ theme }) => theme.COLORS.GRAY_700};
+
+  &:focus {
+    border-color: ${({ theme }) => theme.COLORS.BLUE_700};
+    outline: none;
+  }
+`;
+
+export const Select = styled.select`
+  height: 48px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.COLORS.GRAY_300};
+  font-size: 16px;
+  background: ${({ theme }) => theme.COLORS.WHITE};
+  color: ${({ theme }) => theme.COLORS.GRAY_700};
+
+  &:focus {
+    border-color: ${({ theme }) => theme.COLORS.BLUE_700};
+    outline: none;
+  }
+`;
+
+export const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
+  
+  & > h2 {
+      margin-bottom: 0;
+      color: ${({ theme }) => theme.COLORS.GRAY_900};
+  }
+`;
+
+export const SimpleSwitchWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+`;
+
+export const SwitchControlWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 15px; 
+  border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
+  
+  label {
+    font-weight: 600;
+    font-size: 16px;
+    color: ${({ theme }) => theme.COLORS.GRAY_700};
+  }
+`;
+
 export const Section = styled.section`
-  background: #ffffff;
+  background: ${({ theme }) => theme.COLORS.WHITE};
   border-radius: 16px;
   padding: 24px; 
   box-shadow: 0 8px 28px rgba(0,0,0,0.06);
-  height: 100%; 
-
+  flex-grow: 1; 
+  
   > h2 {
     font-size: 20px;
     margin-top: 0;
     margin-bottom: 8px; 
+    color: ${({ theme }) => theme.COLORS.GRAY_900};
   }
   
   > p {
     font-size: 15px;
-    color: #6B7280;
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
     margin-top: 0;
     margin-bottom: 20px;
-    border-bottom: 1px solid #F3F4F6;
+    border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
     padding-bottom: 20px;
+  }
+  
+  & > ${SectionHeader} + p {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 15px;
   }
 `;
 
@@ -117,6 +219,12 @@ export const LeftColumn = styled.div`
 export const RightColumn = styled.div`
   display: flex; 
   flex-direction: column;
+  
+  > ${Section} {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+  }
 `;
 
 export const FormGroup = styled.div`
@@ -124,43 +232,27 @@ export const FormGroup = styled.div`
   flex-direction: column;
   gap: 8px;
   margin-bottom: 20px; 
+  
+  &:last-child {
+    flex-grow: 1; 
+  }
+  
+  & > ${Textarea} {
+      flex-grow: 1; 
+      min-height: 150px; 
+  }
 
   label {
     font-weight: 600; 
     font-size: 16px;
-    color: #374151;
+    color: ${({ theme }) => theme.COLORS.GRAY_700};
   }
-`;
-
-export const Input = styled.input`
-  height: 48px;
-  padding: 0 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-`;
-
-export const Textarea = styled.textarea`
-  height: 150px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  resize: vertical;
-`;
-
-export const Select = styled.select`
-  height: 48px;
-  padding: 0 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  background: #fff;
 `;
 
 export const CheckboxWrapper = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   margin-bottom: 20px;
 
@@ -171,11 +263,46 @@ export const CheckboxWrapper = styled.div`
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
+    color: ${({ theme }) => theme.COLORS.GRAY_700};
+    
+    input[type="checkbox"] {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid ${({ theme }) => theme.COLORS.GRAY_300}; 
+        border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.2s ease-in-out;
+        display: grid;
+        place-content: center;
+        background: ${({ theme }) => theme.COLORS.WHITE};
+        
+        &::before {
+            content: "\u2713"; 
+            font-size: 14px;
+            color: ${({ theme }) => theme.COLORS.WHITE}; 
+            transform: scale(0);
+            transition: transform 0.2s ease-in-out;
+            line-height: 1;
+        }
+
+        &:checked {
+            background-color: ${({ theme }) => theme.COLORS.BLACK}; 
+            border-color: ${({ theme }) => theme.COLORS.BLACK}; 
+        }
+
+        &:checked::before {
+            transform: scale(1);
+        }
+    }
   }
 
   span {
     font-size: 14px;
-    color: #6B7280;
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
   }
 `;
 
@@ -186,23 +313,34 @@ export const ImageUploadArea = styled.div`
   justify-content: flex-start; 
 `;
 
+export const UploadHint = styled.p`
+    text-align: center;
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
+    font-size: 14px;
+    margin: 0;
+`;
+
 export const ImagePlaceholder = styled.div`
   width: 100%;
   height: 250px;
   border-radius: 12px;
-  background: #F9FAFB;
-  border: 2px dashed #D1D5DB;
+  background: ${({ theme }) => theme.COLORS.GRAY_50};
+  border: 2px dashed ${({ theme }) => theme.COLORS.GRAY_300};
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #6B7280;
+  color: ${({ theme }) => theme.COLORS.GRAY_500};
   font-weight: 500;
   cursor: pointer; 
 
   svg {
     font-size: 32px;
+  }
+
+  &:hover {
+    background: ${({ theme }) => theme.COLORS.GRAY_100};
   }
 `;
 
@@ -214,8 +352,8 @@ export const ThumbnailList = styled.div`
 `;
 
 const ThumbnailBase = styled.div`
-  width: 70px;   
-  height: 70px;  
+  width: 70px;     
+  height: 70px;   
   border-radius: 8px;
   flex-shrink: 0; 
   border: 2px solid transparent;
@@ -225,19 +363,20 @@ export const AddThumbnailButton = styled(ThumbnailBase)`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F9FAFB;
-  border: 2px dashed #D1D5DB;
-  color: #6B7280;
+  background: ${({ theme }) => theme.COLORS.GRAY_50};
+  border: 2px dashed ${({ theme }) => theme.COLORS.GRAY_300};
+  color: ${({ theme }) => theme.COLORS.GRAY_500};
   cursor: pointer;
 
   &:hover {
-    background: #F3F4F6;
+    background: ${({ theme }) => theme.COLORS.GRAY_100};
   }
 `;
 
 export const ThumbnailPreview = styled(ThumbnailBase)`
   overflow: hidden;
   position: relative;
+  border-color: ${({ theme }) => theme.COLORS.GRAY_200};
   
   img {
     width: 100%;
@@ -253,9 +392,9 @@ export const DeleteImageButton = styled.button`
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #EF4444; 
-  border: 2px solid #fff;
-  color: #fff;
+  background: ${({ theme }) => theme.COLORS.DANGER}; 
+  border: 2px solid ${({ theme }) => theme.COLORS.WHITE};
+  color: ${({ theme }) => theme.COLORS.WHITE};
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -263,14 +402,34 @@ export const DeleteImageButton = styled.button`
   z-index: 10;
   
   &:hover {
-    background: #DC2626;
+    background: ${({ theme }) => theme.COLORS.DANGER_HOVER};
   }
 `;
 
-export const SectionHeader = styled.div`
+export const VariationsControl = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
+  
+  p {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 15px;
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
+  }
+`;
+
+export const SimpleProductWarning = styled.div`
+  padding: 20px;
+  text-align: center;
+  color: ${({ theme }) => theme.COLORS.GRAY_500}; 
+  font-style: italic;
+  font-size: 16px;
+  background: ${({ theme }) => theme.COLORS.GRAY_50};
+  border-radius: 8px;
+  margin-top: 10px;
 `;
 
 export const AddVariationButton = styled.button`
@@ -280,12 +439,14 @@ export const AddVariationButton = styled.button`
   padding: 10px 14px;
   border: none;
   border-radius: 10px;
-  background: #000;
-  color: #fff;
+  background: ${({ theme }) => theme.COLORS.BLACK};
+  color: ${({ theme }) => theme.COLORS.WHITE};
   cursor: pointer;
   font-weight: 600;
 
-  &:hover { opacity: .95; }
+  &:hover { 
+      background: ${({ theme }) => theme.COLORS.PRIMARY_HOVER};
+  }
 `;
 
 export const EmptyState = styled.div`
@@ -295,10 +456,10 @@ export const EmptyState = styled.div`
   justify-content: center;
   padding: 40px 0;
   text-align: center;
-  color: #6B7280; 
+  color: ${({ theme }) => theme.COLORS.GRAY_500}; 
   font-size: 15px;
   font-weight: 500;
-  border-top: 1px solid #F3F4F6;
+  border-top: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
   margin-top: 20px;
 `;
 
@@ -310,12 +471,12 @@ export const VariationsTable = styled.table`
   th, td {
     text-align: left;
     padding: 12px 8px;
-    border-bottom: 1px solid #F3F4F6;
+    border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
   }
 
   th {
     font-size: 14px;
-    color: #6B7280;
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
     text-transform: uppercase;
   }
 
@@ -323,27 +484,30 @@ export const VariationsTable = styled.table`
     font-size: 15px;
     font-weight: 500;
     vertical-align: middle; 
+    color: ${({ theme }) => theme.COLORS.GRAY_700};
   }
 `;
 
 export const TableInput = styled.input`
   width: 100%;
   padding: 8px;
-  border: 2px solid #E5E7EB;
+  border: 2px solid ${({ theme }) => theme.COLORS.GRAY_200};
   border-radius: 6px;
   font-size: 15px;
+  background: ${({ theme }) => theme.COLORS.WHITE};
+  color: ${({ theme }) => theme.COLORS.GRAY_700};
 `;
 
 export const DeleteVariationButton = styled.button`
   background: transparent;
   border: none;
-  color: #EF4444;
+  color: ${({ theme }) => theme.COLORS.DANGER};
   cursor: pointer;
   padding: 4px;
   display: flex; 
   align-items: center;
   
   &:hover {
-    color: #DC2626;
+    color: ${({ theme }) => theme.COLORS.DANGER_HOVER};
   }
 `;
