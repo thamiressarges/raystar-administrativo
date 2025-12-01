@@ -1,5 +1,3 @@
-// --- FORMATAÇÃO DE VALORES ---
-
 export const formatCurrency = (value) => {
   const number = Number(value) || 0;
   return number.toLocaleString("pt-BR", {
@@ -11,8 +9,6 @@ export const formatCurrency = (value) => {
 export const formatNumber = (value) => {
   return Number(value).toLocaleString("pt-BR");
 };
-
-// --- FORMATAÇÃO DE DATAS ---
 
 export const formatDate = (dateString) => {
   if (!dateString) return "—";
@@ -48,8 +44,6 @@ export const formatBirthDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("pt-BR");
 };
 
-// --- FORMATAÇÃO DE TEXTO E DADOS ---
-
 export const formatPhone = (phone) => {
   if (!phone) return "—";
   const clean = String(phone).replace(/\D/g, "");
@@ -78,13 +72,10 @@ export const getInitials = (name) => {
     return `${first}${last}`.toUpperCase();
 };
 
-// --- TRADUTORES DE STATUS (PARA PEDIDOS E PAGAMENTOS) ---
-
 export const translateOrderStatus = (status) => {
     if (!status) return "Pendente";
     
     const map = {
-        // Status do Pedido/Pagamento
         'pending': 'Pendente',
         'pedido_criado': "Pedido Criado",
         'aguardando_confirmacao': "Aguardando Confirmação",
@@ -92,8 +83,6 @@ export const translateOrderStatus = (status) => {
         'paid': 'Pago',
         'pagamento_confirmado': "Pagamento Aprovado",
         'pago': "Pago",
-        
-        // Status de entrega
         'processing': 'Em processamento',
         'preparando_pedido': "Preparando",
         'shipped': 'Enviado',
@@ -101,8 +90,6 @@ export const translateOrderStatus = (status) => {
         'delivered': 'Entregue',
         'entregue': "Entregue",
         'pickup': "Pronto para Retirada",
-        
-        // Cancelamentos
         'canceled': 'Cancelado',
         'cancelado': "Cancelado",
         'devolvido': "Devolvido"
