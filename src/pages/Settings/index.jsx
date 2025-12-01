@@ -1,76 +1,84 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { FiTrash2, FiPlus, FiEdit2 } from 'react-icons/fi';
+
 import {
     Container,
     Content,
     Form,
-    FormHeader,
+    HeaderContainer,
     InputWrapper,
     InfoDisplay,
     InfoGroup,
     SectionHeader,
     ContactRow,
     ButtonLink,
-    ActionButtons
+    ActionButtons,
+    IconButton,
+    CancelButton,
+    SaveButton,
 } from './styles';
 
 import { Header } from '../../components/Header';
 import { Brand } from '../../components/Brand';
 import { Menu } from '../../components/Menu';
 import { Input } from '../../components/Input';
-import { Button } from '../../components/Button';
 import { Loading } from '../../components/Loading';
-import { FiTrash2, FiPlus, FiEdit2 } from 'react-icons/fi';
 
 import { useMenu } from '../../contexts/MenuContext';
 import { StoreApi } from '../../services/storeApi';
 
 export function Settings() {
     const { isMenuOpen } = useMenu();
+
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // Estados
-    const [storeId, setStoreId] = useState(null); 
-    const [originalData, setOriginalData] = useState(null); 
+    const [storeId, setStoreId] = useState(null);
+    const [originalData, setOriginalData] = useState(null);
+
     const [editedName, setEditedName] = useState('');
     const [editedEmail, setEditedEmail] = useState('');
     const [editedCnpj, setEditedCnpj] = useState('');
     const [editedPhones, setEditedPhones] = useState([]);
     const [editedSocial, setEditedSocial] = useState({ instagram: '', facebook: '' });
+
     const [editedAddress, setEditedAddress] = useState({
         cep: '',
         numero: '',
         complemento: '',
         bairro: '',
-        cidade: ''
+        cidade: '',
     });
 
     const loadStoreData = async () => {
         setLoading(true);
         try {
             const data = await StoreApi.getStoreSettings();
-            
-            setOriginalData(data); 
+
+            setOriginalData(data);
             setStoreId(data.id);
+
             setEditedName(data.name || '');
             setEditedEmail(data.email || '');
             setEditedCnpj(data.cnpj || '');
-            setEditedPhones(data.phones || []); 
+            setEditedPhones(data.phones || []);
+
             setEditedAddress({
                 cep: data.address?.cep || '',
                 numero: data.address?.numero || '',
                 complemento: data.address?.complemento || '',
                 bairro: data.address?.bairro || '',
-                cidade: data.address?.cidade || ''
+                cidade: data.address?.cidade || '',
             });
+
             setEditedSocial({
                 instagram: data.social_media?.instagram || '',
-                facebook: data.social_media?.facebook || ''
+                facebook: data.social_media?.facebook || '',
             });
 
         } catch (err) {
-            toast.error("Falha ao carregar dados da loja: " + err.message);
+            toast.error('Falha ao carregar dados da loja: ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -82,26 +90,22 @@ export function Settings() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        
         const setters = {
             nome: setEditedName,
             email: setEditedEmail,
             cnpj: setEditedCnpj,
         };
-
-        if (setters[name]) {
-            setters[name](value);
-        }
+        if (setters[name]) setters[name](value);
     };
 
     const handleAddressChange = (e) => {
         const { name, value } = e.target;
-        setEditedAddress(prev => ({ ...prev, [name]: value }));
+        setEditedAddress((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSocialChange = (e) => {
         const { name, value } = e.target;
-        setEditedSocial(prev => ({ ...prev, [name]: value }));
+        setEditedSocial((prev) => ({ ...prev, [name]: value }));
     };
 
     const handlePhoneChange = (e, index) => {
@@ -111,35 +115,35 @@ export function Settings() {
     };
 
     const addPhone = () => {
-        setEditedPhones([...editedPhones, '']);
+        setEditedPhones((prev) => [...prev, '']);
     };
 
     const removePhone = (indexToRemove) => {
-        setEditedPhones(editedPhones.filter((_, index) => index !== indexToRemove));
+        setEditedPhones(editedPhones.filter((_, idx) => idx !== indexToRemove));
     };
 
     const handleCepChange = async (e) => {
-        let cep = e.target.value.replace(/\D/g, ''); 
-        setEditedAddress(prev => ({ ...prev, cep: cep }));
+        let cep = e.target.value.replace(/\D/g, '');
+        setEditedAddress((prev) => ({ ...prev, cep }));
 
         if (cep.length === 8) {
-            setLoading(true);
             try {
+                setLoading(true);
                 const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
                 const data = await response.json();
-                
+
                 if (data.erro) {
-                    toast.warn("CEP não encontrado.");
+                    toast.warn('CEP não encontrado.');
                 } else {
-                    setEditedAddress(prev => ({
+                    setEditedAddress((prev) => ({
                         ...prev,
                         bairro: data.bairro,
                         cidade: data.localidade,
                     }));
-                    toast.success("Endereço preenchido!");
+                    toast.success('Endereço preenchido!');
                 }
-            } catch (err) {
-                toast.error("Erro ao buscar CEP." + err);
+            } catch {
+                toast.error('Erro ao buscar CEP.');
             } finally {
                 setLoading(false);
             }
@@ -147,45 +151,54 @@ export function Settings() {
     };
 
     const handleEdit = () => setIsEditing(true);
-    
+
     const handleCancel = () => {
         if (originalData) {
             setEditedName(originalData.name || '');
             setEditedEmail(originalData.email || '');
             setEditedCnpj(originalData.cnpj || '');
             setEditedPhones(originalData.phones || []);
-            setEditedAddress(originalData.address || { cep: '', numero: '', complemento: '', bairro: '', cidade: '' });
-            setEditedSocial(originalData.social_media || { instagram: '', facebook: '' });
+
+            setEditedAddress(originalData.address || {
+                cep: '',
+                numero: '',
+                complemento: '',
+                bairro: '',
+                cidade: '',
+            });
+
+            setEditedSocial(originalData.social_media || {
+                instagram: '',
+                facebook: '',
+            });
         }
         setIsEditing(false);
     };
-    
+
     const handleSave = async () => {
         if (!storeId) {
-            toast.error("Erro: ID da loja não encontrado.");
+            toast.error('Erro: ID da loja não encontrado.');
             return;
         }
-        
-        setLoading(true);
-        try {
-            const updates = {
-                name: editedName,
-                email: editedEmail,
-                cnpj: editedCnpj,
-                phones: editedPhones,        
-                address: editedAddress,      
-                social_media: editedSocial 
-            };
-            
-            await StoreApi.updateStoreSettings(storeId, updates);
-            
-            await loadStoreData(); 
-            
-            setIsEditing(false);
-            toast.success("Loja atualizada com sucesso!");
 
+        const updates = {
+            name: editedName,
+            email: editedEmail,
+            cnpj: editedCnpj,
+            phones: editedPhones,
+            address: editedAddress,
+            social_media: editedSocial,
+        };
+
+        try {
+            setLoading(true);
+            await StoreApi.updateStoreSettings(storeId, updates);
+            await loadStoreData();
+
+            toast.success('Loja atualizada com sucesso!');
+            setIsEditing(false);
         } catch (err) {
-            toast.error("Erro ao salvar: " + err.message);
+            toast.error('Erro ao salvar: ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -193,7 +206,7 @@ export function Settings() {
 
     if (loading && !originalData) {
         return (
-             <Container $isopen={isMenuOpen}>
+            <Container $isopen={isMenuOpen}>
                 <Brand />
                 <Header />
                 <Menu />
@@ -204,40 +217,36 @@ export function Settings() {
 
     return (
         <Container $isopen={isMenuOpen}>
-            {loading && <Loading />} 
+            {loading && <Loading />}
             <Brand />
             <Header />
             <Menu />
 
             <Content>
                 <Form onSubmit={(e) => e.preventDefault()}>
-                    <FormHeader>
+                    <HeaderContainer>
                         <h2>Configurações da Loja</h2>
                         <ActionButtons>
                             {isEditing ? (
                                 <>
-                                    <Button
+                                    <CancelButton
                                         title="Cancelar"
                                         type="button"
-                                        $isCancel
                                         onClick={handleCancel}
                                     />
-                                    <Button
+                                    <SaveButton
                                         title="Salvar"
                                         type="button"
                                         onClick={handleSave}
                                     />
                                 </>
                             ) : (
-                                <Button
-                                    title="Editar"
-                                    type="button"
-                                    icon={FiEdit2}
-                                    onClick={handleEdit}
-                                />
+                                <IconButton onClick={handleEdit}>
+                                    <FiEdit2 size={22} />
+                                </IconButton>
                             )}
                         </ActionButtons>
-                    </FormHeader>
+                    </HeaderContainer>
 
                     <InputWrapper>
                         <label>Nome da Loja</label>
@@ -266,6 +275,7 @@ export function Settings() {
                                 <InfoDisplay>{editedEmail}</InfoDisplay>
                             )}
                         </InputWrapper>
+
                         <InputWrapper>
                             <label>CNPJ</label>
                             {isEditing ? (
@@ -283,6 +293,7 @@ export function Settings() {
                     <SectionHeader>
                         <h4>Endereço</h4>
                     </SectionHeader>
+
                     <InfoGroup>
                         <InputWrapper>
                             <label>CEP</label>
@@ -290,13 +301,14 @@ export function Settings() {
                                 <Input
                                     name="cep"
                                     value={editedAddress.cep}
-                                    onChange={handleCepChange} 
-                                    maxLength={9} 
+                                    onChange={handleCepChange}
+                                    maxLength={9}
                                 />
                             ) : (
                                 <InfoDisplay>{editedAddress.cep}</InfoDisplay>
                             )}
                         </InputWrapper>
+
                         <InputWrapper>
                             <label>Número</label>
                             {isEditing ? (
@@ -310,6 +322,7 @@ export function Settings() {
                             )}
                         </InputWrapper>
                     </InfoGroup>
+
                     <InfoGroup>
                         <InputWrapper>
                             <label>Complemento</label>
@@ -323,6 +336,7 @@ export function Settings() {
                                 <InfoDisplay>{editedAddress.complemento}</InfoDisplay>
                             )}
                         </InputWrapper>
+
                         <InputWrapper>
                             <label>Bairro</label>
                             {isEditing ? (
@@ -336,6 +350,7 @@ export function Settings() {
                             )}
                         </InputWrapper>
                     </InfoGroup>
+
                     <InputWrapper>
                         <label>Cidade</label>
                         {isEditing ? (
@@ -385,6 +400,7 @@ export function Settings() {
                     <SectionHeader>
                         <h4>Redes Sociais</h4>
                     </SectionHeader>
+
                     <InfoGroup>
                         <InputWrapper>
                             <label>Instagram</label>
@@ -399,6 +415,7 @@ export function Settings() {
                                 <InfoDisplay>{editedSocial.instagram}</InfoDisplay>
                             )}
                         </InputWrapper>
+
                         <InputWrapper>
                             <label>Facebook</label>
                             {isEditing ? (
@@ -413,7 +430,6 @@ export function Settings() {
                             )}
                         </InputWrapper>
                     </InfoGroup>
-
                 </Form>
             </Content>
         </Container>
