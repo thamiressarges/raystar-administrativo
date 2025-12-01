@@ -1,474 +1,491 @@
-import { useState } from "react";
-import {
-  Container,
-  Content,
-  PageTitle,
-  TitleInfo,
-  OrderDate,
-  Card,
-  CardTitle,
-  InfoGrid,
-  InfoItem,
-  InfoLabel,
-  InfoValue,
-  ProductTable,
-  ProductRow,
-  ProductInfo,
-  QuantityContainer,
-  Status,
-  Summary,
-  SummaryRow,
-  SummaryTotal,
-  ActionContainer,
-  SuccessButton,
-  DangerButton,
-  PrimaryButton,
-  SecondaryButton,
-  StaticStatusButton,
-  ModalOverlay,
-  ModalContent,
-  ModalCloseButton,
-  ActionButton, 
-  UberButton, 
-  HelperText,
-  QrContainer,
-  QrImage,
-  QrActions
-} from "./styles";
-
-import { Header } from "../../components/Header";
-import { Brand } from "../../components/Brand";
-import { Menu } from "../../components/Menu";
-import {
-  FiBox,
-  FiUser,
-  FiShoppingCart,
-  FiMapPin,
-  FiTruck,
-  FiClock,
-  FiCheckCircle,
-  FiCreditCard,
-  FiX, 
-  FiCheck,
-  FiXCircle,
-  FiGrid
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { 
+  FiChevronLeft, FiTag, FiMapPin, FiTruck, FiBox, 
+  FiDollarSign, FiCreditCard, FiShoppingBag, FiCheck, FiX, FiMap, FiClock, FiAlertCircle
 } from "react-icons/fi";
-
+import { orderApi } from "../../services/orderApi";
+import { Loading } from "../../components/Loading";
+import { Brand } from "../../components/Brand";
+import { Header } from "../../components/Header";
+import { Menu } from "../../components/Menu";
 import { useMenu } from "../../contexts/MenuContext";
+import * as S from "./styles";
+
+// --- FORMATAÇÕES ---
+const formatPrice = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString("pt-BR") : "—";
+const formatBirthDate = (dateString) => {
+  if (!dateString) return "—";
+  if (dateString.includes('-')) {
+      const [year, month, day] = dateString.split('-');
+      return `${day.substring(0, 2)}/${month}/${year}`;
+  }
+  return new Date(dateString).toLocaleDateString("pt-BR");
+};
+
+const translateStatus = (status) => {
+  if (!status) return "Aguardando Pagamento";
+  const map = {
+    pedido_criado: "Pedido Criado",
+    aguardando_confirmacao: "Aguardando Confirmação",
+    aguardando_pagamento: "Aguardando Pagamento",
+    pagamento_confirmado: "Pagamento Aprovado",
+    pago: "Pago",
+    preparando_pedido: "Preparando",
+    saiu_para_entrega: "Saiu para Entrega",
+    entregue: "Entregue",
+    cancelado: "Cancelado",
+    devolvido: "Devolvido",
+    pickup: "Pronto para Retirada"
+  };
+  return map[status.toLowerCase()] || status;
+};
+
+const getPaymentMethodName = (paymentObj) => {
+  if (!paymentObj) return "Não informado";
+  if (paymentObj.form) {
+    const raw = String(paymentObj.form).toLowerCase().trim();
+    if (raw.includes('cartao') || raw.includes('credit')) return "Cartão de Crédito";
+    if (raw.includes('pix')) return "PIX";
+    if (raw.includes('boleto')) return "Boleto Bancário";
+  }
+  return "Não informado";
+};
 
 export function OrderDetails() {
+  const { id: orderId } = useParams();
+  const navigate = useNavigate();
   const { isMenuOpen } = useMenu();
+  
+  const [order, setOrder] = useState(null);
+  const [store, setStore] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [storeDisplayAddress, setStoreDisplayAddress] = useState("Carregando endereço da loja...");
+  
+  // Estados do Modal de Rota
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrSrc, setQrSrc] = useState(null);
+  const [loadingRoute, setLoadingRoute] = useState(false);
+  
+  const [processingAction, setProcessingAction] = useState(false);
 
-  const [orderStatus, setOrderStatus] = useState("pendente"); 
-  const [qrCodeUrl, setQrCodeUrl] = useState("");
-  const [deepLink, setDeepLink] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // --- LÓGICA DE ESTADOS DO BOTÃO ---
+  const [nextStep, setNextStep] = useState({ 
+    label: "Carregando...", 
+    disabled: true, 
+    icon: <FiClock />, 
+    color: "#9ca3af" 
+  }); 
 
-  const pickLat = -3.1388123;
-  const pickLng = -60.0244228;
-  const dropLat = -3.0213741;
-  const dropLng = -59.9669974;
+  useEffect(() => {
+    let mounted = true;
+    async function loadData() {
+      try {
+        setLoading(true);
+        const [orderData, storeData] = await Promise.all([
+            orderApi.getOrderDetails(orderId),
+            orderApi.getStoreConfig()
+        ]);
+        
+        const deliveryData = orderData.delivery || {};
+        
+        // Normalização do Objeto Order
+        const fullOrder = {
+          ...orderData,
+          client: orderData.client || {},
+          paymentInfo: { 
+            ...orderData.payment, 
+            displayMethod: getPaymentMethodName(orderData.payment) 
+          },
+          deliveryInfo: {
+            ...deliveryData,
+            id: deliveryData.id,
+            isPickup: (deliveryData.type || "").toLowerCase().includes("pickup") || (deliveryData.type || "").toLowerCase().includes("retirada"),
+            cost: Number(deliveryData.cost || 0),
+            trackingUrl: deliveryData.tracking_url || null, 
+            zip: orderData.client?.address?.zip || "",
+            street: orderData.client?.address?.street || "",
+            number: orderData.client?.address?.number || "",
+            neighborhood: orderData.client?.address?.neighborhood || "",
+            city: orderData.client?.address?.city || "",
+            state: orderData.client?.address?.state || "",
+            status: orderData.status 
+          },
+          items: (orderData.items || []).map(item => ({
+             ...item,
+             name: item.product?.title || "Produto",
+             image: item.product?.photos?.[0] || "/images/default-image.jpg",
+             unit_price: Number(item.unit_price),
+             total: Number(item.unit_price) * Number(item.quantity)
+          })),
+          financials: {
+            subtotal: (orderData.items || []).reduce((acc, curr) => acc + (curr.unit_price * curr.quantity), 0),
+            shipping: Number(deliveryData.cost || 0),
+            total: Number(orderData.payment?.value || 0)
+          }
+        };
 
-  function buildUberDeepLink() {
-    const base = "uber://?action=setPickup";
-    const params = [
-      `pickup[latitude]=${pickLat}`,
-      `pickup[longitude]=${pickLng}`,
-      `dropoff[latitude]=${dropLat}`,
-      `dropoff[longitude]=${dropLng}`,
-      `pickup[nickname]=Origem%2069005-050`,
-      `dropoff[nickname]=Destino%2069097-186`
-    ];
-    return `${base}&${params.join("&")}`;
-  }
+        if (mounted) {
+            setOrder(fullOrder);
+            updateNextStep(fullOrder);
+        }
+        
+        // Configuração de endereço da loja
+        if (storeData) {
+            if (mounted) setStore(storeData);
+            const addr = storeData.address || {};
+            const cep = (addr.zip || addr.cep || "").replace(/\D/g, "");
+            
+            if (addr.street || addr.rua) {
+                const n = addr.number || addr.numero || "S/N";
+                if (mounted) setStoreDisplayAddress(`${addr.street || addr.rua}, ${n} - ${addr.neighborhood || addr.bairro}, ${addr.city || addr.cidade}`);
+            } else if (cep.length === 8) {
+                try {
+                    const res = await fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`);
+                    if (res.ok) {
+                        const d = await res.json();
+                        if (mounted) setStoreDisplayAddress(`${d.street}, ${addr.number || "S/N"} - ${d.neighborhood}, ${d.city} - ${d.state}`);
+                    }
+                } catch (e) { console.error(e); }
+            }
+        }
 
-  function buildUberAndroidIntent(deep) {
-    const withoutScheme = deep.replace(/^uber:\/\//, "");
-    return `intent://${withoutScheme}#Intent;scheme=uber;package=com.ubercab;end`;
-  }
+      } catch (err) {
+        console.error(err);
+        toast.error("Erro ao carregar dados.");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    loadData();
+    return () => (mounted = false);
+  }, [orderId]);
 
-  // ================== MUDANÇA AQUI ==================
-  function handleConfirmarPedido() {
-    // 1. Monta o link
-    const deep = buildUberDeepLink();
-    setDeepLink(deep);
+  // --- CALCULA QUAL A PRÓXIMA AÇÃO ---
+  const updateNextStep = (currentOrder) => {
+    const status = currentOrder.deliveryInfo.status;
+    const isPickup = currentOrder.deliveryInfo.isPickup;
 
-    // 2. Gera a URL do QR Code
-    const qr = `https://api.qrserver.com/v1/create-qr-code/?size=340x340&data=${encodeURIComponent(
-      deep
-    )}`;
-    setQrCodeUrl(qr);
+    // 1. ESTADOS FINAIS
+    if (['entregue'].includes(status)) {
+        setNextStep({
+            label: "Pedido Finalizado",
+            disabled: true,
+            icon: <FiCheck />,
+            color: "#10b981" 
+        });
+        return;
+    }
 
-    // 3. Muda o status da página
-    setOrderStatus("confirmado");
+    if (['cancelado', 'devolvido'].includes(status)) {
+        setNextStep({
+            label: "Pedido Cancelado",
+            disabled: true,
+            icon: <FiX />,
+            color: "#ef4444" 
+        });
+        return;
+    }
 
-    // 4. ABRE O MODAL IMEDIATAMENTE (NOVO)
-    setIsModalOpen(true); 
-  }
-  // ================== FIM DA MUDANÇA ==================
+    if (['aguardando_pagamento', 'aguardando_confirmacao'].includes(status)) {
+        setNextStep({
+            label: "Aguardando Pagamento",
+            disabled: true, 
+            icon: <FiClock />,
+            color: "#f59e0b" 
+        });
+        return;
+    }
 
+    // 2. FLUXO DE RETIRADA
+    if (isPickup) {
+        setNextStep({
+            label: "Confirmar Retirada",
+            newStatus: "entregue",
+            disabled: false,
+            icon: <FiCheck />,
+            color: "#10b981"
+        });
+        return;
+    }
 
-  // Esta função agora pode ou não ser usada, mas vamos mantê-la
-  // caso você queira um botão "Ver QR de novo"
-  function handleAbrirQrModal() {
-    setIsModalOpen(true);
-  }
+    // 3. FLUXO DE ENTREGA (DELIVERY)
+    if (['pagamento_confirmado', 'preparando_pedido', 'pedido_criado', 'pago'].includes(status)) {
+        setNextStep({
+            label: "Despachar (Saiu para Entrega)",
+            newStatus: "saiu_para_entrega",
+            disabled: false,
+            icon: <FiTruck />,
+            color: "#2563eb"
+        });
+    } 
+    else if (status === 'saiu_para_entrega') {
+        setNextStep({
+            label: "Confirmar Entrega ao Cliente",
+            newStatus: "entregue",
+            disabled: false,
+            icon: <FiCheck />,
+            color: "#10b981" 
+        });
+    } 
+    else {
+        setNextStep({
+            label: "Status Desconhecido",
+            disabled: true,
+            icon: <FiAlertCircle />,
+            color: "#9ca3af"
+        });
+    }
+  };
 
-  function handleSairParaEntrega() {
-    setOrderStatus("em_entrega");
-    // Opcional: fechar o modal se ele estiver aberto
-    setIsModalOpen(false);
-  }
-
-  function handleConfirmarEntrega() {
-    setOrderStatus("entregue");
-  }
-
-  function handleCancelarPedido() {
-    alert("Pedido Cancelado!");
-    setOrderStatus("pendente");
-  }
-
-  async function copyToClipboard(text) {
+  // --- AÇÕES ---
+  async function handleUpdateStatus() {
+    if (!order || !nextStep || nextStep.disabled) return;
+    
     try {
-      await navigator.clipboard.writeText(text);
-      alert("Link copiado!");
-    } catch {
-      const el = document.createElement("textarea");
-      el.value = text;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-      alert("Link copiado!");
+      setProcessingAction(true);
+      
+      await orderApi.updateDeliveryStatus(order.deliveryInfo.id, order.id, nextStep.newStatus);
+      
+      toast.success(`Status atualizado para: ${translateStatus(nextStep.newStatus)}`);
+      
+      const updatedOrder = {
+          ...order,
+          deliveryInfo: { ...order.deliveryInfo, status: nextStep.newStatus }
+      };
+      setOrder(updatedOrder);
+      updateNextStep(updatedOrder); 
+
+    } catch (err) { 
+        console.error(err);
+        toast.error("Erro ao atualizar status."); 
+    } finally { 
+        setProcessingAction(false); 
     }
   }
 
-  function downloadQr() {
-    const a = document.createElement("a");
-    a.href = qrCodeUrl;
-    a.download = "qr-uber.png";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  async function handleCancelOrder() {
+    if (!confirm("Tem certeza que deseja cancelar este pedido?")) return;
+    try {
+      setProcessingAction(true);
+      await orderApi.cancelOrder(orderId, order.deliveryInfo.id);
+      toast.success("Pedido cancelado.");
+      
+      const updatedOrder = {
+          ...order,
+          deliveryInfo: { ...order.deliveryInfo, status: 'cancelado' }
+      };
+      setOrder(updatedOrder);
+      updateNextStep(updatedOrder);
+    } catch { toast.error("Erro ao cancelar."); }
+    finally { setProcessingAction(false); }
   }
 
-  const androidIntent = deepLink ? buildUberAndroidIntent(deepLink) : "";
+  async function handleGenerateUberRoute() {
+    if (!order) return;
+    if (order.deliveryInfo.trackingUrl) {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(order.deliveryInfo.trackingUrl)}`;
+      setQrSrc(qrUrl);
+      setQrOpen(true);
+      return;
+    }
+    if (!store || !store.address) return toast.error("Endereço da loja inválido.");
+    const clientCep = order.deliveryInfo.zip?.replace(/\D/g, "");
+    const storeCep = (store.address.zip || store.address.cep || "").replace(/\D/g, "");
+
+    if (!clientCep || !storeCep) return toast.warn("CEPs inválidos.");
+
+    try {
+      setLoadingRoute(true);
+      // Simulação
+      const mockUrl = `https://m.uber.com/`; 
+      await orderApi.saveTrackingUrl(order.deliveryInfo.id, mockUrl);
+      
+      setOrder(prev => ({
+          ...prev,
+          deliveryInfo: { ...prev.deliveryInfo, trackingUrl: mockUrl }
+      }));
+      setQrSrc(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(mockUrl)}`);
+      setQrOpen(true);
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao gerar rota.");
+    } finally {
+      setLoadingRoute(false);
+    }
+  }
+
+  if (loading || !order) return <S.Container $isopen={isMenuOpen}><Loading /></S.Container>;
 
   return (
-    <Container $isopen={isMenuOpen}>
-      <Brand />
-      <Header />
-      <Menu />
-
-      <Content>
-        {/* TÍTULO */}
-        <PageTitle>
-          <TitleInfo>
-            <FiBox size={32} />
-            <div>
-              <h2>Detalhes do Pedido</h2>
-              <span>#001234</span>
-            </div>
-          </TitleInfo>
-          <OrderDate>
-            <InfoLabel>Data do Pedido</InfoLabel>
-            <InfoValue>20/01/2024</InfoValue>
-          </OrderDate>
-        </PageTitle>
-
-        {/* CLIENTE */}
-        <Card>
-          <CardTitle>
-            <FiUser size={20} />
-            <h3>Dados do Cliente</h3>
-          </CardTitle>
-          <InfoGrid>
-            <InfoItem>
-              <InfoLabel>Nome Completo</InfoLabel>
-              <InfoValue>Maria Silva Santos</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>CPF</InfoLabel>
-              <InfoValue>123.456.789-00</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Telefone</InfoLabel>
-              <InfoValue>(11) 98765-4321</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Data de Nascimento</InfoLabel>
-              <InfoValue>15/03/1990</InfoValue>
-            </InfoItem>
-          </InfoGrid>
-        </Card>
-
-        {/* ITENS */}
-        <Card>
-          <CardTitle>
-            <FiShoppingCart size={20} />
-            <h3>Itens do Pedido</h3>
-          </CardTitle>
-          <ProductTable>
-            <thead>
-              <tr>
-                <th className="product-col">Produto</th>
-                <th className="qty-col">Qtd</th>
-                <th className="price-col">Preço Unit.</th>
-                <th className="total-col">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <ProductRow>
-                <td className="product-col">
-                  <ProductInfo>
-                    <img
-                      src="https://placehold.co/64x64"
-                      alt="Produto"
-                    />
-                    <span>Camiseta polo</span>
-                  </ProductInfo>
-                </td>
-                <td className="qty-col">
-                  <QuantityContainer>1</QuantityContainer>
-                </td>
-                <td className="price-col">
-                  R$ 34.90
-                </td>
-                <td className="total-col">
-                  <strong>R$ 34.90</strong>
-                </td>
-              </ProductRow>
-              <ProductRow>
-                <td className="product-col">
-                  <ProductInfo>
-                    <img
-                      src="https://placehold.co/64x64"
-                      alt="Produto"
-                    />
-                    <span>Moletom</span>
-                  </ProductInfo>
-                </td>
-                <td className="qty-col">
-                  <QuantityContainer>2</QuantityContainer>
-                </td>
-                <td className="price-col">
-                  R$ 49.90
-                </td>
-                <td className="total-col">
-                  <strong>R$ 99.80</strong>
-                </td>
-              </ProductRow>
-            </tbody>
-          </ProductTable>
-        </Card>
-
-        {/* ENTREGA */}
-        <Card>
-          <CardTitle>
-            <FiMapPin size={20} />
-            <h3>Dados de Entrega</h3>
-          </CardTitle>
-          <InfoGrid>
-            <InfoItem>
-              <InfoLabel>CEP</InfoLabel>
-              <InfoValue>01310-100</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Endereço</InfoLabel>
-              <InfoValue>Av. Djalma Batista</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Cidade</InfoLabel>
-              <InfoValue>Manaus</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Estado</InfoLabel>
-              <InfoValue>AM</InfoValue>
-            </InfoItem>
-          </InfoGrid>
-        </Card>
+    <S.Container $isopen={isMenuOpen}>
+      <Brand /><Header /><Menu />
+      <S.PageWrapper>
         
-        {/* CARD DE STATUS DA ENTREGA */}
-        <Card>
-          <CardTitle>
-            <FiTruck size={20} />
-            <h3>Status da Entrega</h3>
-          </CardTitle>
-          
-          {orderStatus === "pendente" && (
-            <Status $status="warning">
-              <FiClock size={16} />
-              Aguardando Confirmação
-            </Status>
-          )}
-          {orderStatus === "confirmado" && (
-            <Status $status="info">
-              <FiCheckCircle size={16} />
-              Pedido Confirmado
-            </Status>
-          )}
-          {orderStatus === "em_entrega" && (
-            <Status $status="info">
-              <FiTruck size={16} />
-              Saiu para Entrega
-            </Status>
-          )}
-          {orderStatus === "entregue" && (
-            <Status $status="success">
-              <FiCheck size={16} />
-              Entregue
-            </Status>
-          )}
-        </Card>
+        <S.HeaderBar>
+          <S.Title onClick={() => navigate("/order")} style={{ cursor: "pointer" }}>
+            <FiChevronLeft /> 
+            <div>
+              Detalhes do Pedido
+              <div style={{ fontSize: '14px', fontWeight: '400', color: '#6b7280', marginTop: '4px' }}>#{orderId.substring(0, 8).toUpperCase()}</div>
+            </div>
+          </S.Title>
+          <S.DateInfo>
+            <small>Data do Pedido</small>
+            <strong>{formatDate(order.created_at)}</strong>
+          </S.DateInfo>
+        </S.HeaderBar>
+        
+        <S.ContentGrid>
+            {/* ... SEÇÕES DE CLIENTE, ITENS E ENTREGA MANTIDAS IGUAIS ... */}
+            <S.Section>
+                <S.SectionHeader><div><FiTag /> Dados do Cliente</div></S.SectionHeader>
+                <S.ClientGrid>
+                    <div><small>Nome</small><div className="clientValue">{order.client?.name}</div></div>
+                    <div><small>CPF</small><div className="clientValue">{order.client?.cpf || "—"}</div></div>
+                    <div><small>Telefone</small><div className="clientValue">{order.client?.phone || "—"}</div></div>
+                    <div><small>Nascimento</small><div className="clientValue">{formatBirthDate(order.client?.birth_date)}</div></div>
+                </S.ClientGrid>
+            </S.Section>
 
-        {/* CARD DE STATUS DO PAGAMENTO (Estático) */}
-        <Card>
-          <CardTitle>
-            <FiCreditCard size={20} />
-            <h3>Status do Pagamento</h3>
-          </CardTitle>
-          <Status $status="success">
-            <FiCheckCircle size={16} />
-            Pago
-          </Status>
-        </Card>
+            <S.Section>
+                <S.SectionHeader><div><FiBox /> Itens do Pedido</div></S.SectionHeader>
+                <S.ItemsList>
+                    <div className="itemsHead">
+                      <span>Produto</span>
+                      <span style={{textAlign: 'center'}}>Qtd</span>
+                      <span style={{textAlign: 'right'}}>Preço</span>
+                      <span style={{textAlign: 'right'}}>Total</span>
+                    </div>
+                    {order.items.map(item => (
+                        <S.ItemRow key={item.id}>
+                            <S.ItemDetails>
+                              <img src={item.image} alt={item.name} />
+                              <strong>{item.name}</strong>
+                            </S.ItemDetails>
+                            <div className="qty">{item.quantity}</div>
+                            <div className="price">{formatPrice(item.unit_price)}</div>
+                            <div className="total">{formatPrice(item.total)}</div>
+                        </S.ItemRow>
+                    ))}
+                </S.ItemsList>
+            </S.Section>
 
-        {/* CARD DE RESUMO DO PEDIDO (Estático) */}
-        <Card>
-          <CardTitle>
-            <h3>Resumo do Pedido</h3>
-          </CardTitle>
-          <Summary>
-            <SummaryRow>
-              <span>Subtotal</span>
-              <span>R$ 4999.60</span>
-            </SummaryRow>
-            <SummaryRow>
-              <span>Taxa de Entrega</span>
-              <span>R$ 29.90</span>
-            </SummaryRow>
-            <SummaryTotal>
-              <span>Total</span>
-              <span>R$ 5029.50</span>
-            </SummaryTotal>
-          </Summary>
-        </Card>
-
-        {/* CARD DE AÇÕES DO PEDIDO */}
-        <Card>
-          <CardTitle>
-            <h3>Ações do Pedido</h3>
-          </CardTitle>
-
-          {/* ESTADO 1: PENDENTE */}
-          {orderStatus === "pendente" && (
-            <ActionContainer>
-              <SuccessButton onClick={handleConfirmarPedido}>
-                <FiCheck />
-                Confirmar Pedido
-              </SuccessButton>
-              <DangerButton onClick={handleCancelarPedido}>
-                <FiXCircle />
-                Cancelar Pedido
-              </DangerButton>
-            </ActionContainer>
-          )}
-
-          {/* ESTADO 2: CONFIRMADO */}
-          {/* O botão "Ver QR Code" ainda existe, caso o admin feche o modal e queira abrir de novo */}
-          {orderStatus === "confirmado" && (
-            <ActionContainer>
-              <PrimaryButton onClick={handleSairParaEntrega}>
-                <FiTruck />
-                Marcar como Saiu para Entrega
-              </PrimaryButton>
-              <SecondaryButton onClick={handleAbrirQrModal}>
-                <FiGrid />
-                Ver QR Code da Rota
-              </SecondaryButton>
-              <DangerButton onClick={handleCancelarPedido}>
-                <FiXCircle />
-                Cancelar Pedido
-              </DangerButton>
-            </ActionContainer>
-          )}
-
-          {/* ESTADO 3: EM ENTREGA */}
-          {orderStatus === "em_entrega" && (
-            <ActionContainer>
-              <SuccessButton onClick={handleConfirmarEntrega}>
-                <FiCheckCircle />
-                Confirmar Entrega
-              </SuccessButton>
-              <DangerButton onClick={handleCancelarPedido}>
-                <FiXCircle />
-                Cancelar Pedido
-              </DangerButton>
-            </ActionContainer>
-          )}
-
-          {/* ESTADO 4: ENTREGUE */}
-          {orderStatus === "entregue" && (
-            <StaticStatusButton>
-              <FiCheck />
-              Pedido Entregue
-            </StaticStatusButton>
-          )}
-        </Card>
-      </Content>
-
-      {/* MODAL DO QR CODE (Renderizado fora do fluxo) */}
-      {isModalOpen && (
-        <ModalOverlay onClick={() => setIsModalOpen(false)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalCloseButton onClick={() => setIsModalOpen(false)}>
-              <FiX />
-            </ModalCloseButton>
-            
-            <HelperText style={{ textAlign: 'center', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
-              QR Code - Rota de Entrega
-            </HelperText>
-            
-            <HelperText style={{ textAlign: 'center', margin: '8px 0 24px', lineHeight: '1.5' }}>
-              Escaneie o QR Code com seu celular para abrir a rota no Google Maps.
-              <br/>
-              Use para chamar Uber Flash, 99 Entrega ou outro serviço de logística.
-            </HelperText>
-
-            <QrContainer>
-              {qrCodeUrl ? (
-                <QrImage src={qrCodeUrl} alt="QR Code Uber" />
-              ) : (
-                <p>Gerando QR Code...</p>
-              )}
-
-              <QrActions>
-                {deepLink && (
+            <S.Section>
+                <S.SectionHeader>
+                    {order.deliveryInfo.isPickup ? <div><FiShoppingBag /> Retirada</div> : <div><FiMapPin /> Dados de Entrega</div>}
+                </S.SectionHeader>
+                
+                {order.deliveryInfo.isPickup ? (
+                    <S.PickupCard>
+                        <div className="icon"><FiShoppingBag /></div>
+                        <div className="info">
+                            <strong>RETIRADA NA LOJA</strong>
+                            <p>O cliente optou por retirar o produto na loja.</p>
+                        </div>
+                    </S.PickupCard>
+                ) : (
                   <>
-                    <ActionButton type="button" onClick={() => copyToClipboard(deepLink)}>
-                      Copiar link do app
-                    </ActionButton>
-                    <ActionButton type="button" onClick={downloadQr}>
-                      Baixar QR
-                    </ActionButton>
+                    <S.DeliveryGrid>
+                      <div><small>CEP</small><div className="delValue">{order.deliveryInfo.zip}</div></div>
+                      <div><small>Endereço</small><div className="delValue">{order.deliveryInfo.street}, {order.deliveryInfo.number} - {order.deliveryInfo.neighborhood}</div></div>
+                      <div><small>Cidade</small><div className="delValue">{order.deliveryInfo.city}</div></div>
+                      <div><small>Estado</small><div className="delValue">{order.deliveryInfo.state}</div></div>
+                    </S.DeliveryGrid>
+                    <S.Divider />
+                    <div>
+                      <small style={{ color: '#6b7280', fontSize: '12px', marginBottom: '4px', display:'block' }}>Endereço da Loja (Origem)</small>
+                      <div style={{ fontWeight: 600, color: '#1f2937' }}>{storeDisplayAddress}</div>
+                    </div>
                   </>
                 )}
-                {androidIntent && (
-                  <UberButton href={androidIntent} target="_blank" rel="noopener noreferrer">
-                    Tentar via Intent (Android)
-                  </UberButton>
-                )}
-              </QrActions>
-            </QrContainer>
-            
-            <PrimaryButton onClick={() => setIsModalOpen(false)} style={{ width: '100%', marginTop: '24px' }}>
-              Fechar
-            </PrimaryButton>
+            </S.Section>
 
-          </ModalContent>
-        </ModalOverlay>
-      )}
-    </Container>
+            <S.Section>
+                <S.SectionHeader><div><FiTruck /> Status Atual</div></S.SectionHeader>
+                <S.StatusBanner type={order.deliveryInfo.status}>
+                    <div className="icon">
+                        {order.deliveryInfo.status === 'entregue' ? <FiCheck /> : <FiTruck />}
+                    </div>
+                    <div className="content">
+                      <strong>{translateStatus(order.deliveryInfo.status)}</strong>
+                    </div>
+                </S.StatusBanner>
+            </S.Section>
+            
+            <S.Section>
+                <S.SectionHeader><div><FiCreditCard /> Pagamento</div></S.SectionHeader>
+                <S.PaymentBanner type={order.paymentInfo?.status}>
+                    <div className="icon"><FiCheck /></div>
+                    <div className="content">
+                        <strong>{translateStatus(order.paymentInfo?.status)}</strong>
+                        <div style={{fontSize:'13px', marginTop:'2px', opacity: 0.8}}>{order.paymentInfo?.displayMethod}</div>
+                    </div>
+                </S.PaymentBanner>
+            </S.Section>
+
+            {/* RESUMO E BOTÕES DE AÇÃO */}
+            <S.Section>
+                <S.SectionHeader><div><FiDollarSign /> Resumo Financeiro</div></S.SectionHeader>
+                <S.Summary>
+                    <S.SummaryRow><span>Subtotal</span><strong>{formatPrice(order.financials.subtotal)}</strong></S.SummaryRow>
+                    <S.SummaryRow>
+                        <span>Frete ({order.deliveryInfo.isPickup ? 'Retirada' : 'Entrega'})</span>
+                        <strong>{formatPrice(order.financials.shipping)}</strong>
+                    </S.SummaryRow>
+                    <S.TotalRow><span>Total</span><strong>{formatPrice(order.financials.total)}</strong></S.TotalRow>
+                </S.Summary>
+
+                <S.ButtonsRow>
+                  {/* Botão de Rota: SÓ APARECE se NÃO for retirada, E se o status for 'saiu_para_entrega' ou 'entregue' */}
+                  {!order.deliveryInfo.isPickup && 
+                   ['saiu_para_entrega', 'entregue'].includes(order.deliveryInfo.status) && (
+                    <S.RouteButton onClick={handleGenerateUberRoute} disabled={loadingRoute}>
+                      <FiMap /> 
+                      {loadingRoute ? "Gerando..." : (order.deliveryInfo.trackingUrl ? "Ver Rota (QR)" : "Gerar Rota Uber")}
+                    </S.RouteButton>
+                  )}
+                  
+                  {/* Botão Principal - Controlado pelo DISABLED */}
+                  <S.PrimaryButton 
+                    disabled={processingAction || nextStep.disabled} 
+                    onClick={handleUpdateStatus}
+                    style={nextStep.color ? { background: nextStep.color, opacity: nextStep.disabled ? 0.6 : 1 } : {}}
+                  >
+                    {nextStep.icon} {nextStep.label}
+                  </S.PrimaryButton>
+
+                  {/* Botão Cancelar */}
+                  {order.deliveryInfo.status !== 'entregue' && order.deliveryInfo.status !== 'cancelado' && (
+                      <S.SecondaryButton disabled={processingAction} onClick={handleCancelOrder}>
+                        <FiX /> Cancelar Pedido
+                      </S.SecondaryButton>
+                  )}
+                </S.ButtonsRow>
+            </S.Section>
+
+        </S.ContentGrid>
+
+        {qrOpen && (
+          <S.QrModalOverlay onClick={() => setQrOpen(false)}>
+            <S.QrModal onClick={e => e.stopPropagation()}>
+              <h3>Rota de Entrega (Uber)</h3>
+              <p>Escaneie para abrir a rota no app do Uber.</p>
+              {qrSrc && <img src={qrSrc} alt="QR Code Uber" style={{width:'250px', height:'250px'}} />}
+              <div style={{marginTop:'20px'}}>
+                <S.SecondaryButton style={{padding:'8px 24px', width:'auto', margin:'0 auto', fontSize:'14px'}} onClick={() => setQrOpen(false)}>
+                  Fechar
+                </S.SecondaryButton>
+              </div>
+            </S.QrModal>
+          </S.QrModalOverlay>
+        )}
+      </S.PageWrapper>
+    </S.Container>
   );
 }
+
+export default OrderDetails;
