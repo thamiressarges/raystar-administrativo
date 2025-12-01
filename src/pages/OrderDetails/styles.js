@@ -1,360 +1,450 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 export const Container = styled.div`
   width: 100%;
   height: 100vh;
+  overflow: hidden;
   display: grid;
   grid-template-columns: ${({ $isopen }) => ($isopen ? "210px" : "80px")} auto;
   grid-template-rows: 105px auto;
   grid-template-areas:
     "brand header"
     "menu content";
-  background-color: ${({ theme }) => theme.COLORS.GRAY_100};
-  transition: grid-template-columns 0.3s ease-in-out;
+  background: ${({ theme }) => theme.COLORS.GRAY_100};
+  transition: grid-template-columns 0.3s ease;
 `;
 
-export const Content = styled.div`
+export const PageWrapper = styled.div`
   grid-area: content;
-  padding: 40px 80px; 
+  padding: 24px 48px;
   overflow-y: auto;
+  height: 100%;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: ${({ theme }) => theme.COLORS.GRAY_300};
+    border-radius: 4px;
+  }
+`;
+
+export const HeaderBar = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+`;
+
+export const Title = styled.h1`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 22px;
+  color: ${({ theme }) => theme.COLORS.GRAY_900};
+
+  div {
+    display: flex;
+    flex-direction: column;
+  }
+`;
+
+export const DateInfo = styled.div`
+  text-align: right;
+
+  small {
+    display: block;
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+
+  strong {
+    font-size: 18px;
+    color: ${({ theme }) => theme.COLORS.GRAY_900};
+  }
+`;
+
+export const ContentGrid = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding-bottom: 80px; 
-`;
-
-export const PageTitle = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   width: 100%;
+  max-width: 100%;
+  margin: 0;
 `;
 
-export const TitleInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-export const OrderDate = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-`;
-
-export const Card = styled.div`
-  background-color: ${({ theme }) => theme.COLORS.WHITE};
+export const Section = styled.section`
   width: 100%;
-  border-radius: 12px;
-  padding: 28px 32px;
-  box-shadow: 0 8px 30px rgba(17, 24, 39, 0.06);
+  background: ${({ theme }) => theme.COLORS.WHITE};
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.05);
+  border: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
 `;
 
-export const CardTitle = styled.div`
+export const SectionHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  font-weight: 700;
   margin-bottom: 20px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
-  
+  color: ${({ theme }) => theme.COLORS.GRAY_900};
+  font-size: 16px;
+
   svg {
-    flex-shrink: 0;
-  }
-  
-  h3 {
-    line-height: 1.2;
-    font-size: 16px;
-    font-weight: 700;
+    margin-right: 6px;
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
   }
 `;
 
-export const InfoGrid = styled.div`
+export const ClientGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+
+  small {
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
+    font-size: 13px;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .clientValue {
+    font-weight: 600;
+    color: ${({ theme }) => theme.COLORS.GRAY_800};
+    font-size: 15px;
+    word-break: break-word;
+  }
 `;
 
-export const InfoItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-export const InfoLabel = styled.span`
-  font-size: 14px;
-  color: ${({ theme }) => theme.COLORS.GRAY_700};
-`;
-
-export const InfoValue = styled.span`
-  font-size: 16px;
-  font-weight: 600;
-`;
-
-export const ProductTable = styled.table`
+export const ItemsList = styled.div`
   width: 100%;
-  border-collapse: collapse;
 
-  /* ================== MUDANÇA AQUI ================== */
-  th, td {
-    padding: 12px 0;
-    text-align: left;
-    vertical-align: middle; /* <-- ADICIONEI ESSA LINHA */
-  }
-  /* ================== FIM DA MUDANÇA ================== */
-
-  th {
+  .itemsHead {
+    display: grid;
+    grid-template-columns: 2fr 100px 150px 150px;
+    padding: 0 0 12px 0;
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
+    font-size: 13px;
+    font-weight: 600;
     border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
-    padding-bottom: 8px;
-    font-size: 12px;
-    letter-spacing: .02em;
-    text-transform: uppercase;
-    color: ${({ theme }) => theme.COLORS.GRAY_700};
-  }
-
-  /* As classes de alinhamento agora vão funcionar para TH e TD */
-  .product-col { width: 50%; }
-  .qty-col { text-align: center; width: 10%; }
-  .price-col { width: 20%; } /* Não precisa de text-align, já é 'left' */
-  .total-col { text-align: right; width: 20%; }
-`;
-
-export const ProductRow = styled.tr`
-  td {
-    border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
-    height: 72px;
+    margin-bottom: 8px;
   }
 `;
 
-export const ProductInfo = styled.div`
-  display: flex;
+export const ItemRow = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 100px 150px 150px;
+  padding: 16px 0;
+  border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
   align-items: center;
-  gap: 14px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .qty {
+    text-align: center;
+  }
+
+  .price,
+  .total {
+    text-align: right;
+  }
+
+  .qty,
+  .price,
+  .total {
+    font-weight: 600;
+    color: ${({ theme }) => theme.COLORS.GRAY_700};
+    font-size: 14px;
+  }
+`;
+
+export const ItemDetails = styled.div`
+  display: flex;
+  gap: 16px;
+  align-items: center;
 
   img {
     width: 56px;
     height: 56px;
+    border-radius: 8px;
     object-fit: cover;
-    border-radius: 10px;
-    background-color: ${({ theme }) => theme.COLORS.GRAY_100};
+    background: ${({ theme }) => theme.COLORS.GRAY_50};
+    border: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
+  }
+
+  strong {
+    font-size: 14px;
+    color: ${({ theme }) => theme.COLORS.GRAY_900};
+    display: block;
   }
 `;
 
-export const QuantityContainer = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background-color: ${({ theme }) => theme.COLORS.GRAY_100};
-  font-size: 14px;
-  font-weight: 600;
+export const DeliveryGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+
+  small {
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
+    font-size: 13px;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .delValue {
+    font-weight: 600;
+    color: ${({ theme }) => theme.COLORS.GRAY_800};
+    font-size: 15px;
+  }
 `;
 
-/* ===== PARTE DE BAIXO (STATUS, BOTÕES) ===== */
-export const Status = styled.div`
-  padding: 12px 20px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  
-  background-color: ${({ theme, $status }) =>
-    $status === "success"
-      ? "rgba(16, 185, 129, .12)"
-      : $status === "warning"
-      ? "rgba(245, 158, 11, .12)"
-      : $status === "info"
-      ? "rgba(59, 130, 246, .12)"
-      : "rgba(107, 114, 128, .12)"};
-      
-  color: ${({ theme, $status }) =>
-    $status === "success"
-      ? "#065f46"
-      : $status === "warning"
-      ? "#b45309"
-      : $status === "info"
-      ? "#1d4ed8"
-      : "#111827"};
+export const Divider = styled.hr`
+  border: 0;
+  border-top: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
+  margin: 16px 0;
 `;
+
+export const PickupCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  width: 100%;
+  background: ${({ theme }) => theme.COLORS.INFO_LIGHT};
+  border: 1px solid ${({ theme }) => theme.COLORS.INFO};
+  border-radius: 12px;
+
+  .icon {
+    font-size: 24px;
+    color: ${({ theme }) => theme.COLORS.INFO};
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    background: ${({ theme }) => theme.COLORS.WHITE};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .info {
+    strong {
+      color: ${({ theme }) => theme.COLORS.BLUE_700};
+      font-size: 16px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    p {
+      color: ${({ theme }) => theme.COLORS.INFO};
+      font-size: 14px;
+      margin: 0;
+    }
+  }
+`;
+
+const bannerColors = {
+  pickup: css`
+    background: ${({ theme }) => theme.COLORS.INFO_LIGHT};
+    border: 1px solid ${({ theme }) => theme.COLORS.INFO};
+    color: ${({ theme }) => theme.COLORS.BLUE_700};
+  `,
+  entregue: css`
+    background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT};
+    border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS};
+    color: ${({ theme }) => theme.COLORS.GREEN_700};
+  `,
+  pago: css`
+    background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT};
+    border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS};
+    color: ${({ theme }) => theme.COLORS.GREEN_700};
+  `,
+  enviado: css`
+    background: ${({ theme }) => theme.COLORS.INDIGO_100};
+    border: 1px solid ${({ theme }) => theme.COLORS.INDIGO_800};
+    color: ${({ theme }) => theme.COLORS.INDIGO_800};
+  `,
+  processando: css`
+    background: ${({ theme }) => theme.COLORS.PURPLE_100};
+    border: 1px solid ${({ theme }) => theme.COLORS.PURPLE_500};
+    color: ${({ theme }) => theme.COLORS.PURPLE_800};
+  `,
+  cancelado: css`
+    background: ${({ theme }) => theme.COLORS.DANGER_LIGHT};
+    border: 1px solid ${({ theme }) => theme.COLORS.DANGER};
+    color: ${({ theme }) => theme.COLORS.DANGER};
+  `,
+  aguardando_confirmacao: css`
+    background: ${({ theme }) => theme.COLORS.WARNING_LIGHT};
+    border: 1px solid ${({ theme }) => theme.COLORS.WARNING};
+    color: ${({ theme }) => theme.COLORS.AMBER_600};
+  `,
+  aguardando_pagamento: css`
+    background: ${({ theme }) => theme.COLORS.WARNING_LIGHT};
+    border: 1px solid ${({ theme }) => theme.COLORS.WARNING};
+    color: ${({ theme }) => theme.COLORS.AMBER_600};
+  `,
+  default: css`
+    background: ${({ theme }) => theme.COLORS.GRAY_50};
+    border: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
+    color: ${({ theme }) => theme.COLORS.GRAY_700};
+  `,
+};
+
+export const StatusBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  justify-content: space-between;
+  width: 100%;
+  ${({ type }) => bannerColors[type?.toLowerCase()] || bannerColors.default};
+
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .content {
+    flex: 1;
+    strong {
+      font-weight: 700;
+      font-size: 15px;
+    }
+  }
+`;
+
+export const PaymentBanner = styled(StatusBanner)``;
 
 export const Summary = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  padding: 8px 0;
+  margin-bottom: 24px;
 `;
 
 export const SummaryRow = styled.div`
   display: flex;
   justify-content: space-between;
-  color: ${({ theme }) => theme.COLORS.GRAY_700};
+  color: ${({ theme }) => theme.COLORS.GRAY_500};
+  padding: 10px 0;
+  font-size: 15px;
 `;
 
-export const SummaryTotal = styled.div`
+export const TotalRow = styled.div`
   display: flex;
   justify-content: space-between;
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 800;
-  padding-top: 12px;
+  padding-top: 16px;
+  margin-top: 8px;
   border-top: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
+  color: ${({ theme }) => theme.COLORS.GRAY_900};
 `;
 
-export const ActionContainer = styled.div`
+export const ButtonsRow = styled.div`
   display: flex;
-  flex-wrap: wrap;
   gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+
+  & > button {
+    flex: 1;
+    min-width: 140px;
+  }
 `;
 
 const BaseButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
-  font-size: 14px;
-  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: 8px;
   border: none;
-  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  svg {
-    font-size: 16px;
-  }
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  font-size: 14px;
 
   &:hover {
-    opacity: 0.9;
+    filter: brightness(0.95);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
-  
-  &:active {
-    transform: scale(0.98);
-    box-shadow: none;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
-`;
-
-export const SuccessButton = styled(BaseButton)`
-  background-color: #16a34a;
-  color: white;
-`;
-
-export const DangerButton = styled(BaseButton)`
-  background-color: #ef4444;
-  color: white;
 `;
 
 export const PrimaryButton = styled(BaseButton)`
-  background-color: #2563eb;
-  color: white;
+  background: ${({ theme }) => theme.COLORS.SUCCESS};
+  color: ${({ theme }) => theme.COLORS.WHITE};
 `;
 
 export const SecondaryButton = styled(BaseButton)`
-  background-color: #374151;
-  color: white;
-  
-  &:hover {
-    background-color: #1f2937;
-  }
+  background: ${({ theme }) => theme.COLORS.DANGER};
+  color: ${({ theme }) => theme.COLORS.WHITE};
 `;
 
-export const StaticStatusButton = styled(BaseButton)`
-  background-color: rgba(16, 185, 129, .12);
-  color: #065f46;
-  font-weight: 600;
-  cursor: default;
-  
-  &:hover {
-    opacity: 1;
-    transform: none;
-    box-shadow: none;
-  }
+export const RouteButton = styled(BaseButton)`
+  background: ${({ theme }) => theme.COLORS.BLUE_700};
+  color: ${({ theme }) => theme.COLORS.WHITE};
 `;
 
-/* ===== ESTILOS DO MODAL E QR CODE ===== */
-
-export const ActionButton = styled(BaseButton)`
-  background: #1fbad6;
-  color: white;
-`;
-
-export const UberButton = styled(BaseButton).attrs({ as: 'a' })`
-  background: #2563eb;
-  color: white;
-  text-decoration: none;
-`;
-
-export const QrContainer = styled.div`
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  background: #ffffff;
-  margin: 8px 0 4px;
-`;
-
-export const QrImage = styled.img`
-  width: 260px;
-  height: 260px;
-  border-radius: 12px;
-  image-rendering: pixelated;
-`;
-
-export const QrActions = styled.div`
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-`;
-
-export const HelperText = styled.p`
-  font-size: 14px;
-  color: ${({ theme }) => theme.COLORS.GRAY_700};
-`;
-
-export const ModalOverlay = styled.div`
+export const QrModalOverlay = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: ${({ theme }) => theme.COLORS.OVERLAY};
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 16px;
+  z-index: 9999;
 `;
 
-export const ModalContent = styled.div`
-  background: #FFFFFF;
-  padding: 32px;
+export const QrModal = styled.div`
+  width: 400px;
+  max-width: 90%;
+  background: ${({ theme }) => theme.COLORS.WHITE};
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.15);
-  max-width: 500px;
-  width: 100%;
-  position: relative;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-`;
 
-export const ModalCloseButton = styled.button`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: ${({ theme }) => theme.COLORS.GRAY_700};
-  font-size: 28px;
-  line-height: 1;
+  img {
+    width: 100%;
+    border-radius: 8px;
+  }
 
-  &:hover {
-    color: #000;
+  h3 {
+    margin-bottom: 12px;
+    color: ${({ theme }) => theme.COLORS.GRAY_900};
+    text-align: center;
+  }
+
+  p {
+    font-size: 13px;
+    color: ${({ theme }) => theme.COLORS.GRAY_500};
+    text-align: center;
+    margin-bottom: 16px;
   }
 `;

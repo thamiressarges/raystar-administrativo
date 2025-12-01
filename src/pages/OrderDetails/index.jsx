@@ -5,54 +5,24 @@ import {
   FiChevronLeft, FiTag, FiMapPin, FiTruck, FiBox, 
   FiDollarSign, FiCreditCard, FiShoppingBag, FiCheck, FiX, FiMap, FiClock, FiAlertCircle
 } from "react-icons/fi";
+
 import { orderApi } from "../../services/orderApi";
 import { Loading } from "../../components/Loading";
 import { Brand } from "../../components/Brand";
 import { Header } from "../../components/Header";
 import { Menu } from "../../components/Menu";
 import { useMenu } from "../../contexts/MenuContext";
+
+import { 
+  formatCurrency, 
+  formatDate, 
+  formatBirthDate, 
+  translateOrderStatus, 
+  getPaymentMethodName 
+} from "../../utils/format";
+import { theme } from "../../styles/theme";
+
 import * as S from "./styles";
-
-// --- FORMATAÇÕES ---
-const formatPrice = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString("pt-BR") : "—";
-const formatBirthDate = (dateString) => {
-  if (!dateString) return "—";
-  if (dateString.includes('-')) {
-      const [year, month, day] = dateString.split('-');
-      return `${day.substring(0, 2)}/${month}/${year}`;
-  }
-  return new Date(dateString).toLocaleDateString("pt-BR");
-};
-
-const translateStatus = (status) => {
-  if (!status) return "Aguardando Pagamento";
-  const map = {
-    pedido_criado: "Pedido Criado",
-    aguardando_confirmacao: "Aguardando Confirmação",
-    aguardando_pagamento: "Aguardando Pagamento",
-    pagamento_confirmado: "Pagamento Aprovado",
-    pago: "Pago",
-    preparando_pedido: "Preparando",
-    saiu_para_entrega: "Saiu para Entrega",
-    entregue: "Entregue",
-    cancelado: "Cancelado",
-    devolvido: "Devolvido",
-    pickup: "Pronto para Retirada"
-  };
-  return map[status.toLowerCase()] || status;
-};
-
-const getPaymentMethodName = (paymentObj) => {
-  if (!paymentObj) return "Não informado";
-  if (paymentObj.form) {
-    const raw = String(paymentObj.form).toLowerCase().trim();
-    if (raw.includes('cartao') || raw.includes('credit')) return "Cartão de Crédito";
-    if (raw.includes('pix')) return "PIX";
-    if (raw.includes('boleto')) return "Boleto Bancário";
-  }
-  return "Não informado";
-};
 
 export function OrderDetails() {
   const { id: orderId } = useParams();
@@ -64,23 +34,21 @@ export function OrderDetails() {
   const [loading, setLoading] = useState(true);
   const [storeDisplayAddress, setStoreDisplayAddress] = useState("Carregando endereço da loja...");
   
-  // Estados do Modal de Rota
   const [qrOpen, setQrOpen] = useState(false);
   const [qrSrc, setQrSrc] = useState(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
-  
   const [processingAction, setProcessingAction] = useState(false);
 
-  // --- LÓGICA DE ESTADOS DO BOTÃO ---
   const [nextStep, setNextStep] = useState({ 
     label: "Carregando...", 
     disabled: true, 
     icon: <FiClock />, 
-    color: "#9ca3af" 
+    color: theme.COLORS.GRAY_400 
   }); 
 
   useEffect(() => {
     let mounted = true;
+    
     async function loadData() {
       try {
         setLoading(true);
@@ -91,7 +59,6 @@ export function OrderDetails() {
         
         const deliveryData = orderData.delivery || {};
         
-        // Normalização do Objeto Order
         const fullOrder = {
           ...orderData,
           client: orderData.client || {},
@@ -132,7 +99,6 @@ export function OrderDetails() {
             updateNextStep(fullOrder);
         }
         
-        // Configuração de endereço da loja
         if (storeData) {
             if (mounted) setStore(storeData);
             const addr = storeData.address || {};
@@ -153,7 +119,6 @@ export function OrderDetails() {
         }
 
       } catch (err) {
-        console.error(err);
         toast.error("Erro ao carregar dados.");
       } finally {
         if (mounted) setLoading(false);
@@ -163,18 +128,16 @@ export function OrderDetails() {
     return () => (mounted = false);
   }, [orderId]);
 
-  // --- CALCULA QUAL A PRÓXIMA AÇÃO ---
   const updateNextStep = (currentOrder) => {
     const status = currentOrder.deliveryInfo.status;
     const isPickup = currentOrder.deliveryInfo.isPickup;
 
-    // 1. ESTADOS FINAIS
     if (['entregue'].includes(status)) {
         setNextStep({
             label: "Pedido Finalizado",
             disabled: true,
             icon: <FiCheck />,
-            color: "#10b981" 
+            color: theme.COLORS.SUCCESS 
         });
         return;
     }
@@ -184,7 +147,7 @@ export function OrderDetails() {
             label: "Pedido Cancelado",
             disabled: true,
             icon: <FiX />,
-            color: "#ef4444" 
+            color: theme.COLORS.DANGER 
         });
         return;
     }
@@ -194,31 +157,29 @@ export function OrderDetails() {
             label: "Aguardando Pagamento",
             disabled: true, 
             icon: <FiClock />,
-            color: "#f59e0b" 
+            color: theme.COLORS.WARNING 
         });
         return;
     }
 
-    // 2. FLUXO DE RETIRADA
     if (isPickup) {
         setNextStep({
             label: "Confirmar Retirada",
             newStatus: "entregue",
             disabled: false,
             icon: <FiCheck />,
-            color: "#10b981"
+            color: theme.COLORS.SUCCESS
         });
         return;
     }
 
-    // 3. FLUXO DE ENTREGA (DELIVERY)
     if (['pagamento_confirmado', 'preparando_pedido', 'pedido_criado', 'pago'].includes(status)) {
         setNextStep({
             label: "Despachar (Saiu para Entrega)",
             newStatus: "saiu_para_entrega",
             disabled: false,
             icon: <FiTruck />,
-            color: "#2563eb"
+            color: theme.COLORS.BLUE_700
         });
     } 
     else if (status === 'saiu_para_entrega') {
@@ -227,7 +188,7 @@ export function OrderDetails() {
             newStatus: "entregue",
             disabled: false,
             icon: <FiCheck />,
-            color: "#10b981" 
+            color: theme.COLORS.SUCCESS 
         });
     } 
     else {
@@ -235,12 +196,11 @@ export function OrderDetails() {
             label: "Status Desconhecido",
             disabled: true,
             icon: <FiAlertCircle />,
-            color: "#9ca3af"
+            color: theme.COLORS.GRAY_400
         });
     }
   };
 
-  // --- AÇÕES ---
   async function handleUpdateStatus() {
     if (!order || !nextStep || nextStep.disabled) return;
     
@@ -249,7 +209,7 @@ export function OrderDetails() {
       
       await orderApi.updateDeliveryStatus(order.deliveryInfo.id, order.id, nextStep.newStatus);
       
-      toast.success(`Status atualizado para: ${translateStatus(nextStep.newStatus)}`);
+      toast.success(`Status atualizado para: ${translateOrderStatus(nextStep.newStatus)}`);
       
       const updatedOrder = {
           ...order,
@@ -259,7 +219,6 @@ export function OrderDetails() {
       updateNextStep(updatedOrder); 
 
     } catch (err) { 
-        console.error(err);
         toast.error("Erro ao atualizar status."); 
     } finally { 
         setProcessingAction(false); 
@@ -299,7 +258,6 @@ export function OrderDetails() {
 
     try {
       setLoadingRoute(true);
-      // Simulação
       const mockUrl = `https://m.uber.com/`; 
       await orderApi.saveTrackingUrl(order.deliveryInfo.id, mockUrl);
       
@@ -311,7 +269,6 @@ export function OrderDetails() {
       setQrOpen(true);
 
     } catch (error) {
-      console.error(error);
       toast.error("Erro ao gerar rota.");
     } finally {
       setLoadingRoute(false);
@@ -330,7 +287,9 @@ export function OrderDetails() {
             <FiChevronLeft /> 
             <div>
               Detalhes do Pedido
-              <div style={{ fontSize: '14px', fontWeight: '400', color: '#6b7280', marginTop: '4px' }}>#{orderId.substring(0, 8).toUpperCase()}</div>
+              <div style={{ fontSize: '14px', fontWeight: '400', color: theme.COLORS.GRAY_500, marginTop: '4px' }}>
+                  #{orderId.substring(0, 8).toUpperCase()}
+              </div>
             </div>
           </S.Title>
           <S.DateInfo>
@@ -340,7 +299,6 @@ export function OrderDetails() {
         </S.HeaderBar>
         
         <S.ContentGrid>
-            {/* ... SEÇÕES DE CLIENTE, ITENS E ENTREGA MANTIDAS IGUAIS ... */}
             <S.Section>
                 <S.SectionHeader><div><FiTag /> Dados do Cliente</div></S.SectionHeader>
                 <S.ClientGrid>
@@ -367,8 +325,8 @@ export function OrderDetails() {
                               <strong>{item.name}</strong>
                             </S.ItemDetails>
                             <div className="qty">{item.quantity}</div>
-                            <div className="price">{formatPrice(item.unit_price)}</div>
-                            <div className="total">{formatPrice(item.total)}</div>
+                            <div className="price">{formatCurrency(item.unit_price)}</div>
+                            <div className="total">{formatCurrency(item.total)}</div>
                         </S.ItemRow>
                     ))}
                 </S.ItemsList>
@@ -397,8 +355,8 @@ export function OrderDetails() {
                     </S.DeliveryGrid>
                     <S.Divider />
                     <div>
-                      <small style={{ color: '#6b7280', fontSize: '12px', marginBottom: '4px', display:'block' }}>Endereço da Loja (Origem)</small>
-                      <div style={{ fontWeight: 600, color: '#1f2937' }}>{storeDisplayAddress}</div>
+                      <small style={{ color: theme.COLORS.GRAY_500, fontSize: '12px', marginBottom: '4px', display:'block' }}>Endereço da Loja (Origem)</small>
+                      <div style={{ fontWeight: 600, color: theme.COLORS.GRAY_800 }}>{storeDisplayAddress}</div>
                     </div>
                   </>
                 )}
@@ -411,7 +369,7 @@ export function OrderDetails() {
                         {order.deliveryInfo.status === 'entregue' ? <FiCheck /> : <FiTruck />}
                     </div>
                     <div className="content">
-                      <strong>{translateStatus(order.deliveryInfo.status)}</strong>
+                      <strong>{translateOrderStatus(order.deliveryInfo.status)}</strong>
                     </div>
                 </S.StatusBanner>
             </S.Section>
@@ -421,26 +379,24 @@ export function OrderDetails() {
                 <S.PaymentBanner type={order.paymentInfo?.status}>
                     <div className="icon"><FiCheck /></div>
                     <div className="content">
-                        <strong>{translateStatus(order.paymentInfo?.status)}</strong>
+                        <strong>{translateOrderStatus(order.paymentInfo?.status)}</strong>
                         <div style={{fontSize:'13px', marginTop:'2px', opacity: 0.8}}>{order.paymentInfo?.displayMethod}</div>
                     </div>
                 </S.PaymentBanner>
             </S.Section>
 
-            {/* RESUMO E BOTÕES DE AÇÃO */}
             <S.Section>
                 <S.SectionHeader><div><FiDollarSign /> Resumo Financeiro</div></S.SectionHeader>
                 <S.Summary>
-                    <S.SummaryRow><span>Subtotal</span><strong>{formatPrice(order.financials.subtotal)}</strong></S.SummaryRow>
+                    <S.SummaryRow><span>Subtotal</span><strong>{formatCurrency(order.financials.subtotal)}</strong></S.SummaryRow>
                     <S.SummaryRow>
                         <span>Frete ({order.deliveryInfo.isPickup ? 'Retirada' : 'Entrega'})</span>
-                        <strong>{formatPrice(order.financials.shipping)}</strong>
+                        <strong>{formatCurrency(order.financials.shipping)}</strong>
                     </S.SummaryRow>
-                    <S.TotalRow><span>Total</span><strong>{formatPrice(order.financials.total)}</strong></S.TotalRow>
+                    <S.TotalRow><span>Total</span><strong>{formatCurrency(order.financials.total)}</strong></S.TotalRow>
                 </S.Summary>
 
                 <S.ButtonsRow>
-                  {/* Botão de Rota: SÓ APARECE se NÃO for retirada, E se o status for 'saiu_para_entrega' ou 'entregue' */}
                   {!order.deliveryInfo.isPickup && 
                    ['saiu_para_entrega', 'entregue'].includes(order.deliveryInfo.status) && (
                     <S.RouteButton onClick={handleGenerateUberRoute} disabled={loadingRoute}>
@@ -449,7 +405,6 @@ export function OrderDetails() {
                     </S.RouteButton>
                   )}
                   
-                  {/* Botão Principal - Controlado pelo DISABLED */}
                   <S.PrimaryButton 
                     disabled={processingAction || nextStep.disabled} 
                     onClick={handleUpdateStatus}
@@ -458,7 +413,6 @@ export function OrderDetails() {
                     {nextStep.icon} {nextStep.label}
                   </S.PrimaryButton>
 
-                  {/* Botão Cancelar */}
                   {order.deliveryInfo.status !== 'entregue' && order.deliveryInfo.status !== 'cancelado' && (
                       <S.SecondaryButton disabled={processingAction} onClick={handleCancelOrder}>
                         <FiX /> Cancelar Pedido
