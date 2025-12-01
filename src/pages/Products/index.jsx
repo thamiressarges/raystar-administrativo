@@ -30,13 +30,12 @@ export function Products() {
         hasProducts 
     } = useProducts();
 
-    const productHeaders = ["Produto", "Categoria", "Disponibilidade"];
-    const productDataKeys = ["title", "categoryName", "is_available"];
+    const productHeaders = ["Produto", "Categoria", "Estoque", "Disponibilidade"];
+    const productDataKeys = ["title", "category_name", "quantity", "formatted_availability"];
 
-    // Pequena formatação visual para a tabela
     const formattedProducts = products.map(p => ({
         ...p,
-        is_available: p.is_available ? "Sim" : "Não"
+        formatted_availability: p.is_available ? "Sim" : "Não"
     }));
 
     const handleNewProduct = () => navigate('/products/new');

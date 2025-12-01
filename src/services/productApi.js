@@ -2,7 +2,6 @@ import { supabase } from './supabase';
 
 export const ProductApi = {
 
-    // LISTAR PRODUTOS (Mantive igual, pois lê da tabela products que está ok)
     async list({ limit = 200, searchTerm = "" }) {
         let query = supabase
             .from('products')
@@ -11,7 +10,8 @@ export const ProductApi = {
                 title,
                 is_available,
                 quantity,
-                categories(name)
+                categories(name),
+                photos
             `)
             .order('title', { ascending: true });
 
@@ -24,16 +24,15 @@ export const ProductApi = {
 
         return data.map(product => ({
             id: product.id,
-            product: product.title,
-            category: product.categories?.name || 'Sem Categoria',
-            availability: product.is_available ? 'Sim' : 'Não',
+            title: product.title,
+            category_name: product.categories?.name || 'Sem Categoria',
+            is_available: product.is_available, 
             quantity: product.quantity ?? 0,
+            photo: product.photos?.[0] || null
         }));
     },
 
-    // CRIAR PRODUTO
     async create(productData) {
-        // 1. Cria o Produto
         const { data: prod, error: prodError } = await supabase
             .from('products')
             .insert({
@@ -50,13 +49,12 @@ export const ProductApi = {
 
         if (prodError) throw prodError;
 
-        // 2. Se tiver variações, insere na tabela NOVA
         if (productData.variations && productData.variations.length > 0) {
             const varsToInsert = productData.variations.map(v => ({
                 product_id: prod.id,
                 tamanho: v.tamanho,
                 cor: v.cor,
-                stock: Number(v.quantity), // Mapeia quantity -> stock
+                stock: Number(v.quantity),
                 price: Number(v.price)
             }));
 
@@ -70,9 +68,8 @@ export const ProductApi = {
         return prod;
     },
 
-    // DETALHES DO PRODUTO (CORRIGIDO: Lê direto das tabelas novas)
+
     async getDetails({ productId }) {
-        // 1. Busca o Produto
         const { data: product, error: prodError } = await supabase
             .from('products')
             .select('*')
@@ -81,7 +78,6 @@ export const ProductApi = {
 
         if (prodError) throw new Error(prodError.message);
 
-        // 2. Busca as Variações na tabela CERTA (variations)
         const { data: variations, error: varError } = await supabase
             .from('variations')
             .select('*')
@@ -89,25 +85,21 @@ export const ProductApi = {
 
         if (varError) throw new Error(varError.message);
 
-        // 3. Busca Reviews
         const { data: reviews, error: revError } = await supabase
             .from('reviews')
             .select('*')
             .eq('product_id', productId);
 
-        // 4. Retorna tudo formatado para o Front
         return {
             product,
-            // Mapeia 'stock' do banco para 'quantity' pro seu Front antigo entender
             variations: variations.map(v => ({
                 ...v,
-                quantity: v.stock // O segredo: traduz stock -> quantity
+                quantity: v.stock
             })),
             reviews: reviews || []
         };
     },
 
-    // UPDATE (Simples update na tabela products)
     async update({ productId, updates }) {
         const { error } = await supabase
             .from('products')
@@ -121,7 +113,6 @@ export const ProductApi = {
         return true;
     },
 
-    // DELETE
     async delete({ productId }) {
         const { error } = await supabase
             .from('products')
@@ -132,9 +123,7 @@ export const ProductApi = {
         return true;
     },
 
-    // SYNC VARIAÇÕES (CORRIGIDO: Apaga e recria na tabela 'variations')
     async syncVariations({ productId, variations }) {
-        // 1. Apaga as variações antigas desse produto
         const { error: delError } = await supabase
             .from('variations')
             .delete()
@@ -142,13 +131,12 @@ export const ProductApi = {
         
         if (delError) throw delError;
 
-        // 2. Se tiver novas, insere
         if (variations && variations.length > 0) {
             const varsToInsert = variations.map(v => ({
                 product_id: productId,
                 tamanho: v.tamanho,
                 cor: v.cor,
-                stock: Number(v.quantity), // Traduz quantity -> stock
+                stock: Number(v.quantity),
                 price: Number(v.price)
             }));
 
