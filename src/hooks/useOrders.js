@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { orderApi } from '../services/orderApi';
-import { translateOrderStatus } from '../utils/format';
 
 export function useOrders() {
     const [orders, setOrders] = useState([]);
@@ -14,15 +13,7 @@ export function useOrders() {
         try {
             setLoading(true);
             const { data, count } = await orderApi.getOrders(currentPage, itemsPerPage);
-
-            const formattedOrders = data.map(order => ({
-                id: order.id, 
-                displayId: `PED-${order.id.substring(0, 8).toUpperCase()}`, 
-                status: translateOrderStatus(order.status),
-                formattedDate: new Date(order.created_at).toLocaleDateString('pt-BR')
-            }));
-
-            setOrders(formattedOrders);
+            setOrders(data);
             setTotalCount(count);
         } catch (error) {
             console.error("Erro ao buscar pedidos:", error);

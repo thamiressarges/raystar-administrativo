@@ -6,6 +6,7 @@ import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
+import { translateOrderStatus, formatDate } from '../../utils/format'; // Importando formatadores
 import { PageContainer } from '../../styles/commonStyles';
 import { Container, SearchArea, FilterButton, EmptyState, PaginationWrapper } from './styles';
 
@@ -14,7 +15,14 @@ export function Order() {
     const { orders, loading, totalPages, currentPage, setCurrentPage } = useOrders();
 
     const orderHeader = ["Id", "Status", "Data"];
-    const orderDataKeys = ["displayId", "status", "formattedDate"];
+    const orderDataKeys = ["displayId", "formattedStatus", "formattedDate"];
+
+    const formattedOrders = orders.map(order => ({
+        ...order,
+        displayId: `PED-${order.id.substring(0, 8).toUpperCase()}`,
+        formattedStatus: translateOrderStatus(order.status),
+        formattedDate: formatDate(order.created_at)
+    }));
 
     return (
         <Container>
@@ -39,7 +47,7 @@ export function Order() {
                 {!loading && orders.length > 0 && (
                     <>
                         <Table 
-                            data={orders}
+                            data={formattedOrders}
                             headers={orderHeader}
                             dataKeys={orderDataKeys}
                             onDetailsClick={(item) => navigate(`/orderDetails/${item.id}`)}
