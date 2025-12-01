@@ -30,6 +30,24 @@ export const PaginationWrapper = styled.div`
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-top: 20px; /* Ajuste conforme necessário */
-    padding-bottom: 20px; /* Para garantir que não fique colado na parte inferior */
+    margin-top: 20px;
+    padding-bottom: 20px;
+`;
+
+export const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 60px;
+  padding-bottom: 60px;
+  text-align: center;
+
+  color: '#9CA3AF'; 
+
+  p {
+      font-size: 18px;
+      font-weight: 500;
+      color: #6B7280;
+    }
 `;

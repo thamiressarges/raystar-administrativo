@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
-    Container,
-    Search as SearchArea,
-    Content,
-    PaginationWrapper
+  Container,
+  Search as SearchArea,
+  Content,
+  PaginationWrapper,
+  EmptyState
 } from './styles';
+
+import { supabase } from '../../services/supabase'; 
+import { useDebounce } from '../../hooks/useDebounce';
+import { formatPhone } from '../../utils/format';
 
 import { Header } from '../../components/Header';
 import { SearchInput } from '../../components/SearchInput';
@@ -13,74 +19,153 @@ import { Table } from '../../components/Table';
 import { Brand } from '../../components/Brand';
 import { Menu } from '../../components/Menu';
 import { Pagination } from '../../components/Pagination';
+import { Loading } from '../../components/Loading'; 
 
 import { useMenu } from '../../contexts/MenuContext';
 
+const ITEMS_PER_PAGE = 10;
+
 export function Clients() {
+  const { isMenuOpen } = useMenu();
+  const navigate = useNavigate();
 
-    const { isMenuOpen } = useMenu();
+  const [clients, setClients] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const debouncedSearchTerm = useDebounce(searchTerm, 500); 
 
-    const clientsHeaders = ["Nome", "Email", "Telefone", "CPF"];
-    const clientsDataKeys = ["name", "email", "phone", "cpf"];
+  const clientsHeaders = ["Nome", "Email", "Telefone"];
+  const clientsDataKeys = ["name", "email", "phone"];
 
-    const data = [
-        { 
-            name: "Cliente 1", 
-            email: "cliente1@gmail.com", 
-            phone: "(99) 99999-9999", 
-            cpf: "111.111.111-11" 
-        },
-        { 
-            name: "Cliente 2", 
-            email: "cliente2@gmail.com", 
-            phone: "(99) 99999-9999", 
-            cpf: "222.222.222-22" 
-        },
-        { 
-            name: "Cliente 3", 
-            email: "cliente3@gmail.com", 
-            phone: "(99) 99999-9999", 
-            cpf: "333.333.333-33" 
-        },
-    ];
+  const fetchClients = async (page, search = "") => {
+    setIsLoading(true);
+    setError(null);
 
-    const [currentPage, setCurrentPage] = useState(1);
-            const itemsPerPage = 3; // Por exemplo, 3 itens por página
-            const totalPages = 8;
-        
-            const indexOfLastItem = currentPage * itemsPerPage;
-            const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-            const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
-        
-            const handlePageChange = (pageNumber) => {
-                setCurrentPage(pageNumber);
-            };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado.");
+
+      const { data: adminData, error: adminError } = await supabase
+        .from('users')
+        .select('permissions')
+        .eq('uid', user.id)
+        .single();
+
+      if (adminError) throw new Error("Falha ao buscar dados do administrador.");
+
+      const userPermissions = adminData.permissions || [];
+      const isAdmin = userPermissions.includes('admin') || userPermissions.includes('super_admin');
+
+      if (!isAdmin) {
+        throw new Error("Você não tem permissão para ver esta página.");
+      }
+
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+
+      let query = supabase
+        .from('users')
+        .select('uid, name, email, phones, cpf', { count: 'exact' })
+        .eq('is_deleted', false)
+        .contains('permissions', '{client}');
+
+      if (search) {
+        query = query.ilike('name', `%${search}%`);
+      }
+
+      const { data, error, count } = await query.range(from, to);
+
+      if (error) {
+        throw new Error(`Falha ao buscar clientes: ${error.message}`);
+      }
+
+      const processedClients = data.map(client => ({
+        ...client,
+        phone: formatPhone(client.phones?.main || client.phones?.[0])
+      }));
+
+      setClients(processedClients);
+      setTotalPages(Math.ceil(count / ITEMS_PER_PAGE));
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients(1, debouncedSearchTerm);
+    setCurrentPage(1);
+  }, [debouncedSearchTerm]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    fetchClients(pageNumber, debouncedSearchTerm);
+  };
+
+  const handleDetailsClick = (client) => {
+    navigate(`/clientsDetails/${client.uid}`);
+  };
+
+  const renderContent = () => {
+    if (isLoading) return <Loading />;
+
+    if (error) return <p style={{padding: '40px', textAlign: 'center', color: '#EF4444'}}>{error}</p>;
+
+    if (clients.length === 0) {
+      return searchTerm ? (
+        <EmptyState>
+          <p>Nenhum cliente encontrado com o nome "{searchTerm}"</p>
+        </EmptyState>
+      ) : (
+        <EmptyState>
+          <p>Nenhum cliente cadastrado</p>
+        </EmptyState>
+      );
+    }
 
     return (
-        <Container $isopen={isMenuOpen}>
-            <Brand />
-            <Header />
-            <Menu />
+      <>
+        <Table
+          data={clients}
+          headers={clientsHeaders}
+          dataKeys={clientsDataKeys}
+          onDetailsClick={handleDetailsClick}
+        />
 
-            <SearchArea>
-                <SearchInput placeholder="Pesquise por nome" />
-            </SearchArea>
-
-            <Content>
-                <Table 
-                    data={data}
-                    headers={clientsHeaders}
-                    dataKeys={clientsDataKeys}
-                />
-
-                <PaginationWrapper>
-                    <Pagination
-                        totalPages={totalPages}
-                        currentPage={currentPage}
-                        onPageChange={handlePageChange}
-                    />
-                </PaginationWrapper>
-            </Content>
-        </Container>
+        <PaginationWrapper>
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
+        </PaginationWrapper>
+      </>
     );
+  };
+
+  return (
+    <Container $isopen={isMenuOpen}>
+      <Brand />
+      <Header />
+      <Menu />
+
+      <SearchArea>
+        <SearchInput
+          placeholder="Pesquise por nome"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </SearchArea>
+
+      <Content>
+        {renderContent()}
+      </Content>
+    </Container>
+  );
 }
