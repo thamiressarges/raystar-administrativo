@@ -12,14 +12,13 @@ export function useImageUpload(initialUrls = []) {
         
         setUploading(true);
         try {
-            const uploadedUrls = [];
-            for (const file of files) {
+            const uploadPromises = files.map(file => {
                 const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
                 const path = `products/${Date.now()}-${cleanName}`;
-                
-                const url = await StorageApi.uploadImage(file, path);
-                uploadedUrls.push(url);
-            }
+                return StorageApi.uploadImage(file, path);
+            });
+
+            const uploadedUrls = await Promise.all(uploadPromises);
             
             setPreviews(prev => [...prev, ...uploadedUrls]);
             toast.success(`${files.length} imagem(ns) enviada(s)!`);

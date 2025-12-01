@@ -3,11 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { 
   FiChevronLeft, FiTag, FiMapPin, FiTruck, FiBox, 
-  FiDollarSign, FiCreditCard, FiShoppingBag, FiCheck, FiMap, FiX 
+  FiDollarSign, FiCreditCard, FiShoppingBag, FiCheck, FiMap, FiX, FiClock, FiAlertCircle
 } from "react-icons/fi";
 
 import { useOrderDetails } from "../../hooks/useOrderDetails";
-import { orderApi } from "../../services/orderApi"; // Usado pontualmente para rota
+import { orderApi } from "../../services/orderApi";
 import { Loading } from "../../components/Loading";
 import { formatCurrency, formatDate, formatBirthDate, translateOrderStatus } from "../../utils/format";
 import { theme } from "../../styles/theme";
@@ -19,7 +19,6 @@ export function OrderDetails() {
   const { id: orderId } = useParams();
   const navigate = useNavigate();
   
-  // Toda a lógica movida para o Hook
   const { 
     order, store, loading, processingAction, nextStep, updateStatus, cancelOrder 
   } = useOrderDetails(orderId);
@@ -27,6 +26,27 @@ export function OrderDetails() {
   const [qrOpen, setQrOpen] = useState(false);
   const [qrSrc, setQrSrc] = useState(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
+
+  const getButtonConfig = (type) => {
+    switch(type) {
+        case 'finished': 
+            return { icon: <FiCheck />, color: theme.COLORS.SUCCESS };
+        case 'canceled': 
+            return { icon: <FiX />, color: theme.COLORS.DANGER };
+        case 'waiting': 
+            return { icon: <FiClock />, color: theme.COLORS.WARNING };
+        case 'confirm_pickup': 
+            return { icon: <FiCheck />, color: theme.COLORS.SUCCESS };
+        case 'dispatch': 
+            return { icon: <FiTruck />, color: theme.COLORS.BLUE_700 };
+        case 'confirm_delivery': 
+            return { icon: <FiCheck />, color: theme.COLORS.SUCCESS };
+        default: 
+            return { icon: <FiAlertCircle />, color: theme.COLORS.GRAY_400 };
+    }
+  };
+
+  const buttonStyle = getButtonConfig(nextStep.actionType);
 
   async function handleGenerateUberRoute() {
     if (!order) return;
@@ -185,9 +205,9 @@ export function OrderDetails() {
                   <S.PrimaryButton 
                     disabled={processingAction || nextStep.disabled} 
                     onClick={updateStatus}
-                    style={nextStep.color ? { background: nextStep.color, opacity: nextStep.disabled ? 0.6 : 1 } : {}}
+                    style={{ background: buttonStyle.color, opacity: nextStep.disabled ? 0.6 : 1 }}
                   >
-                    {nextStep.icon} {nextStep.label}
+                    {buttonStyle.icon} {nextStep.label}
                   </S.PrimaryButton>
 
                   {order.deliveryInfo.status !== 'entregue' && order.deliveryInfo.status !== 'cancelado' && (

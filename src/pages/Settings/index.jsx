@@ -1,5 +1,4 @@
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
-
 import { useSettings } from '../../hooks/useSettings';
 import { Input } from '../../components/Input';
 import { Loading } from '../../components/Loading';
@@ -20,6 +19,19 @@ import {
     CancelButton,
     SaveButton,
 } from './styles';
+
+// Componente auxiliar para evitar repetição de código
+const SettingsField = ({ label, isEditing, register, name, value, error, ...props }) => (
+    <InputWrapper>
+        <label>{label}</label>
+        {isEditing ? (
+            <Input {...register(name)} {...props} />
+        ) : (
+            <InfoDisplay>{value}</InfoDisplay>
+        )}
+        {error && <span style={{color:'red', fontSize: 12}}>{error.message}</span>}
+    </InputWrapper>
+);
 
 export function Settings() {
     const {
@@ -62,36 +74,32 @@ export function Settings() {
                     </HeaderContainer>
 
                     {/* --- DADOS GERAIS --- */}
-                    <InputWrapper>
-                        <label>Nome da Loja</label>
-                        {isEditing ? (
-                            <Input {...register("name")} />
-                        ) : (
-                            // CORREÇÃO AQUI: Usando getValues direto, sem chamar o hook de novo
-                            <InfoDisplay>{getValues("name")}</InfoDisplay>
-                        )}
-                        {errors.name && <span style={{color:'red', fontSize: 12}}>{errors.name.message}</span>}
-                    </InputWrapper>
+                    <SettingsField 
+                        label="Nome da Loja" 
+                        isEditing={isEditing} 
+                        register={register} 
+                        name="name" 
+                        value={getValues("name")} 
+                        error={errors.name} 
+                    />
 
                     <InfoGroup>
-                        <InputWrapper>
-                            <label>Email</label>
-                            {isEditing ? (
-                                <Input {...register("email")} />
-                            ) : (
-                                <InfoDisplay>{getValues("email")}</InfoDisplay>
-                            )}
-                             {errors.email && <span style={{color:'red', fontSize: 12}}>{errors.email.message}</span>}
-                        </InputWrapper>
-
-                        <InputWrapper>
-                            <label>CNPJ</label>
-                            {isEditing ? (
-                                <Input {...register("cnpj")} />
-                            ) : (
-                                <InfoDisplay>{getValues("cnpj")}</InfoDisplay>
-                            )}
-                        </InputWrapper>
+                        <SettingsField 
+                            label="Email" 
+                            isEditing={isEditing} 
+                            register={register} 
+                            name="email" 
+                            value={getValues("email")} 
+                            error={errors.email} 
+                        />
+                        <SettingsField 
+                            label="CNPJ" 
+                            isEditing={isEditing} 
+                            register={register} 
+                            name="cnpj" 
+                            value={getValues("cnpj")} 
+                            error={errors.cnpj} 
+                        />
                     </InfoGroup>
 
                     {/* --- ENDEREÇO --- */}
@@ -100,60 +108,54 @@ export function Settings() {
                     </SectionHeader>
 
                     <InfoGroup>
-                        <InputWrapper>
-                            <label>CEP</label>
-                            {isEditing ? (
-                                <Input 
-                                    {...register("address.cep")} 
-                                    onBlur={(e) => fetchCep(e.target.value)} 
-                                    maxLength={9}
-                                />
-                            ) : (
-                                <InfoDisplay>{getValues("address.cep")}</InfoDisplay>
-                            )}
-                             {errors.address?.cep && <span style={{color:'red', fontSize: 12}}>{errors.address.cep.message}</span>}
-                        </InputWrapper>
-
-                        <InputWrapper>
-                            <label>Número</label>
-                            {isEditing ? (
-                                <Input {...register("address.numero")} />
-                            ) : (
-                                <InfoDisplay>{getValues("address.numero")}</InfoDisplay>
-                            )}
-                        </InputWrapper>
+                        <SettingsField 
+                            label="CEP" 
+                            isEditing={isEditing} 
+                            register={register} 
+                            name="address.cep" 
+                            value={getValues("address.cep")} 
+                            error={errors.address?.cep}
+                            onBlur={(e) => fetchCep(e.target.value)}
+                            maxLength={9}
+                        />
+                        <SettingsField 
+                            label="Número" 
+                            isEditing={isEditing} 
+                            register={register} 
+                            name="address.numero" 
+                            value={getValues("address.numero")} 
+                            error={errors.address?.numero} 
+                        />
                     </InfoGroup>
 
                     <InfoGroup>
-                        <InputWrapper>
-                            <label>Complemento</label>
-                            {isEditing ? (
-                                <Input {...register("address.complemento")} />
-                            ) : (
-                                <InfoDisplay>{getValues("address.complemento")}</InfoDisplay>
-                            )}
-                        </InputWrapper>
-
-                        <InputWrapper>
-                            <label>Bairro</label>
-                            {isEditing ? (
-                                <Input {...register("address.bairro")} />
-                            ) : (
-                                <InfoDisplay>{getValues("address.bairro")}</InfoDisplay>
-                            )}
-                        </InputWrapper>
+                        <SettingsField 
+                            label="Complemento" 
+                            isEditing={isEditing} 
+                            register={register} 
+                            name="address.complemento" 
+                            value={getValues("address.complemento")} 
+                        />
+                        <SettingsField 
+                            label="Bairro" 
+                            isEditing={isEditing} 
+                            register={register} 
+                            name="address.bairro" 
+                            value={getValues("address.bairro")} 
+                            error={errors.address?.bairro} 
+                        />
                     </InfoGroup>
 
-                    <InputWrapper>
-                        <label>Cidade</label>
-                        {isEditing ? (
-                            <Input {...register("address.cidade")} />
-                        ) : (
-                            <InfoDisplay>{getValues("address.cidade")}</InfoDisplay>
-                        )}
-                    </InputWrapper>
+                    <SettingsField 
+                        label="Cidade" 
+                        isEditing={isEditing} 
+                        register={register} 
+                        name="address.cidade" 
+                        value={getValues("address.cidade")} 
+                        error={errors.address?.cidade} 
+                    />
 
-                    {/* --- TELEFONES (Dinâmico) --- */}
+                    {/* --- TELEFONES --- */}
                     <SectionHeader>
                         <h4>Telefones</h4>
                         {isEditing && (
@@ -187,23 +189,22 @@ export function Settings() {
                     </SectionHeader>
 
                     <InfoGroup>
-                        <InputWrapper>
-                            <label>Instagram</label>
-                            {isEditing ? (
-                                <Input {...register("social_media.instagram")} placeholder="@sua_loja" />
-                            ) : (
-                                <InfoDisplay>{getValues("social_media.instagram")}</InfoDisplay>
-                            )}
-                        </InputWrapper>
-
-                        <InputWrapper>
-                            <label>Facebook</label>
-                            {isEditing ? (
-                                <Input {...register("social_media.facebook")} placeholder="facebook.com/page" />
-                            ) : (
-                                <InfoDisplay>{getValues("social_media.facebook")}</InfoDisplay>
-                            )}
-                        </InputWrapper>
+                        <SettingsField 
+                            label="Instagram" 
+                            isEditing={isEditing} 
+                            register={register} 
+                            name="social_media.instagram" 
+                            value={getValues("social_media.instagram")} 
+                            placeholder="@sua_loja"
+                        />
+                        <SettingsField 
+                            label="Facebook" 
+                            isEditing={isEditing} 
+                            register={register} 
+                            name="social_media.facebook" 
+                            value={getValues("social_media.facebook")} 
+                            placeholder="facebook.com/page"
+                        />
                     </InfoGroup>
                 </Form>
             </Content>

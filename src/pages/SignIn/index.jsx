@@ -59,8 +59,7 @@ export function SignIn() {
         </Toggle>
 
         {isLoginView ? (
-          // --- FORMULÁRIO DE LOGIN ---
-          <div style={{ width: '100%' }} onKeyDown={(e) => e.key === 'Enter' && submitLogin()}>
+          <form style={{ width: '100%' }} onSubmit={submitLogin}>
             <h2>Entrar</h2>
             
             <div style={{ marginBottom: 12 }}>
@@ -94,13 +93,12 @@ export function SignIn() {
             
             <Button 
                 title={loading ? "Entrando..." : "Entrar"} 
-                onClick={submitLogin}
+                type="submit"
                 disabled={loading} 
             />
-          </div>
+          </form>
         ) : (
-          // --- FORMULÁRIO DE CADASTRO ---
-          <div style={{ width: '100%' }} onKeyDown={(e) => e.key === 'Enter' && submitSignUp()}>
+          <form style={{ width: '100%' }} onSubmit={submitSignUp}>
             <h2>Solicitar Acesso</h2>
             
             <div style={{ marginBottom: 12 }}>
@@ -135,10 +133,10 @@ export function SignIn() {
 
             <Button 
                 title={loading ? "Enviando..." : "Solicitar"} 
-                onClick={submitSignUp}
+                type="submit"
                 disabled={loading}
             />
-          </div>
+          </form>
         )}
       </Form>
       <Background />

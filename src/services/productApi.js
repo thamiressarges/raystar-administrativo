@@ -2,7 +2,10 @@ import { supabase } from './supabase';
 
 export const ProductApi = {
 
-    async list({ limit = 200, searchTerm = "" }) {
+    async list({ page = 1, limit = 10, searchTerm = "" }) {
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
         let query = supabase
             .from('products')
             .select(`
@@ -12,17 +15,19 @@ export const ProductApi = {
                 quantity,
                 categories(name),
                 photos
-            `)
-            .order('title', { ascending: true });
+            `, { count: 'exact' }); 
 
         if (searchTerm) {
             query = query.ilike('title', `%${searchTerm}%`);
         }
 
-        const { data, error } = await query;
+        const { data, error, count } = await query
+            .order('title', { ascending: true })
+            .range(from, to);
+
         if (error) throw new Error(error.message);
 
-        return data.map(product => ({
+        const formattedData = data.map(product => ({
             id: product.id,
             title: product.title,
             category_name: product.categories?.name || 'Sem Categoria',
@@ -30,6 +35,8 @@ export const ProductApi = {
             quantity: product.quantity ?? 0,
             photo: product.photos?.[0] || null
         }));
+
+        return { data: formattedData, count };
     },
 
     async create(productData) {
@@ -67,7 +74,6 @@ export const ProductApi = {
 
         return prod;
     },
-
 
     async getDetails({ productId }) {
         const { data: product, error: prodError } = await supabase
@@ -124,27 +130,69 @@ export const ProductApi = {
     },
 
     async syncVariations({ productId, variations }) {
-        const { error: delError } = await supabase
+        const { data: existingVars, error: fetchError } = await supabase
             .from('variations')
-            .delete()
+            .select('id')
             .eq('product_id', productId);
-        
-        if (delError) throw delError;
+
+        if (fetchError) throw fetchError;
+
+        const existingIds = existingVars.map(v => v.id);
+
+        const toInsert = [];
+        const toUpdate = [];
+        const incomingIds = [];
 
         if (variations && variations.length > 0) {
-            const varsToInsert = variations.map(v => ({
-                product_id: productId,
-                tamanho: v.tamanho,
-                cor: v.cor,
-                stock: Number(v.quantity),
-                price: Number(v.price)
-            }));
+            variations.forEach(v => {
+                if (v.id && !String(v.id).startsWith('temp-')) {
+                    incomingIds.push(v.id);
+                    toUpdate.push({
+                        id: v.id,
+                        product_id: productId,
+                        tamanho: v.tamanho,
+                        cor: v.cor,
+                        stock: Number(v.quantity),
+                        price: Number(v.price)
+                    });
+                } else {
+                    toInsert.push({
+                        product_id: productId,
+                        tamanho: v.tamanho,
+                        cor: v.cor,
+                        stock: Number(v.quantity),
+                        price: Number(v.price)
+                    });
+                }
+            });
+        }
 
+        const toDeleteIds = existingIds.filter(id => !incomingIds.includes(id));
+
+        if (toDeleteIds.length > 0) {
+            const { error: delError } = await supabase
+                .from('variations')
+                .delete()
+                .in('id', toDeleteIds);
+            
+            if (delError) {
+                console.error("Erro ao deletar variações antigas:", delError);
+                throw new Error("Não é possível excluir variações que já possuem pedidos vinculados.");
+            }
+        }
+
+        if (toInsert.length > 0) {
             const { error: insError } = await supabase
                 .from('variations')
-                .insert(varsToInsert);
-            
+                .insert(toInsert);
             if (insError) throw insError;
+        }
+
+        if (toUpdate.length > 0) {
+            const { error: upError } = await supabase
+                .from('variations')
+                .upsert(toUpdate);
+            if (upError) throw upError;
         }
 
         return true;

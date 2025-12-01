@@ -13,7 +13,7 @@ export function Toast() {
       pauseOnFocusLoss
       draggable
       pauseOnHover
-      theme="colored"
+      
     />
   );
 }
