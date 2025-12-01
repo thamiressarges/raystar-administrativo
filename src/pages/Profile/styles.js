@@ -1,25 +1,20 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  display: grid;
-  grid-template-columns: ${({ $isopen }) => ($isopen ? '210px' : '80px')};
-  grid-template-rows: 105px auto;
-  grid-template-areas:
-    "brand header"
-    "menu content";
   width: 100%;
-  height: 100vh;
-  background-color: ${({ theme }) => theme.COLORS.GRAY_100};
-  transition: grid-template-columns 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
 `;
 
 export const Content = styled.div`
-  grid-area: content;
-  padding: 24px 64px 48px;
-  overflow-y: auto;
+  padding: 40px 64px 48px;
   max-width: 1120px;
   margin: 0 auto;
   width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 20px 20px;
+  }
 `;
 
 export const BackLink = styled.button`
@@ -48,6 +43,11 @@ export const ProfileCard = styled.div`
   align-items: center;
   gap: 24px;
   margin-bottom: 32px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+  }
 `;
 
 export const Avatar = styled.div`
@@ -82,6 +82,10 @@ export const ProfileInfo = styled.div`
     font-size: 16px;
     color: ${({ theme }) => theme.COLORS.GRAY_700};
     
+    @media (max-width: 768px) {
+        justify-content: center;
+    }
+    
     svg {
       color: ${({ theme }) => theme.COLORS.GRAY_500};
     }
@@ -94,6 +98,10 @@ export const Section = styled.section`
   padding: 32px;
   margin-top: 18px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
 
   > h3 {
     font-size: 22px;
@@ -137,6 +145,13 @@ export const AdminTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   margin-top: 24px;
+  display: table;
+
+  @media (max-width: 768px) {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
 
   th, td {
     text-align: left;

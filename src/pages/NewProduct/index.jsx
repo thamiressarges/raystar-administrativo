@@ -5,11 +5,7 @@ import {
     FiSave, FiChevronLeft, FiPlus, FiImage, FiTrash2, FiX 
 } from "react-icons/fi";
 
-import { Header } from "../../components/Header";
-import { Brand } from "../../components/Brand";
-import { Menu } from "../../components/Menu";
 import { Loading } from '../../components/Loading'; 
-import { useMenu } from "../../contexts/MenuContext";
 import { AddVariationModal } from '../../components/AddVariationModal';
 import { Switch } from '../../components/Switch'; 
 
@@ -22,8 +18,6 @@ import * as S from "./styles";
 
 export function NewProduct() {
     const navigate = useNavigate();
-    const { isMenuOpen } = useMenu();
-    
     const fileInputRef = useRef(null);
 
     const [name, setName] = useState("");
@@ -52,7 +46,7 @@ export function NewProduct() {
                 const list = await CategoryApi.list({ limit: 200 }); 
                 setCategories(list);
             } catch (err) {
-                toast.error("Erro ao carregar as categorias." + err);
+                toast.error("Erro ao carregar as categorias: " + err);
             }
         }
         loadCategories();
@@ -163,7 +157,7 @@ export function NewProduct() {
     };
 
     return (
-        <S.Container $isopen={isMenuOpen}>
+        <S.Container>
             {(loading) && <Loading />}
 
             <S.HiddenFileInput 
@@ -174,195 +168,188 @@ export function NewProduct() {
                 onChange={handleImageSelect}
             />
 
-            <Brand />
-            <Header />
-            <Menu />
+            <S.HeaderBar>
+                <S.Title>
+                    <S.BackLink onClick={() => navigate("/products")}>
+                        <FiChevronLeft />
+                    </S.BackLink>
+                    Novo Produto
+                </S.Title>
+                <S.SaveButton onClick={handleSave} disabled={loading}>
+                    <FiSave /> Salvar
+                </S.SaveButton>
+            </S.HeaderBar>
 
-            <S.PageContainer>
-                <S.HeaderBar>
-                    <S.Title>
-                        <S.BackLink onClick={() => navigate("/products")}>
-                            <FiChevronLeft />
-                        </S.BackLink>
-                        Novo Produto
-                    </S.Title>
-                    <S.SaveButton onClick={handleSave} disabled={loading}>
-                        <FiSave /> Salvar
-                    </S.SaveButton>
-                </S.HeaderBar>
+            <S.MainContentGrid>
+                <S.LeftColumn>
+                    <S.Section>
+                        <h2>Imagens do Produto</h2>
+                        <S.ImageUploadArea>
+                            <S.ImagePlaceholder onClick={triggerFileInput}>
+                                <FiImage />
+                                <span>Nenhuma imagem adicionada</span>
+                            </S.ImagePlaceholder>
 
-                <S.MainContentGrid>
-                    <S.LeftColumn>
-                        <S.Section>
-                            <h2>Imagens do Produto</h2>
-                            <S.ImageUploadArea>
-                                <S.ImagePlaceholder onClick={triggerFileInput}>
-                                    <FiImage />
-                                    <span>Nenhuma imagem adicionada</span>
-                                </S.ImagePlaceholder>
+                            <S.ThumbnailList>
+                                {images.map(image => (
+                                    <S.ThumbnailPreview key={image.id}>
+                                        <img src={image.previewUrl} alt="Preview" />
+                                        <S.DeleteImageButton onClick={() => handleDeleteImage(image.id)}>
+                                            <FiX size={14} />
+                                        </S.DeleteImageButton>
+                                    </S.ThumbnailPreview>
+                                ))}
 
-                                <S.ThumbnailList>
-                                    {images.map(image => (
-                                        <S.ThumbnailPreview key={image.id}>
-                                            <img src={image.previewUrl} alt="Preview" />
-                                            <S.DeleteImageButton onClick={() => handleDeleteImage(image.id)}>
-                                                <FiX size={14} />
-                                            </S.DeleteImageButton>
-                                        </S.ThumbnailPreview>
-                                    ))}
+                                <S.AddThumbnailButton onClick={triggerFileInput}>
+                                    <FiPlus size={24} />
+                                </S.AddThumbnailButton>
+                            </S.ThumbnailList>
 
-                                    <S.AddThumbnailButton onClick={triggerFileInput}>
-                                        <FiPlus size={24} />
-                                    </S.AddThumbnailButton>
-                                </S.ThumbnailList>
+                            <S.UploadHint>
+                                Clique no + para adicionar imagens do produto
+                            </S.UploadHint>
+                        </S.ImageUploadArea>
+                    </S.Section>
+                </S.LeftColumn>
 
-                                <S.UploadHint>
-                                    Clique no + para adicionar imagens do produto
-                                </S.UploadHint>
-                            </S.ImageUploadArea>
-                        </S.Section>
-                    </S.LeftColumn>
+                <S.RightColumn>
+                    <S.Section>
+                        <S.FormGroup>
+                            <label>Nome *</label>
+                            <S.Input 
+                                type="text"
+                                placeholder="Ex: Camiseta Premium Oversized"
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                            />
+                        </S.FormGroup>
 
-                    <S.RightColumn>
-                        <S.Section>
+                        <S.FormGroup>
+                            <label>Categoria *</label>
+                            <S.Select 
+                                value={selectedCategory}
+                                onChange={e => setSelectedCategory(e.target.value)}
+                            >
+                                <option value="">Selecione uma categoria</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </S.Select>
+                        </S.FormGroup>
+                        
+                        <S.FormGroup>
+                            <label>Preço Base * (Preço de Referência)</label>
+                            <S.Input
+                                type="number"
+                                step="0.01"
+                                placeholder="Ex: 199.90"
+                                value={price}
+                                onChange={e => setPrice(parseFloat(e.target.value) || 0)}
+                            />
+                        </S.FormGroup>
+                        
+                        {!hasVariations && (
                             <S.FormGroup>
-                                <label>Nome *</label>
-                                <S.Input 
-                                    type="text"
-                                    placeholder="Ex: Camiseta Premium Oversized"
-                                    value={name}
-                                    onChange={e => setName(e.target.value)}
-                                />
-                            </S.FormGroup>
-
-                            <S.FormGroup>
-                                <label>Categoria *</label>
-                                <S.Select 
-                                    value={selectedCategory}
-                                    onChange={e => setSelectedCategory(e.target.value)}
-                                >
-                                    <option value="">Selecione uma categoria</option>
-                                    {categories.map(cat => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </option>
-                                    ))}
-                                </S.Select>
-                            </S.FormGroup>
-                            
-                            <S.FormGroup>
-                                <label>Preço Base * (Preço de Referência)</label>
+                                <label>Estoque Disponível *</label>
                                 <S.Input
                                     type="number"
-                                    step="0.01"
-                                    placeholder="Ex: 199.90"
-                                    value={price}
-                                    onChange={e => setPrice(parseFloat(e.target.value) || 0)}
+                                    placeholder="Quantidade em estoque"
+                                    value={simpleProductStock}
+                                    onChange={e => setSimpleProductStock(parseInt(e.target.value) || 0)}
                                 />
                             </S.FormGroup>
-                            
-                            {!hasVariations && (
-                                <S.FormGroup>
-                                    <label>Estoque Disponível *</label>
-                                    <S.Input
-                                        type="number"
-                                        placeholder="Quantidade em estoque"
-                                        value={simpleProductStock}
-                                        onChange={e => setSimpleProductStock(parseInt(e.target.value) || 0)}
-                                    />
-                                </S.FormGroup>
-                            )}
+                        )}
 
-                            <S.CheckboxWrapper>
-                                <label>
-                                    <input 
-                                        type="checkbox" 
-                                        checked={isAvailable}
-                                        onChange={e => setIsAvailable(e.target.checked)}
-                                    />
-                                    Produto disponível
-                                </label>
-                                
-                                <span>Estoque total: {totalStock} unidades</span>
-                            </S.CheckboxWrapper>
-                            
-                            <S.FormGroup>
-                                <label>Descrição *</label>
-                                <S.Textarea 
-                                    placeholder="Descreva as características..."
-                                    value={description}
-                                    onChange={e => setDescription(e.target.value)}
+                        <S.CheckboxWrapper>
+                            <label>
+                                <input 
+                                    type="checkbox" 
+                                    checked={isAvailable}
+                                    onChange={e => setIsAvailable(e.target.checked)}
                                 />
-                            </S.FormGroup>
-                        </S.Section>
-                    </S.RightColumn>
-                </S.MainContentGrid>
-                
-                <S.Section style={{marginTop: '24px'}}>
-                    <S.SectionHeader>
-                        <h2>Variações do Produto</h2>
-                        <S.SimpleSwitchWrapper>
-                            <Switch 
-                                checked={hasVariations}
-                                onChange={setHasVariations}
+                                Produto disponível
+                            </label>
+                            
+                            <span>Estoque total: {totalStock} unidades</span>
+                        </S.CheckboxWrapper>
+                        
+                        <S.FormGroup>
+                            <label>Descrição *</label>
+                            <S.Textarea 
+                                placeholder="Descreva as características..."
+                                value={description}
+                                onChange={e => setDescription(e.target.value)}
                             />
-                        </S.SimpleSwitchWrapper>
-                    </S.SectionHeader>
+                        </S.FormGroup>
+                    </S.Section>
+                </S.RightColumn>
+            </S.MainContentGrid>
+            
+            <S.Section style={{marginTop: '24px'}}>
+                <S.SectionHeader>
+                    <h2>Variações do Produto</h2>
+                    <S.SimpleSwitchWrapper>
+                        <Switch 
+                            checked={hasVariations}
+                            onChange={setHasVariations}
+                        />
+                    </S.SimpleSwitchWrapper>
+                </S.SectionHeader>
 
-                    {hasVariations ? (
-                        <>
-                            <S.VariationsControl>
-                                <p>Adicione tamanhos, cores e preços individuais</p>
-                                <S.AddVariationButton onClick={() => setIsVariationModalOpen(true)}>
-                                    <FiPlus /> Adicionar Variação
-                                </S.AddVariationButton>
-                            </S.VariationsControl>
-                            
-                            {variations.length === 0 ? (
-                                <S.EmptyState>
-                                    Nenhuma variação adicionada
-                                    <br />
-                                    Clique em "Adicionar Variação" para começar
-                                </S.EmptyState>
-                            ) : (
-                                <S.VariationsTable>
-                                    <thead>
-                                        <tr>
-                                            <th>Tamanho</th>
-                                            <th>Cor</th>
-                                            <th>Estoque</th>
-                                            <th>Preço</th>
-                                            <th>Ações</th>
+                {hasVariations ? (
+                    <>
+                        <S.VariationsControl>
+                            <p>Adicione tamanhos, cores e preços individuais</p>
+                            <S.AddVariationButton onClick={() => setIsVariationModalOpen(true)}>
+                                <FiPlus /> Adicionar Variação
+                            </S.AddVariationButton>
+                        </S.VariationsControl>
+                        
+                        {variations.length === 0 ? (
+                            <S.EmptyState>
+                                Nenhuma variação adicionada
+                                <br />
+                                Clique em "Adicionar Variação" para começar
+                            </S.EmptyState>
+                        ) : (
+                            <S.VariationsTable>
+                                <thead>
+                                    <tr>
+                                        <th>Tamanho</th>
+                                        <th>Cor</th>
+                                        <th>Estoque</th>
+                                        <th>Preço</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {variations.map(v => (
+                                        <tr key={v.id}>
+                                            <td>{v.tamanho}</td>
+                                            <td>{v.cor}</td>
+                                            <td>{v.estoque}</td>
+                                            <td>
+                                                {formatCurrency(v.preco)}
+                                            </td>
+                                            <td>
+                                                <S.DeleteVariationButton onClick={() => handleDeleteVariation(v.id)}>
+                                                    <FiTrash2 size={18} />
+                                                </S.DeleteVariationButton>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {variations.map(v => (
-                                            <tr key={v.id}>
-                                                <td>{v.tamanho}</td>
-                                                <td>{v.cor}</td>
-                                                <td>{v.estoque}</td>
-                                                <td>
-                                                    {formatCurrency(v.preco)}
-                                                </td>
-                                                <td>
-                                                    <S.DeleteVariationButton onClick={() => handleDeleteVariation(v.id)}>
-                                                        <FiTrash2 size={18} />
-                                                    </S.DeleteVariationButton>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </S.VariationsTable>
-                            )}
-                        </>
-                    ) : (
-                         <S.SimpleProductWarning>
-                            Produto cadastrado com preço único. Para adicionar variações, ative a chave acima.
-                        </S.SimpleProductWarning>
-                    )}
-                </S.Section>
-
-            </S.PageContainer>
+                                    ))}
+                                </tbody>
+                            </S.VariationsTable>
+                        )}
+                    </>
+                ) : (
+                        <S.SimpleProductWarning>
+                        Produto cadastrado com preço único. Para adicionar variações, ative a chave acima.
+                    </S.SimpleProductWarning>
+                )}
+            </S.Section>
 
             <AddVariationModal
                 isOpen={isVariationModalOpen}

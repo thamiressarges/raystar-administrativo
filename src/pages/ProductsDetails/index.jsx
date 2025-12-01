@@ -5,12 +5,8 @@ import {
   FiEdit2, FiTrash2, FiSave, FiX, FiPlus, FiChevronLeft, FiStar
 } from "react-icons/fi";
 
-import { Header } from "../../components/Header";
-import { Brand } from "../../components/Brand";
-import { Menu } from "../../components/Menu";
 import { Loading } from '../../components/Loading';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { useMenu } from "../../contexts/MenuContext";
 
 import { ProductApi } from '../../services/productApi';
 import { StorageApi } from '../../services/storageApi';
@@ -23,7 +19,6 @@ import * as S from "./styles";
 export function ProductsDetails() {
   const navigate = useNavigate();
   const { id: productId } = useParams();
-  const { isMenuOpen } = useMenu();
   const fileInputRef = useRef(null);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -233,15 +228,11 @@ export function ProductsDetails() {
     : 0;
 
   if (loadingPage || !product) {
-    return (
-      <S.Container $isopen={isMenuOpen}>
-        <Loading />
-      </S.Container>
-    );
+    return <Loading />;
   }
 
   return (
-    <S.Container $isopen={isMenuOpen}>
+    <S.Container>
       {loading && <Loading />}
 
       <input
@@ -251,12 +242,6 @@ export function ProductsDetails() {
         style={{ display: "none" }}
         onChange={handleImageUpload}
       />
-
-      <Brand />
-      <Header />
-      <Menu />
-
-      <S.PageWrapper>
 
         <S.HeaderBar>
           <S.Title>
@@ -546,7 +531,6 @@ export function ProductsDetails() {
           </S.ReviewList>
         </S.Section>
 
-      </S.PageWrapper>
     </S.Container>
   );
 }

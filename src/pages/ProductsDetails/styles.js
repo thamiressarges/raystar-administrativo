@@ -2,20 +2,15 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   width: 100%;
-  height: 100vh;
-  display: grid;
-  grid-template-columns: ${({ $isopen }) => ($isopen ? "210px" : "80px")} auto;
-  grid-template-rows: 105px auto;
-  grid-template-areas:
-    "brand header"
-    "menu content";
-  background: ${({ theme }) => theme.COLORS.GRAY_100};
-`;
-
-export const PageWrapper = styled.div`
-  grid-area: content;
   padding: 24px 64px 48px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 60px;
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
 `;
 
 export const HeaderBar = styled.div`
@@ -45,7 +40,6 @@ export const Section = styled.section`
   background: ${({ theme }) => theme.COLORS.WHITE};
   border-radius: 16px;
   padding: 24px;
-  margin-top: 18px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.06);
 
   > h2 {
@@ -126,15 +120,23 @@ export const ProductOverview = styled.div`
   background: ${({ theme }) => theme.COLORS.WHITE};
   border-radius: 16px;
   padding: 24px;
-  margin-top: 18px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.06);
   display: flex;
   gap: 32px;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+  }
 
   > div:first-child {
     flex-shrink: 0;
     width: 45%;
     max-width: 400px;
+
+    @media (max-width: 1024px) {
+        width: 100%;
+        max-width: 100%;
+    }
   }
 
   > div:last-child {

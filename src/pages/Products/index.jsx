@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 
 import {
     Container,
-    Search as SearchArea,
+    SearchArea,
     Content,
     PaginationContainer,
     SearchAndActionButton,
@@ -13,19 +13,14 @@ import {
     EmptyState
 } from './styles';
 
-import { Header } from '../../components/Header';
 import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
-import { Brand } from '../../components/Brand';
-import { Menu } from '../../components/Menu';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
-import { useMenu } from '../../contexts/MenuContext';
 
 import { ProductApi } from '../../services/productApi';
 
 export function Products() {
-    const { isMenuOpen } = useMenu();
     const navigate = useNavigate();
 
     const [allProducts, setAllProducts] = useState([]);
@@ -74,11 +69,8 @@ export function Products() {
     const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
 
     return (
-        <Container $isopen={isMenuOpen}>
+        <Container>
             {loading && <Loading />}
-            <Brand />
-            <Header />
-            <Menu />
 
             <SearchArea>
                 <SearchAndActionButton>

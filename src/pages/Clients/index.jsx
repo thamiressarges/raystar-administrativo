@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   Container,
-  Search as SearchArea,
+  SearchArea,
   Content,
   PaginationWrapper,
   EmptyState
@@ -13,20 +13,14 @@ import { supabase } from '../../services/supabase';
 import { useDebounce } from '../../hooks/useDebounce';
 import { formatPhone } from '../../utils/format';
 
-import { Header } from '../../components/Header';
 import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
-import { Brand } from '../../components/Brand';
-import { Menu } from '../../components/Menu';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading'; 
-
-import { useMenu } from '../../contexts/MenuContext';
 
 const ITEMS_PER_PAGE = 10;
 
 export function Clients() {
-  const { isMenuOpen } = useMenu();
   const navigate = useNavigate();
 
   const [clients, setClients] = useState([]);
@@ -150,11 +144,7 @@ export function Clients() {
   };
 
   return (
-    <Container $isopen={isMenuOpen}>
-      <Brand />
-      <Header />
-      <Menu />
-
+    <Container>
       <SearchArea>
         <SearchInput
           placeholder="Pesquise por nome"

@@ -6,12 +6,8 @@ import {
   FiTrash2, FiChevronLeft, FiCheckCircle
 } from 'react-icons/fi';
 
-import { Header } from '../../components/Header';
-import { Brand } from '../../components/Brand';
-import { Menu } from '../../components/Menu';
 import { Loading } from '../../components/Loading';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { useMenu } from '../../contexts/MenuContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserApi } from '../../services/userApi';
 import { getInitials, formatDate, getRoleName } from '../../utils/format';
@@ -23,7 +19,6 @@ import {
 } from './styles';
 
 export function Profile() {
-  const { isMenuOpen } = useMenu();
   const navigate = useNavigate();
   const { userProfile: currentUser } = useAuth();
   
@@ -101,14 +96,7 @@ export function Profile() {
   const isSuperAdmin = currentUser?.permissions?.includes('super_admin');
 
   if (loading && !currentUser) {
-    return (
-        <Container $isopen={isMenuOpen}>
-          <Brand />
-          <Header />
-          <Menu />
-          <Loading />
-        </Container>
-    );
+    return <Loading />;
   }
 
   if (!currentUser) {
@@ -117,11 +105,8 @@ export function Profile() {
   }
 
   return (
-    <Container $isopen={isMenuOpen}>
+    <Container>
       {loading && <Loading />}
-      <Brand />
-      <Header />
-      <Menu />
 
       <Content>
         <BackLink onClick={() => navigate(-1)}>

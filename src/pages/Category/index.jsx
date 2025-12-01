@@ -3,18 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { FiPlus } from "react-icons/fi"; 
 import { toast } from 'react-toastify'; 
 
-import { useMenu } from '../../contexts/MenuContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { CategoryApi } from "../../services/categoryApi"; 
 
 import { CategoryModal } from "../../components/CategoryModel"; 
 import { Loading } from '../../components/Loading';
-import { Header } from '../../components/Header';
 import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
 import { Pagination } from '../../components/Pagination';
-import { Brand } from '../../components/Brand';
-import { Menu } from '../../components/Menu';
 
 import {
     Container,
@@ -27,7 +23,6 @@ import {
 } from "./styles"; 
 
 export function Category() {
-    const { isMenuOpen } = useMenu();
     const navigate = useNavigate();
 
     // Estados de UI
@@ -46,7 +41,6 @@ export function Category() {
     const tableHeaders = ["Categoria", "Quantidade"];
     const tableDataKeys = ["name", "quantity"]; 
 
-    // Função de carregamento memorizada para reuso
     const loadCategories = useCallback(async (search = "") => {
         try {
             setLoading(true); 
@@ -55,14 +49,13 @@ export function Category() {
                 searchTerm: search 
             }); 
             
-            // Tratamento de dados para a tabela
             const formattedList = list.map(c => ({
                 ...c,
                 quantity: c.quantity ?? 0 
             }));
 
             setCategories(formattedList);
-            setCurrentPage(1); // Reseta para a primeira página ao filtrar
+            setCurrentPage(1);
         } catch (error) {
              console.error(error);
              toast.error("Não foi possível carregar as categorias.");
@@ -71,7 +64,6 @@ export function Category() {
         }
     }, []);
 
-    // Efeito único para monitorar a busca (já com debounce)
     useEffect(() => {
         loadCategories(debouncedSearchTerm);
     }, [debouncedSearchTerm, loadCategories]);
@@ -89,7 +81,6 @@ export function Category() {
         } 
     };
 
-    // Lógica de Paginação no Frontend
     const paginatedCategories = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
         return categories.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -98,12 +89,8 @@ export function Category() {
     const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
 
     return(
-        <Container $isopen={isMenuOpen}>
+        <Container>
             {loading && <Loading />}
-
-            <Brand />
-            <Header />
-            <Menu />
 
             <SearchArea>
                 <SearchAndActionButton>

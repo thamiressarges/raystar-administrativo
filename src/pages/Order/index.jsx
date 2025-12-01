@@ -4,27 +4,22 @@ import { FiFilter } from "react-icons/fi";
 
 import {
     Container,
-    Search as SearchArea,
+    SearchArea,
     Content,
     PaginationWrapper,
     FilterButton,
     EmptyState
 } from './styles';
 
-import { Header } from '../../components/Header';
 import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
-import { Brand } from '../../components/Brand';
-import { Menu } from '../../components/Menu';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
 
-import { useMenu } from '../../contexts/MenuContext';
 import { orderApi } from '../../services/orderApi';
 import { translateOrderStatus } from '../../utils/format'; 
 
 export function Order() {
-    const { isMenuOpen } = useMenu();
     const navigate = useNavigate();
 
     const [orders, setOrders] = useState([]);
@@ -73,11 +68,7 @@ export function Order() {
     };
 
     return (
-        <Container $isopen={isMenuOpen}>
-            <Brand />
-            <Header />
-            <Menu />
-
+        <Container>
             <SearchArea>
                 <div className="search-wrapper">
                     <SearchInput placeholder="Pesquise por ID do pedido" />

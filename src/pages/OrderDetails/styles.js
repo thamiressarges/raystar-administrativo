@@ -2,31 +2,14 @@ import styled, { css } from "styled-components";
 
 export const Container = styled.div`
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: ${({ $isopen }) => ($isopen ? "210px" : "80px")} auto;
-  grid-template-rows: 105px auto;
-  grid-template-areas:
-    "brand header"
-    "menu content";
-  background: ${({ theme }) => theme.COLORS.GRAY_100};
-  transition: grid-template-columns 0.3s ease;
-`;
-
-export const PageWrapper = styled.div`
-  grid-area: content;
   padding: 24px 48px;
-  overflow-y: auto;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 60px;
 
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: ${({ theme }) => theme.COLORS.GRAY_300};
-    border-radius: 4px;
+  @media (max-width: 768px) {
+    padding: 20px;
   }
 `;
 

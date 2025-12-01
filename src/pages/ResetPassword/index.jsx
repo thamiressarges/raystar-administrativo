@@ -10,12 +10,12 @@ import { Button } from '../../components/Button';
 import { supabase } from '../../services/supabase'; 
 
 export function ResetPassword() {
+    const navigate = useNavigate();
+    
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [isSessionValid, setIsSessionValid] = useState(false);
-
-    const navigate = useNavigate();
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -81,7 +81,7 @@ export function ResetPassword() {
 
     return (
         <Container>
-            <Form>
+            <Form onSubmit={handleResetPassword}>
                 <h1>RayStar</h1>
                 <h2>Criar Nova Senha</h2>
 
@@ -91,6 +91,7 @@ export function ResetPassword() {
                     placeholder="Nova Senha"
                     type="password"
                     icon={FiLock}
+                    value={password}
                     onChange={e => setPassword(e.target.value)}
                 />
 
@@ -98,6 +99,7 @@ export function ResetPassword() {
                     placeholder="Confirmar Senha"
                     type="password"
                     icon={FiLock}
+                    value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                 />
 

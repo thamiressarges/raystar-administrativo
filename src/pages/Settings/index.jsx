@@ -19,18 +19,12 @@ import {
     SaveButton,
 } from './styles';
 
-import { Header } from '../../components/Header';
-import { Brand } from '../../components/Brand';
-import { Menu } from '../../components/Menu';
 import { Input } from '../../components/Input';
 import { Loading } from '../../components/Loading';
 
-import { useMenu } from '../../contexts/MenuContext';
 import { StoreApi } from '../../services/storeApi';
 
 export function Settings() {
-    const { isMenuOpen } = useMenu();
-
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -205,22 +199,12 @@ export function Settings() {
     };
 
     if (loading && !originalData) {
-        return (
-            <Container $isopen={isMenuOpen}>
-                <Brand />
-                <Header />
-                <Menu />
-                <Loading />
-            </Container>
-        );
+        return <Loading />;
     }
 
     return (
-        <Container $isopen={isMenuOpen}>
+        <Container>
             {loading && <Loading />}
-            <Brand />
-            <Header />
-            <Menu />
 
             <Content>
                 <Form onSubmit={(e) => e.preventDefault()}>

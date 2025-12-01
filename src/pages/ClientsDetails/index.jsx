@@ -5,7 +5,6 @@ import { toast } from 'react-toastify';
 
 import {
   Container,
-  PageContainer, 
   HeaderBar,     
   BackLink,      
   Title,         
@@ -16,16 +15,12 @@ import {
   InfoLabel,
   InfoValue,
   ActionsRow,    
-  DangerButton
+  DangerButton,
+  ErrorMessage
 } from "./styles"; 
 
-import { Header } from "../../components/Header";
-import { Brand } from "../../components/Brand";
-import { Menu } from "../../components/Menu";
 import { Loading } from "../../components/Loading"; 
 import { ConfirmModal } from "../../components/ConfirmModal"; 
-
-import { useMenu } from "../../contexts/MenuContext";
 import { formatBirthDate, formatPhone, formatCPF } from "../../utils/format";
 
 import {
@@ -37,7 +32,6 @@ import {
 } from "react-icons/fi";
 
 export function ClientsDetails() {
-  const { isMenuOpen } = useMenu();
   const { id } = useParams(); 
   const navigate = useNavigate();
 
@@ -124,131 +118,113 @@ export function ClientsDetails() {
   };
 
   if (isLoading && !client) {
-    return (
-      <Container $isopen={isMenuOpen}>
-        <Brand />
-        <Header />
-        <Menu />
-        <Loading />
-      </Container>
-    );
+    return <Loading />;
   }
 
   if (error) {
     return (
-      <Container $isopen={isMenuOpen}>
-        <Brand />
-        <Header />
-        <Menu />
-        <PageContainer> 
-          <HeaderBar> 
-            <BackLink onClick={() => navigate("/clients")}>
-              <FiChevronLeft /> Voltar
-            </BackLink>
-            <Title>Erro</Title>
-          </HeaderBar>
-          <Card>
-            <p style={{color: '#EF4444'}}>Falha ao carregar cliente: {error}</p>
-          </Card>
-        </PageContainer>
+      <Container> 
+        <HeaderBar> 
+          <BackLink onClick={() => navigate("/clients")}>
+            <FiChevronLeft /> Voltar
+          </BackLink>
+          <Title>Erro</Title>
+        </HeaderBar>
+        <Card>
+          <ErrorMessage>Falha ao carregar cliente: {error}</ErrorMessage>
+        </Card>
       </Container>
     );
   }
 
   return (
-    <Container $isopen={isMenuOpen}>
-      <Brand />
-      <Header />
-      <Menu />
+    <Container>
       {(isLoading && client) && <Loading />}
 
-      <PageContainer> 
+      <HeaderBar>
+        <BackLink onClick={() => navigate("/clients")}>
+          <FiChevronLeft /> Voltar
+        </BackLink>
+        <Title>Detalhes do Cliente</Title>
+      </HeaderBar>
+      
+      <Card>
+        <CardTitle>
+          <FiUser size={20} />
+          <h3>Dados Pessoais</h3>
+        </CardTitle>
+        <InfoGrid>
+          <InfoItem>
+            <InfoLabel>Nome Completo</InfoLabel>
+            <InfoValue>{client.name || 'N/A'}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>CPF</InfoLabel>
+            <InfoValue>{formatCPF(client.cpf) || 'N/A'}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Data de Nascimento</InfoLabel>
+            <InfoValue>{formatBirthDate(client.birth_date)}</InfoValue>
+          </InfoItem>
+        </InfoGrid>
         
-        <HeaderBar>
-          <BackLink onClick={() => navigate("/clients")}>
-            <FiChevronLeft /> Voltar
-          </BackLink>
-          <Title>Detalhes do Cliente</Title>
-        </HeaderBar>
-        
-        <Card>
-          <CardTitle>
-            <FiUser size={20} />
-            <h3>Dados Pessoais</h3>
-          </CardTitle>
-          <InfoGrid>
-            <InfoItem>
-              <InfoLabel>Nome Completo</InfoLabel>
-              <InfoValue>{client.name || 'N/A'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>CPF</InfoLabel>
-              <InfoValue>{formatCPF(client.cpf) || 'N/A'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Data de Nascimento</InfoLabel>
-              <InfoValue>{formatBirthDate(client.birth_date)}</InfoValue>
-            </InfoItem>
-          </InfoGrid>
-          
-          <ActionsRow>
-            <DangerButton onClick={handleDeleteClient}>
-              <FiTrash2 /> Excluir Cliente
-            </DangerButton>
-          </ActionsRow>
-        </Card>
+        <ActionsRow>
+          <DangerButton onClick={handleDeleteClient}>
+            <FiTrash2 /> Excluir Cliente
+          </DangerButton>
+        </ActionsRow>
+      </Card>
 
-        <Card>
-          <CardTitle>
-            <FiPhone size={20} />
-            <h3>Contato</h3>
-          </CardTitle>
-          <InfoGrid>
-            <InfoItem>
-              <InfoLabel>Telefone</InfoLabel>
-              <InfoValue>{formatPhone(client.phones?.main || client.phones?.[0]) || 'N/A'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>E-mail</InfoLabel>
-              <InfoValue>{client.email || 'N/A'}</InfoValue>
-            </InfoItem>
-          </InfoGrid>
-        </Card>
+      <Card>
+        <CardTitle>
+          <FiPhone size={20} />
+          <h3>Contato</h3>
+        </CardTitle>
+        <InfoGrid>
+          <InfoItem>
+            <InfoLabel>Telefone</InfoLabel>
+            <InfoValue>{formatPhone(client.phones?.main || client.phones?.[0]) || 'N/A'}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>E-mail</InfoLabel>
+            <InfoValue>{client.email || 'N/A'}</InfoValue>
+          </InfoItem>
+        </InfoGrid>
+      </Card>
 
-        <Card>
-          <CardTitle>
-            <FiMapPin size={20} />
-            <h3>Endereço</h3>
-          </CardTitle>
-          <InfoGrid>
-            <InfoItem>
-              <InfoLabel>CEP</InfoLabel>
-              <InfoValue>{client.address?.cep || 'N/A'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Rua/Avenida</InfoLabel>
-              <InfoValue>{client.address?.street || 'N/A'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Número</InfoLabel>
-              <InfoValue>{client.address?.number || 'N/A'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Bairro</InfoLabel>
-              <InfoValue>{client.address?.neighborhood || 'N/A'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Cidade</InfoLabel>
-              <InfoValue>{client.address?.city || 'N/A'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Estado</InfoLabel>
-              <InfoValue>{client.address?.state || 'N/A'}</InfoValue>
-            </InfoItem>
-          </InfoGrid>
-        </Card>
+      <Card>
+        <CardTitle>
+          <FiMapPin size={20} />
+          <h3>Endereço</h3>
+        </CardTitle>
+        <InfoGrid>
+          <InfoItem>
+            <InfoLabel>CEP</InfoLabel>
+            <InfoValue>{client.address?.cep || 'N/A'}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Rua/Avenida</InfoLabel>
+            <InfoValue>{client.address?.street || 'N/A'}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Número</InfoLabel>
+            <InfoValue>{client.address?.number || 'N/A'}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Bairro</InfoLabel>
+            <InfoValue>{client.address?.neighborhood || 'N/A'}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Cidade</InfoLabel>
+            <InfoValue>{client.address?.city || 'N/A'}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Estado</InfoLabel>
+            <InfoValue>{client.address?.state || 'N/A'}</InfoValue>
+          </InfoItem>
+        </InfoGrid>
+      </Card>
 
-      </PageContainer>
     </Container>
   );
 }

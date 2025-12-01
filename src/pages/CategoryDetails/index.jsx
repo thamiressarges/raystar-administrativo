@@ -7,10 +7,6 @@ import { CategoryApi } from "../../services/categoryApi";
 import { CategoryModal } from "../../components/CategoryModel";
 import { Loading } from '../../components/Loading';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { Header } from "../../components/Header";
-import { Brand } from "../../components/Brand";
-import { Menu } from "../../components/Menu";
-import { useMenu } from "../../contexts/MenuContext";
 
 import {
     Container,
@@ -35,7 +31,6 @@ import {
 export function CategoryDetails() {
     const navigate = useNavigate();
     const { id: categoryId } = useParams();
-    const { isMenuOpen } = useMenu();
 
     const [category, setCategory] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -130,12 +125,8 @@ export function CategoryDetails() {
     };
 
     return (
-        <Container $isopen={isMenuOpen}>
+        <Container>
             {(loading || loadingPage) && <Loading />}
-
-            <Brand />
-            <Header />
-            <Menu />
 
             <PageContainer>
                 {!loadingPage && category ? (

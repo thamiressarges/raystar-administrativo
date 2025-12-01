@@ -2,25 +2,15 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   width: 100%;
-  height: 100vh;
-  display: grid;
-  grid-template-columns: ${({ $isopen }) => ($isopen ? "210px" : "80px")} auto;
-  grid-template-rows: 105px auto;
-  grid-template-areas:
-    "brand header"
-    "menu content";
-  background-color: ${({ theme }) => theme.COLORS.GRAY_100};
-  transition: grid-template-columns 0.3s ease-in-out;
-`;
-
-export const PageContainer = styled.div`
-  grid-area: content;
   padding: 40px 80px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
   padding-bottom: 80px;
+
+  @media (max-width: 768px) {
+    padding: 20px 20px;
+  }
 `;
 
 export const HeaderBar = styled.div`
@@ -56,6 +46,10 @@ export const Title = styled.h1`
   margin: 0;
   color: ${({ theme }) => theme.COLORS.GRAY_800};
   font-weight: 700;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+  }
 `;
 
 export const Card = styled.div`
@@ -64,6 +58,10 @@ export const Card = styled.div`
   border-radius: 12px;
   padding: 28px 32px;
   box-shadow: 0 8px 30px rgba(17, 24, 39, 0.06);
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
 `;
 
 export const CardTitle = styled.div`
@@ -93,6 +91,7 @@ export const InfoGrid = styled.div`
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 `;
 
@@ -111,6 +110,7 @@ export const InfoValue = styled.span`
   font-size: 16px;
   font-weight: 600;
   color: ${({ theme }) => theme.COLORS.GRAY_900};
+  word-break: break-word; /* Evita que emails longos quebrem o layout */
 `;
 
 export const ActionsRow = styled.div`
@@ -120,6 +120,11 @@ export const ActionsRow = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 12px; 
+`;
+
+export const ErrorMessage = styled.p`
+    color: #EF4444;
+    font-weight: 500;
 `;
 
 const BaseButton = styled.button`

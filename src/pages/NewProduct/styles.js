@@ -2,24 +2,17 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   width: 100%;
-  height: 100vh;
-  display: grid;
-  grid-template-columns: ${({ $isopen }) => ($isopen ? "210px" : "80px")} auto;
-  grid-template-rows: 105px auto;
-  grid-template-areas:
-    "brand header"
-    "menu content";
-  background: ${({ theme }) => theme.COLORS.GRAY_100};
+  padding: 24px 64px 48px;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
 `;
 
 export const HiddenFileInput = styled.input`
   display: none;
-`;
-
-export const PageContainer = styled.div`
-  grid-area: content;
-  padding: 24px 64px 48px;
-  overflow-y: auto; 
 `;
 
 export const HeaderBar = styled.div`
@@ -197,6 +190,10 @@ export const MainContentGrid = styled.div`
   margin-bottom: 18px; 
   align-items: stretch; 
 
+  @media (max-width: 1024px) {
+    flex-direction: column;
+  }
+
   > div {
     flex: 1; 
   }
@@ -204,10 +201,20 @@ export const MainContentGrid = styled.div`
   > div:first-child { 
     flex-basis: 40%; 
     max-width: 40%; 
+
+    @media (max-width: 1024px) {
+        max-width: 100%;
+        flex-basis: auto;
+    }
   }
   > div:last-child { 
     flex-basis: 60%; 
     max-width: 60%; 
+
+    @media (max-width: 1024px) {
+        max-width: 100%;
+        flex-basis: auto;
+    }
   }
 `;
 

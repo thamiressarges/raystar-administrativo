@@ -8,10 +8,6 @@ import {
 
 import { orderApi } from "../../services/orderApi";
 import { Loading } from "../../components/Loading";
-import { Brand } from "../../components/Brand";
-import { Header } from "../../components/Header";
-import { Menu } from "../../components/Menu";
-import { useMenu } from "../../contexts/MenuContext";
 
 import { 
   formatCurrency, 
@@ -27,7 +23,6 @@ import * as S from "./styles";
 export function OrderDetails() {
   const { id: orderId } = useParams();
   const navigate = useNavigate();
-  const { isMenuOpen } = useMenu();
   
   const [order, setOrder] = useState(null);
   const [store, setStore] = useState(null);
@@ -275,13 +270,10 @@ export function OrderDetails() {
     }
   }
 
-  if (loading || !order) return <S.Container $isopen={isMenuOpen}><Loading /></S.Container>;
+  if (loading || !order) return <Loading />;
 
   return (
-    <S.Container $isopen={isMenuOpen}>
-      <Brand /><Header /><Menu />
-      <S.PageWrapper>
-        
+    <S.Container>
         <S.HeaderBar>
           <S.Title onClick={() => navigate("/order")} style={{ cursor: "pointer" }}>
             <FiChevronLeft /> 
@@ -420,7 +412,6 @@ export function OrderDetails() {
                   )}
                 </S.ButtonsRow>
             </S.Section>
-
         </S.ContentGrid>
 
         {qrOpen && (
@@ -437,7 +428,6 @@ export function OrderDetails() {
             </S.QrModal>
           </S.QrModalOverlay>
         )}
-      </S.PageWrapper>
     </S.Container>
   );
 }

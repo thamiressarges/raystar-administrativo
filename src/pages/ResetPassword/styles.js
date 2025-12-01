@@ -14,13 +14,24 @@ export const Form = styled.form`
   justify-content: center;
   align-items: center;
   text-align: center;
+  
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   background-color: ${({ theme }) => theme.COLORS.WHITE};
+
+  @media (max-width: 1024px) {
+    padding: 0 60px;
+    max-width: 500px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 30px;
+    max-width: 100%;
+  }
 
   > h1 {
     font-size: 48px;
-    font-family: ${({ theme }) => theme.FONTS.SERIF};
+    font-family: ${({ theme }) => theme.FONTS.SERIF || 'serif'};
     color: ${({ theme }) => theme.COLORS.BLACK};
   }
 
@@ -40,10 +51,12 @@ export const Form = styled.form`
 
   > div {
     margin-bottom: 8px;
+    width: 100%; 
   }
   
   > button {
     margin-top: 16px;
+    width: 100%;
   }
 `;
 
@@ -51,4 +64,8 @@ export const Background = styled.div`
   flex: 1;
   background: url(${background}) no-repeat center center;
   background-size: cover;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
