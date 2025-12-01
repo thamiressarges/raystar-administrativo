@@ -1,3 +1,5 @@
+import { ORDER_STATUS, USER_ROLES } from './constants';
+
 export const formatCurrency = (value) => {
   const number = Number(value) || 0;
   return number.toLocaleString("pt-BR", {
@@ -76,23 +78,23 @@ export const translateOrderStatus = (status) => {
     if (!status) return "Pendente";
     
     const map = {
-        'pending': 'Pendente',
-        'pedido_criado': "Pedido Criado",
-        'aguardando_confirmacao': "Aguardando Confirmação",
-        'aguardando_pagamento': "Aguardando Pagamento",
-        'paid': 'Pago',
-        'pagamento_confirmado': "Pagamento Aprovado",
-        'pago': "Pago",
-        'processing': 'Em processamento',
-        'preparando_pedido': "Preparando",
-        'shipped': 'Enviado',
-        'saiu_para_entrega': "Saiu para Entrega",
-        'delivered': 'Entregue',
-        'entregue': "Entregue",
-        'pickup': "Pronto para Retirada",
-        'canceled': 'Cancelado',
-        'cancelado': "Cancelado",
-        'devolvido': "Devolvido"
+        [ORDER_STATUS.PENDING]: 'Pendente',
+        [ORDER_STATUS.CREATED]: "Pedido Criado",
+        [ORDER_STATUS.WAITING_CONFIRMATION]: "Aguardando Confirmação",
+        [ORDER_STATUS.WAITING_PAYMENT]: "Aguardando Pagamento",
+        [ORDER_STATUS.PAID]: 'Pago',
+        [ORDER_STATUS.PAYMENT_APPROVED]: "Pagamento Aprovado",
+        [ORDER_STATUS.PAYMENT_PAID]: "Pago",
+        [ORDER_STATUS.PROCESSING]: 'Em processamento',
+        [ORDER_STATUS.PREPARING]: "Preparando",
+        [ORDER_STATUS.SHIPPED]: 'Enviado',
+        [ORDER_STATUS.OUT_FOR_DELIVERY]: "Saiu para Entrega",
+        [ORDER_STATUS.DELIVERED]: 'Entregue',
+        [ORDER_STATUS.DELIVERED_PT]: "Entregue",
+        [ORDER_STATUS.PICKUP]: "Pronto para Retirada",
+        [ORDER_STATUS.CANCELED]: 'Cancelado',
+        [ORDER_STATUS.CANCELED_PT]: "Cancelado",
+        [ORDER_STATUS.RETURNED]: "Devolvido"
     };
     
     return map[status.toLowerCase()] || status;
@@ -112,7 +114,7 @@ export const getPaymentMethodName = (paymentObj) => {
 
 export const getRoleName = (permissions) => {
     if (!permissions) return "Usuário";
-    if (permissions.includes('super_admin')) return 'Admin Principal';
-    if (permissions.includes('admin')) return 'Administrador';
+    if (permissions.includes(USER_ROLES.SUPER_ADMIN)) return 'Admin Principal';
+    if (permissions.includes(USER_ROLES.ADMIN)) return 'Administrador';
     return 'Usuário';
 };

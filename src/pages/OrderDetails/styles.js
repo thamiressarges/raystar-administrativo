@@ -1,4 +1,5 @@
 import styled, { css } from "styled-components";
+import { ORDER_STATUS } from '../../utils/constants';
 
 export const DateInfo = styled.div`
   text-align: right;
@@ -176,14 +177,16 @@ export const PickupCard = styled.div`
 `;
 
 const bannerColors = {
-  pickup: css` background: ${({ theme }) => theme.COLORS.INFO_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.INFO}; color: ${({ theme }) => theme.COLORS.BLUE_700}; `,
-  entregue: css` background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS}; color: ${({ theme }) => theme.COLORS.GREEN_700}; `,
-  pago: css` background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS}; color: ${({ theme }) => theme.COLORS.GREEN_700}; `,
-  enviado: css` background: ${({ theme }) => theme.COLORS.INDIGO_100}; border: 1px solid ${({ theme }) => theme.COLORS.INDIGO_800}; color: ${({ theme }) => theme.COLORS.INDIGO_800}; `,
-  processando: css` background: ${({ theme }) => theme.COLORS.PURPLE_100}; border: 1px solid ${({ theme }) => theme.COLORS.PURPLE_500}; color: ${({ theme }) => theme.COLORS.PURPLE_800}; `,
-  cancelado: css` background: ${({ theme }) => theme.COLORS.DANGER_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.DANGER}; color: ${({ theme }) => theme.COLORS.DANGER}; `,
-  aguardando_confirmacao: css` background: ${({ theme }) => theme.COLORS.WARNING_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.WARNING}; color: ${({ theme }) => theme.COLORS.AMBER_600}; `,
-  aguardando_pagamento: css` background: ${({ theme }) => theme.COLORS.WARNING_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.WARNING}; color: ${({ theme }) => theme.COLORS.AMBER_600}; `,
+  [ORDER_STATUS.PICKUP]: css` background: ${({ theme }) => theme.COLORS.INFO_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.INFO}; color: ${({ theme }) => theme.COLORS.BLUE_700}; `,
+  [ORDER_STATUS.DELIVERED]: css` background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS}; color: ${({ theme }) => theme.COLORS.GREEN_700}; `,
+  [ORDER_STATUS.DELIVERED_PT]: css` background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS}; color: ${({ theme }) => theme.COLORS.GREEN_700}; `,
+  [ORDER_STATUS.PAYMENT_PAID]: css` background: ${({ theme }) => theme.COLORS.SUCCESS_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.SUCCESS}; color: ${({ theme }) => theme.COLORS.GREEN_700}; `,
+  [ORDER_STATUS.SHIPPED]: css` background: ${({ theme }) => theme.COLORS.INDIGO_100}; border: 1px solid ${({ theme }) => theme.COLORS.INDIGO_800}; color: ${({ theme }) => theme.COLORS.INDIGO_800}; `,
+  [ORDER_STATUS.PROCESSING]: css` background: ${({ theme }) => theme.COLORS.PURPLE_100}; border: 1px solid ${({ theme }) => theme.COLORS.PURPLE_500}; color: ${({ theme }) => theme.COLORS.PURPLE_800}; `,
+  [ORDER_STATUS.CANCELED]: css` background: ${({ theme }) => theme.COLORS.DANGER_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.DANGER}; color: ${({ theme }) => theme.COLORS.DANGER}; `,
+  [ORDER_STATUS.CANCELED_PT]: css` background: ${({ theme }) => theme.COLORS.DANGER_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.DANGER}; color: ${({ theme }) => theme.COLORS.DANGER}; `,
+  [ORDER_STATUS.WAITING_CONFIRMATION]: css` background: ${({ theme }) => theme.COLORS.WARNING_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.WARNING}; color: ${({ theme }) => theme.COLORS.AMBER_600}; `,
+  [ORDER_STATUS.WAITING_PAYMENT]: css` background: ${({ theme }) => theme.COLORS.WARNING_LIGHT}; border: 1px solid ${({ theme }) => theme.COLORS.WARNING}; color: ${({ theme }) => theme.COLORS.AMBER_600}; `,
   default: css` background: ${({ theme }) => theme.COLORS.GRAY_50}; border: 1px solid ${({ theme }) => theme.COLORS.GRAY_200}; color: ${({ theme }) => theme.COLORS.GRAY_700}; `,
 };
 

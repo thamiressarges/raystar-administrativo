@@ -1,11 +1,22 @@
 export const ORDER_STATUS = {
   PENDING: 'pending',
+  CREATED: 'pedido_criado',
+  WAITING_CONFIRMATION: 'aguardando_confirmacao',
+  WAITING_PAYMENT: 'aguardando_pagamento',
   PAID: 'paid',
+  PAYMENT_APPROVED: 'pagamento_confirmado',
+  PAYMENT_PAID: 'pago',
   PROCESSING: 'processing',
-  SHIPPED: 'shipped', 
-  DELIVERED: 'delivered', 
+  PREPARING: 'preparando_pedido',
+  SHIPPED: 'shipped',
+  OUT_FOR_DELIVERY: 'saiu_para_entrega',
+  DELIVERED: 'delivered',
+  DELIVERED_PT: 'entregue',
+  PICKUP: 'pickup',
+  READY_FOR_PICKUP: 'pronto_para_retirada',
   CANCELED: 'canceled',
-  PICKUP: 'pickup'
+  CANCELED_PT: 'cancelado',
+  RETURNED: 'devolvido'
 };
 
 export const USER_ROLES = {

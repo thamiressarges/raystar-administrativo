@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { orderApi } from '../services/orderApi';
 import { getPaymentMethodName } from '../utils/format';
+import { ORDER_STATUS } from '../utils/constants';
 import { theme } from '../styles/theme';
 import { FiClock, FiCheck, FiX, FiTruck, FiAlertCircle } from "react-icons/fi";
 
@@ -29,7 +30,7 @@ export function useOrderDetails(orderId) {
                 },
                 deliveryInfo: {
                     ...deliveryData,
-                    isPickup: (deliveryData.type || "").toLowerCase().includes("pickup") || (deliveryData.type || "").toLowerCase().includes("retirada"),
+                    isPickup: (deliveryData.type || "").toLowerCase().includes(ORDER_STATUS.PICKUP) || (deliveryData.type || "").toLowerCase().includes("retirada"),
                     status: orderData.status 
                 },
                 financials: {
@@ -58,15 +59,15 @@ export function useOrderDetails(orderId) {
         const status = currentOrder.deliveryInfo.status;
         const isPickup = currentOrder.deliveryInfo.isPickup;
 
-        if (['entregue'].includes(status)) {
+        if ([ORDER_STATUS.DELIVERED, ORDER_STATUS.DELIVERED_PT].includes(status)) {
             setNextStep({ label: "Pedido Finalizado", disabled: true, icon: <FiCheck />, color: theme.COLORS.SUCCESS });
             return;
         }
-        if (['cancelado', 'devolvido'].includes(status)) {
+        if ([ORDER_STATUS.CANCELED, ORDER_STATUS.CANCELED_PT, ORDER_STATUS.RETURNED].includes(status)) {
             setNextStep({ label: "Pedido Cancelado", disabled: true, icon: <FiX />, color: theme.COLORS.DANGER });
             return;
         }
-        if (['aguardando_pagamento', 'aguardando_confirmacao'].includes(status)) {
+        if ([ORDER_STATUS.WAITING_PAYMENT, ORDER_STATUS.WAITING_CONFIRMATION].includes(status)) {
             setNextStep({ label: "Aguardando Pagamento", disabled: true, icon: <FiClock />, color: theme.COLORS.WARNING });
             return;
         }
@@ -74,7 +75,7 @@ export function useOrderDetails(orderId) {
         if (isPickup) {
             setNextStep({
                 label: "Confirmar Retirada",
-                newStatus: "entregue",
+                newStatus: ORDER_STATUS.DELIVERED_PT,
                 disabled: false,
                 icon: <FiCheck />,
                 color: theme.COLORS.SUCCESS
@@ -82,10 +83,22 @@ export function useOrderDetails(orderId) {
             return;
         }
 
-        if (['pagamento_confirmado', 'preparando_pedido', 'pedido_criado', 'pago'].includes(status)) {
-            setNextStep({ label: "Despachar (Saiu para Entrega)", newStatus: "saiu_para_entrega", disabled: false, icon: <FiTruck />, color: theme.COLORS.BLUE_700 });
-        } else if (status === 'saiu_para_entrega') {
-            setNextStep({ label: "Confirmar Entrega", newStatus: "entregue", disabled: false, icon: <FiCheck />, color: theme.COLORS.SUCCESS });
+        if ([ORDER_STATUS.PAYMENT_APPROVED, ORDER_STATUS.PREPARING, ORDER_STATUS.CREATED, ORDER_STATUS.PAYMENT_PAID].includes(status)) {
+            setNextStep({ 
+                label: "Despachar (Saiu para Entrega)", 
+                newStatus: ORDER_STATUS.OUT_FOR_DELIVERY, 
+                disabled: false, 
+                icon: <FiTruck />, 
+                color: theme.COLORS.BLUE_700 
+            });
+        } else if (status === ORDER_STATUS.OUT_FOR_DELIVERY) {
+            setNextStep({ 
+                label: "Confirmar Entrega", 
+                newStatus: ORDER_STATUS.DELIVERED_PT, 
+                disabled: false, 
+                icon: <FiCheck />, 
+                color: theme.COLORS.SUCCESS 
+            });
         } else {
             setNextStep({ label: "Status Desconhecido", disabled: true, icon: <FiAlertCircle />, color: theme.COLORS.GRAY_400 });
         }
