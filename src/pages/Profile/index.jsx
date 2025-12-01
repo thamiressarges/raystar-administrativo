@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   FiMail, FiShield, FiCalendar, FiUsers, FiUserCheck, FiAlertTriangle,
-  FiInfo, FiTrash2, FiChevronLeft, FiCheckCircle
+  FiTrash2, FiChevronLeft, FiCheckCircle
 } from 'react-icons/fi';
+
 import { Header } from '../../components/Header';
 import { Brand } from '../../components/Brand';
 import { Menu } from '../../components/Menu';
@@ -13,12 +14,13 @@ import { ConfirmModal } from '../../components/ConfirmModal';
 import { useMenu } from '../../contexts/MenuContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserApi } from '../../services/userApi';
+import { getInitials, formatDate, getRoleName } from '../../utils/format';
+
 import {
   Container, Content, BackLink, ProfileCard, Avatar, ProfileInfo,
   Section, AdminTable, MiniAvatar, TrashButton,
   ActionButton, PendingHeader 
 } from './styles';
-
 
 export function Profile() {
   const { isMenuOpen } = useMenu();
@@ -96,24 +98,7 @@ export function Profile() {
     );
   };
 
-  // --- Helpers ---
-  const getInitials = (name) => {
-    if (!name) return "?";
-    const names = (name || "").split(' ');
-    const first = names[0] ? names[0][0] : '';
-    const last = names.length > 1 ? names[names.length - 1][0] : '';
-    return `${first}${last}`.toUpperCase();
-  };
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
   const isSuperAdmin = currentUser?.permissions?.includes('super_admin');
-  const getRoleName = (permissions) => {
-    if (!permissions) return "Usuário";
-    if (permissions.includes('super_admin')) return 'Admin Principal';
-    if (permissions.includes('admin')) return 'Administrador';
-    return 'Usuário';
-  };
 
   if (loading && !currentUser) {
     return (
