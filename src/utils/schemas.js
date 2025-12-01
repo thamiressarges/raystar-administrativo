@@ -52,3 +52,22 @@ export const signUpSchema = z.object({
   email: z.string().email("E-mail inválido"),
   password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
 });
+
+export const storeSettingsSchema = z.object({
+  name: z.string().min(3, "Nome da loja é obrigatório"),
+  email: z.string().email("E-mail inválido"),
+  cnpj: z.string().min(14, "CNPJ inválido").optional().or(z.literal('')),
+  
+  address: z.object({
+    cep: z.string().min(8, "CEP inválido"),
+    numero: z.string().min(1, "Número obrigatório"),
+    complemento: z.string().optional(),
+    bairro: z.string().min(1, "Bairro obrigatório"),
+    cidade: z.string().min(1, "Cidade obrigatória"),
+  }),
+  social_media: z.object({
+    instagram: z.string().optional(),
+    facebook: z.string().optional(),
+  }),
+  phones: z.array(z.string().min(1, "Telefone inválido")).optional(),
+});

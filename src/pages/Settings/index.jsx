@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import { FiTrash2, FiPlus, FiEdit2 } from 'react-icons/fi';
+import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 
+import { useSettings } from '../../hooks/useSettings';
 import { Input } from '../../components/Input';
 import { Loading } from '../../components/Loading';
-import { StoreApi } from '../../services/storeApi';
 import { PageContainer } from '../../styles/commonStyles';
+
 import {
     Content,
     Form,
@@ -23,208 +22,79 @@ import {
 } from './styles';
 
 export function Settings() {
-    const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const {
+        form, 
+        phoneFields,
+        appendPhone,
+        removePhone,
+        loading,
+        isEditing,
+        setIsEditing,
+        handleCancel,
+        handleSave,
+        fetchCep
+    } = useSettings();
 
-    const [storeId, setStoreId] = useState(null);
-    const [originalData, setOriginalData] = useState(null);
+    const { register, formState: { errors }, getValues } = form;
 
-    const [editedName, setEditedName] = useState('');
-    const [editedEmail, setEditedEmail] = useState('');
-    const [editedCnpj, setEditedCnpj] = useState('');
-    const [editedPhones, setEditedPhones] = useState([]);
-    const [editedSocial, setEditedSocial] = useState({ instagram: '', facebook: '' });
-
-    const [editedAddress, setEditedAddress] = useState({
-        cep: '', numero: '', complemento: '', bairro: '', cidade: '',
-    });
-
-    const loadStoreData = async () => {
-        setLoading(true);
-        try {
-            const data = await StoreApi.getStoreSettings();
-
-            setOriginalData(data);
-            setStoreId(data.id);
-
-            setEditedName(data.name || '');
-            setEditedEmail(data.email || '');
-            setEditedCnpj(data.cnpj || '');
-            setEditedPhones(data.phones || []);
-
-            setEditedAddress({
-                cep: data.address?.cep || '',
-                numero: data.address?.numero || '',
-                complemento: data.address?.complemento || '',
-                bairro: data.address?.bairro || '',
-                cidade: data.address?.cidade || '',
-            });
-
-            setEditedSocial({
-                instagram: data.social_media?.instagram || '',
-                facebook: data.social_media?.facebook || '',
-            });
-
-        } catch (err) {
-            toast.error('Falha ao carregar dados da loja: ' + err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadStoreData();
-    }, []);
-
-    // ... (Handlers mantidos para simplicidade, já que não usamos Hook Form aqui devido à estrutura dinâmica complexa de telefones/endereço aninhado, mas seria o próximo passo ideal)
-    
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        if (name === 'nome') setEditedName(value);
-        if (name === 'email') setEditedEmail(value);
-        if (name === 'cnpj') setEditedCnpj(value);
-    };
-
-    const handleAddressChange = (e) => {
-        const { name, value } = e.target;
-        setEditedAddress((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleSocialChange = (e) => {
-        const { name, value } = e.target;
-        setEditedSocial((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handlePhoneChange = (e, index) => {
-        const newPhones = [...editedPhones];
-        newPhones[index] = e.target.value;
-        setEditedPhones(newPhones);
-    };
-
-    const addPhone = () => setEditedPhones((prev) => [...prev, '']);
-    
-    const removePhone = (index) => setEditedPhones(prev => prev.filter((_, i) => i !== index));
-
-    const handleCepChange = async (e) => {
-        let cep = e.target.value.replace(/\D/g, '');
-        setEditedAddress((prev) => ({ ...prev, cep }));
-
-        if (cep.length === 8) {
-            try {
-                setLoading(true);
-                const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                const data = await response.json();
-
-                if (data.erro) {
-                    toast.warn('CEP não encontrado.');
-                } else {
-                    setEditedAddress((prev) => ({
-                        ...prev,
-                        bairro: data.bairro,
-                        cidade: data.localidade,
-                    }));
-                    toast.success('Endereço preenchido!');
-                }
-            } catch {
-                toast.error('Erro ao buscar CEP.');
-            } finally {
-                setLoading(false);
-            }
-        }
-    };
-
-    const handleEdit = () => setIsEditing(true);
-
-    const handleCancel = () => {
-        if (originalData) {
-            setEditedName(originalData.name || '');
-            setEditedEmail(originalData.email || '');
-            setEditedCnpj(originalData.cnpj || '');
-            setEditedPhones(originalData.phones || []);
-            setEditedAddress(originalData.address || { cep: '', numero: '', complemento: '', bairro: '', cidade: '' });
-            setEditedSocial(originalData.social_media || { instagram: '', facebook: '' });
-        }
-        setIsEditing(false);
-    };
-
-    const handleSave = async () => {
-        if (!storeId) return toast.error('Erro: ID da loja não encontrado.');
-
-        const updates = {
-            name: editedName,
-            email: editedEmail,
-            cnpj: editedCnpj,
-            phones: editedPhones,
-            address: editedAddress,
-            social_media: editedSocial,
-        };
-
-        try {
-            setLoading(true);
-            await StoreApi.updateStoreSettings(storeId, updates);
-            await loadStoreData();
-            toast.success('Loja atualizada com sucesso!');
-            setIsEditing(false);
-        } catch (err) {
-            toast.error('Erro ao salvar: ' + err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading && !originalData) return <Loading />;
+    if (loading && !isEditing) return <Loading />;
 
     return (
         <PageContainer>
             {loading && <Loading />}
 
             <Content>
-                <Form onSubmit={(e) => e.preventDefault()}>
+                <Form onSubmit={handleSave}>
                     <HeaderContainer>
                         <h2>Configurações da Loja</h2>
                         <ActionButtons>
                             {isEditing ? (
                                 <>
                                     <CancelButton title="Cancelar" type="button" onClick={handleCancel} />
-                                    <SaveButton title="Salvar" type="button" onClick={handleSave} />
+                                    <SaveButton title="Salvar" type="submit" />
                                 </>
                             ) : (
-                                <IconButton onClick={handleEdit}>
+                                <IconButton type="button" onClick={() => setIsEditing(true)}>
                                     <FiEdit2 size={22} />
                                 </IconButton>
                             )}
                         </ActionButtons>
                     </HeaderContainer>
 
+                    {/* --- DADOS GERAIS --- */}
                     <InputWrapper>
                         <label>Nome da Loja</label>
                         {isEditing ? (
-                            <Input name="nome" value={editedName} onChange={handleChange} />
+                            <Input {...register("name")} />
                         ) : (
-                            <InfoDisplay>{editedName}</InfoDisplay>
+                            // CORREÇÃO AQUI: Usando getValues direto, sem chamar o hook de novo
+                            <InfoDisplay>{getValues("name")}</InfoDisplay>
                         )}
+                        {errors.name && <span style={{color:'red', fontSize: 12}}>{errors.name.message}</span>}
                     </InputWrapper>
 
                     <InfoGroup>
                         <InputWrapper>
                             <label>Email</label>
                             {isEditing ? (
-                                <Input name="email" type="email" value={editedEmail} onChange={handleChange} />
+                                <Input {...register("email")} />
                             ) : (
-                                <InfoDisplay>{editedEmail}</InfoDisplay>
+                                <InfoDisplay>{getValues("email")}</InfoDisplay>
                             )}
+                             {errors.email && <span style={{color:'red', fontSize: 12}}>{errors.email.message}</span>}
                         </InputWrapper>
 
                         <InputWrapper>
                             <label>CNPJ</label>
                             {isEditing ? (
-                                <Input name="cnpj" value={editedCnpj} onChange={handleChange} />
+                                <Input {...register("cnpj")} />
                             ) : (
-                                <InfoDisplay>{editedCnpj}</InfoDisplay>
+                                <InfoDisplay>{getValues("cnpj")}</InfoDisplay>
                             )}
                         </InputWrapper>
                     </InfoGroup>
 
+                    {/* --- ENDEREÇO --- */}
                     <SectionHeader>
                         <h4>Endereço</h4>
                     </SectionHeader>
@@ -233,18 +103,23 @@ export function Settings() {
                         <InputWrapper>
                             <label>CEP</label>
                             {isEditing ? (
-                                <Input name="cep" value={editedAddress.cep} onChange={handleCepChange} maxLength={9} />
+                                <Input 
+                                    {...register("address.cep")} 
+                                    onBlur={(e) => fetchCep(e.target.value)} 
+                                    maxLength={9}
+                                />
                             ) : (
-                                <InfoDisplay>{editedAddress.cep}</InfoDisplay>
+                                <InfoDisplay>{getValues("address.cep")}</InfoDisplay>
                             )}
+                             {errors.address?.cep && <span style={{color:'red', fontSize: 12}}>{errors.address.cep.message}</span>}
                         </InputWrapper>
 
                         <InputWrapper>
                             <label>Número</label>
                             {isEditing ? (
-                                <Input name="numero" value={editedAddress.numero} onChange={handleAddressChange} />
+                                <Input {...register("address.numero")} />
                             ) : (
-                                <InfoDisplay>{editedAddress.numero}</InfoDisplay>
+                                <InfoDisplay>{getValues("address.numero")}</InfoDisplay>
                             )}
                         </InputWrapper>
                     </InfoGroup>
@@ -253,18 +128,18 @@ export function Settings() {
                         <InputWrapper>
                             <label>Complemento</label>
                             {isEditing ? (
-                                <Input name="complemento" value={editedAddress.complemento} onChange={handleAddressChange} />
+                                <Input {...register("address.complemento")} />
                             ) : (
-                                <InfoDisplay>{editedAddress.complemento}</InfoDisplay>
+                                <InfoDisplay>{getValues("address.complemento")}</InfoDisplay>
                             )}
                         </InputWrapper>
 
                         <InputWrapper>
                             <label>Bairro</label>
                             {isEditing ? (
-                                <Input name="bairro" value={editedAddress.bairro} onChange={handleAddressChange} />
+                                <Input {...register("address.bairro")} />
                             ) : (
-                                <InfoDisplay>{editedAddress.bairro}</InfoDisplay>
+                                <InfoDisplay>{getValues("address.bairro")}</InfoDisplay>
                             )}
                         </InputWrapper>
                     </InfoGroup>
@@ -272,40 +147,41 @@ export function Settings() {
                     <InputWrapper>
                         <label>Cidade</label>
                         {isEditing ? (
-                            <Input name="cidade" value={editedAddress.cidade} onChange={handleAddressChange} />
+                            <Input {...register("address.cidade")} />
                         ) : (
-                            <InfoDisplay>{editedAddress.cidade}</InfoDisplay>
+                            <InfoDisplay>{getValues("address.cidade")}</InfoDisplay>
                         )}
                     </InputWrapper>
 
+                    {/* --- TELEFONES (Dinâmico) --- */}
                     <SectionHeader>
                         <h4>Telefones</h4>
                         {isEditing && (
-                            <ButtonLink type="button" onClick={addPhone}>
+                            <ButtonLink type="button" onClick={() => appendPhone("")}>
                                 <FiPlus size={20} /> Adicionar Telefone
                             </ButtonLink>
                         )}
                     </SectionHeader>
 
-                    {editedPhones.map((phone, index) => (
-                        <ContactRow key={index}>
+                    {phoneFields.map((field, index) => (
+                        <ContactRow key={field.id}>
                             {isEditing ? (
                                 <>
-                                    <Input
-                                        value={phone}
-                                        onChange={(e) => handlePhoneChange(e, index)}
-                                        placeholder="(00) 90000-0000"
+                                    <Input 
+                                        {...register(`phones.${index}`)} 
+                                        placeholder="(00) 00000-0000"
                                     />
                                     <button type="button" className="trash-button" onClick={() => removePhone(index)}>
                                         <FiTrash2 size={20} />
                                     </button>
                                 </>
                             ) : (
-                                <span className="phone-text">{phone}</span>
+                                <span className="phone-text">{getValues(`phones.${index}`)}</span>
                             )}
                         </ContactRow>
                     ))}
 
+                    {/* --- REDES SOCIAIS --- */}
                     <SectionHeader>
                         <h4>Redes Sociais</h4>
                     </SectionHeader>
@@ -314,18 +190,18 @@ export function Settings() {
                         <InputWrapper>
                             <label>Instagram</label>
                             {isEditing ? (
-                                <Input name="instagram" value={editedSocial.instagram} onChange={handleSocialChange} placeholder="@sua_loja" />
+                                <Input {...register("social_media.instagram")} placeholder="@sua_loja" />
                             ) : (
-                                <InfoDisplay>{editedSocial.instagram}</InfoDisplay>
+                                <InfoDisplay>{getValues("social_media.instagram")}</InfoDisplay>
                             )}
                         </InputWrapper>
 
                         <InputWrapper>
                             <label>Facebook</label>
                             {isEditing ? (
-                                <Input name="facebook" value={editedSocial.facebook} onChange={handleSocialChange} placeholder="facebook.com/sua_loja" />
+                                <Input {...register("social_media.facebook")} placeholder="facebook.com/page" />
                             ) : (
-                                <InfoDisplay>{editedSocial.facebook}</InfoDisplay>
+                                <InfoDisplay>{getValues("social_media.facebook")}</InfoDisplay>
                             )}
                         </InputWrapper>
                     </InfoGroup>
