@@ -1,27 +1,24 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
+// Layout
+import { DefaultLayout } from "../../layouts/DefaultLayout";
+
 // Autenticação
 import { SignIn } from "../SignIn";
 import { ResetPassword } from "../ResetPassword";
 
-// Core
-import { Profile } from "../Profile";
-import { Settings } from "../Settings";
+// Componente de Proteção
 import { PrivateRoute } from "../../components/PrivateRoute/PrivateRoute";
 
-// Pedidos
+// Páginas
+import { Profile } from "../Profile";
+import { Settings } from "../Settings";
 import { Order } from "../Order";
 import { OrderDetails } from "../OrderDetails";
-
-// Clientes
 import { Clients } from "../Clients";
 import { ClientsDetails } from "../ClientsDetails";
-
-// Categorias
 import { Category } from "../Category";
 import { CategoryDetails } from "../CategoryDetails";
-
-// Produtos
 import { Products } from "../Products";
 import { ProductsDetails } from "../ProductsDetails";
 import { NewProduct } from "../NewProduct";
@@ -34,29 +31,32 @@ export function AppRoutes() {
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* --- Rotas Privadas --- */}
-      
-      {/* Pedidos */}
-      <Route path="/order" element={<PrivateRoute><Order /></PrivateRoute>} />
-      <Route path="/orderDetails/:id" element={<PrivateRoute><OrderDetails /></PrivateRoute>} />
+      <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
+        
+        {/* Pedidos */}
+        <Route path="/order" element={<Order />} />
+        <Route path="/orderDetails/:id" element={<OrderDetails />} />
 
-      {/* Clientes */}
-      <Route path="/clients" element={<PrivateRoute><Clients /></PrivateRoute>} />
-      <Route path="/clientsDetails/:id" element={<PrivateRoute><ClientsDetails /></PrivateRoute>} />
+        {/* Clientes */}
+        <Route path="/clients" element={<Clients />} />
+        <Route path="/clientsDetails/:id" element={<ClientsDetails />} />
 
-      {/* Categorias */}
-      <Route path="/category" element={<PrivateRoute><Category /></PrivateRoute>} />
-      <Route path="/categoryDetails/:id" element={<PrivateRoute><CategoryDetails /></PrivateRoute>} />
+        {/* Categorias */}
+        <Route path="/category" element={<Category />} />
+        <Route path="/categoryDetails/:id" element={<CategoryDetails />} />
 
-      {/* Produtos */}
-      <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
-      <Route path="/products/new" element={<PrivateRoute><NewProduct /></PrivateRoute>} />
-      <Route path="/productDetails/:id" element={<PrivateRoute><ProductsDetails /></PrivateRoute>} />
+        {/* Produtos */}
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/new" element={<NewProduct />} />
+        <Route path="/productDetails/:id" element={<ProductsDetails />} />
 
-      {/* Configurações e Perfil */}
-      <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-      <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+        {/* Configurações e Perfil */}
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/profile" element={<Profile />} />
 
-      {/* Redirecionamento para rotas inexistentes */}
+      </Route>
+
+      {/* Rotas que não existem*/}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
