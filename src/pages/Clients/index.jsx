@@ -5,6 +5,7 @@ import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
+import { formatPhone } from '../../utils/format'; // Importando o formatador
 
 // Importando estilos locais (apenas o que é específico) e compartilhados
 import { Container, SearchArea, EmptyState, PaginationWrapper } from './styles';
@@ -24,7 +25,12 @@ export function Clients() {
   } = useClients();
 
   const clientsHeaders = ["Nome", "Email", "Telefone"];
-  const clientsDataKeys = ["name", "email", "phone"];
+  const clientsDataKeys = ["name", "email", "formattedPhone"];
+
+  const formattedClients = clients.map(client => ({
+      ...client,
+      formattedPhone: formatPhone(client.phones?.main || client.phones?.[0])
+  }));
 
   const handleDetailsClick = (client) => {
     navigate(`/clientsDetails/${client.uid}`);
@@ -50,7 +56,7 @@ export function Clients() {
         ) : (
           <>
             <Table
-              data={clients}
+              data={formattedClients}
               headers={clientsHeaders}
               dataKeys={clientsDataKeys}
               onDetailsClick={handleDetailsClick}

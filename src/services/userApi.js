@@ -1,5 +1,4 @@
 import { supabase } from './supabase';
-import { formatPhone } from '../utils/format';
 
 export const UserApi = {
 
@@ -26,13 +25,7 @@ export const UserApi = {
     const { data, error, count } = await query.range(from, to);
 
     if (error) throw new Error(error.message);
-
-    const formattedData = data.map(client => ({
-        ...client,
-        phone: formatPhone(client.phones?.main || client.phones?.[0])
-    }));
-
-    return { data: formattedData, count };
+    return { data, count };
   },
 
   async getClientById(uid) {
