@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
 import { FiPlus, FiTrash2, FiImage, FiX, FiSave, FiAlertCircle } from 'react-icons/fi';
 
 import { productSchema } from '../../utils/schemas';
-import { StorageApi } from '../../services/storageApi';
+import { useImageUpload } from '../../hooks/useImageUpload'; // Novo hook
 import { Switch } from '../Switch';
 import { Loading } from '../Loading';
 
@@ -17,8 +17,12 @@ import {
 } from './styles';
 
 export function ProductForm({ initialData, categories, onSubmit, onCancel }) {
-    const [uploading, setUploading] = useState(false);
-    const [previews, setPreviews] = useState(initialData?.photos || []);
+    const { 
+        previews, 
+        uploading, 
+        handleImageUpload, 
+        removeImage 
+    } = useImageUpload(initialData?.photos || []);
 
     const { 
         register, 
@@ -52,33 +56,6 @@ export function ProductForm({ initialData, categories, onSubmit, onCancel }) {
 
     const hasVariations = watch("hasVariations");
 
-    const handleImageUpload = async (e) => {
-        const files = Array.from(e.target.files);
-        if(!files.length) return;
-        
-        setUploading(true);
-        try {
-            const uploadedUrls = [];
-            for (const file of files) {
-                const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-                const path = `products/${Date.now()}-${cleanName}`;
-                const url = await StorageApi.uploadImage(file, path);
-                uploadedUrls.push(url);
-            }
-            setPreviews(prev => [...prev, ...uploadedUrls]);
-            toast.success(`${files.length} imagem(ns) enviada(s)!`);
-        } catch (err) {
-            console.error(err);
-            toast.error("Erro ao fazer upload da imagem.");
-        } finally {
-            setUploading(false);
-        }
-    };
-
-    const handleRemoveImage = (urlToRemove) => {
-        setPreviews(prev => prev.filter(url => url !== urlToRemove));
-    };
-
     const submitHandler = (data) => {
         if (previews.length === 0) {
             return toast.warn("Adicione pelo menos uma imagem ao produto.");
@@ -99,7 +76,7 @@ export function ProductForm({ initialData, categories, onSubmit, onCancel }) {
                                 {previews.map((url, idx) => (
                                     <ImageBox key={idx}>
                                         <img src={url} alt={`Preview ${idx}`} />
-                                        <button type="button" onClick={() => handleRemoveImage(url)}>
+                                        <button type="button" onClick={() => removeImage(url)}>
                                             <FiX />
                                         </button>
                                     </ImageBox>

@@ -1,35 +1,24 @@
-// src/services/storageApi.js
 import { supabase } from './supabase';
-
-// O nome do Balde que você criou no Passo 2
-const BUCKET_NAME = 'product-images';
+import { STORAGE_BUCKETS } from '../utils/constants';
 
 export const StorageApi = {
 
-  /**
-   * Faz upload de um arquivo para o Supabase Storage.
-   * @param {File} file - O objeto do arquivo (ex: event.target.files[0])
-   * @param {string} filePath - O caminho/nome do arquivo no bucket (ex: 'public/produto-1.png')
-   * @returns {string} A URL pública do arquivo
-   */
   async uploadImage(file, filePath) {
     try {
-      // 1. Faz o upload do arquivo
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(BUCKET_NAME)
+        .from(STORAGE_BUCKETS.PRODUCTS)
         .upload(filePath, file, {
-          cacheControl: '3600', // Cache de 1 hora
-          upsert: true, // Sobrescreve se já existir
+          cacheControl: '3600',
+          upsert: true,
         });
 
       if (uploadError) {
         throw uploadError;
       }
 
-      // 2. Pega a URL pública do arquivo que acabamos de enviar
       const { data: urlData } = supabase.storage
-        .from(BUCKET_NAME)
-        .getPublicUrl(uploadData.path); // 'uploadData.path' é o filePath
+        .from(STORAGE_BUCKETS.PRODUCTS)
+        .getPublicUrl(uploadData.path); 
 
       if (!urlData.publicUrl) {
         throw new Error("Não foi possível obter a URL pública.");
