@@ -11,6 +11,7 @@ import { orderApi } from "../../services/orderApi";
 import { Loading } from "../../components/Loading";
 import { formatCurrency, formatDate, formatBirthDate, translateOrderStatus } from "../../utils/format";
 import { theme } from "../../styles/theme";
+import { ORDER_STATUS } from "../../utils/constants";
 
 import { PageContainer, PageHeader, PageTitle, BackButton } from "../../styles/commonStyles";
 import * as S from "./styles";
@@ -74,6 +75,10 @@ export function OrderDetails() {
   const storeAddress = store?.address 
       ? `${store.address.street || ""}, ${store.address.number || ""} - ${store.address.neighborhood || ""}`
       : "Endereço não disponível";
+
+  const isDelivered = [ORDER_STATUS.DELIVERED, ORDER_STATUS.DELIVERED_PT].includes(order.deliveryInfo.status);
+  const isCanceled = [ORDER_STATUS.CANCELED, ORDER_STATUS.CANCELED_PT, ORDER_STATUS.RETURNED].includes(order.deliveryInfo.status);
+  const isOutForDelivery = order.deliveryInfo.status === ORDER_STATUS.OUT_FOR_DELIVERY;
 
   return (
     <PageContainer>
@@ -163,7 +168,7 @@ export function OrderDetails() {
                 <S.SectionHeader><div><FiTruck /> Status Atual</div></S.SectionHeader>
                 <S.StatusBanner type={order.deliveryInfo.status}>
                     <div className="icon">
-                        {order.deliveryInfo.status === 'entregue' ? <FiCheck /> : <FiTruck />}
+                        {isDelivered ? <FiCheck /> : <FiTruck />}
                     </div>
                     <div className="content">
                       <strong>{translateOrderStatus(order.deliveryInfo.status)}</strong>
@@ -194,8 +199,7 @@ export function OrderDetails() {
                 </S.Summary>
 
                 <S.ButtonsRow>
-                  {!order.deliveryInfo.isPickup && 
-                   ['saiu_para_entrega', 'entregue'].includes(order.deliveryInfo.status) && (
+                  {!order.deliveryInfo.isPickup && (isOutForDelivery || isDelivered) && (
                     <S.RouteButton onClick={handleGenerateUberRoute} disabled={loadingRoute}>
                       <FiMap /> 
                       {loadingRoute ? "Gerando..." : "Ver Rota (QR)"}
@@ -210,7 +214,7 @@ export function OrderDetails() {
                     {buttonStyle.icon} {nextStep.label}
                   </S.PrimaryButton>
 
-                  {order.deliveryInfo.status !== 'entregue' && order.deliveryInfo.status !== 'cancelado' && (
+                  {!isDelivered && !isCanceled && (
                       <S.SecondaryButton disabled={processingAction} onClick={cancelOrder}>
                         <FiX /> Cancelar Pedido
                       </S.SecondaryButton>

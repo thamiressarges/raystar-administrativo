@@ -1,14 +1,14 @@
 import { supabase } from "./supabase"; 
+import { ORDER_STATUS } from "../utils/constants";
 
 export const orderApi = {
-  // --- CONFIGURAÇÃO DA LOJA ---
+  
   async getStoreConfig() {
     const { data, error } = await supabase.from("stores").select("*").single();
     if (error) { console.error("Erro store:", error); return null; }
     return data;
   },
 
-  // --- LISTAGEM ---
   async getOrders(page, limit) {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
@@ -26,7 +26,6 @@ export const orderApi = {
 
     if (error) throw error;
     
-    // Normaliza arrays para objetos simples, mas mantém dados RAW
     const normalizedData = data.map(o => ({
         ...o,
         payment: Array.isArray(o.payment) ? o.payment[0] : o.payment,
@@ -36,12 +35,10 @@ export const orderApi = {
     return { data: normalizedData, count };
   },
 
-  // --- DETALHES ---
   async getOrderDetails(orderId) {
     const { data: order, error } = await supabase.from("orders").select("*").eq("id", orderId).single();
     if (error) throw error;
 
-    // Buscas paralelas para performance
     const [clientRes, deliveryRes, paymentRes, itemsRes] = await Promise.all([
       supabase.from("users").select("*").eq("uid", order.client_id).single(),
       supabase.from("deliveries").select("*").eq("order_id", orderId).maybeSingle(),
@@ -51,7 +48,6 @@ export const orderApi = {
 
     return {
       ...order,
-      // Status do pedido tem prioridade, fallback para delivery
       status: order.status || deliveryRes.data?.status, 
       client: clientRes.data || {},
       delivery: deliveryRes.data || {},
@@ -60,9 +56,7 @@ export const orderApi = {
     };
   },
   
-  // --- UPDATES ---
   async updateDeliveryStatus(deliveryId, orderId, newStatus) {
-    // Transação manual: Atualiza entrega E pedido
     const { error: deliveryError } = await supabase
         .from("deliveries")
         .update({ status: newStatus })
@@ -92,10 +86,12 @@ export const orderApi = {
   },
   
   async cancelOrder(orderId, deliveryId) {
+    const CANCELED_STATUS = ORDER_STATUS.CANCELED_PT;
+
     if (deliveryId) {
-        await supabase.from("deliveries").update({ status: 'cancelado' }).eq("id", deliveryId);
+        await supabase.from("deliveries").update({ status: CANCELED_STATUS }).eq("id", deliveryId);
     }
-    const { error } = await supabase.from("orders").update({ status: "cancelado", is_canceled: true }).eq("id", orderId);
+    const { error } = await supabase.from("orders").update({ status: CANCELED_STATUS, is_canceled: true }).eq("id", orderId);
     if (error) throw error;
     return true;
   }

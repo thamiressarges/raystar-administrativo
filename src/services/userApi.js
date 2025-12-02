@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { USER_ROLES } from '../utils/constants';
 
 export const UserApi = {
 
@@ -16,7 +17,7 @@ export const UserApi = {
       .from('users')
       .select('uid, name, email, phones, cpf', { count: 'exact' })
       .eq('is_deleted', false)
-      .contains('permissions', '{client}');
+      .contains('permissions', `{${USER_ROLES.CLIENT}}`);
 
     if (searchTerm) {
       query = query.ilike('name', `%${searchTerm}%`);

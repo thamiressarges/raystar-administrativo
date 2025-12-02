@@ -9,6 +9,7 @@ import { useProfile } from '../../hooks/useProfile';
 import { Loading } from '../../components/Loading';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { getInitials, formatDate, getRoleName } from '../../utils/format';
+import { USER_ROLES } from '../../utils/constants';
 
 import { PageContainer } from '../../styles/commonStyles';
 import {
@@ -53,7 +54,7 @@ export function Profile() {
   };
 
   if (loading && !currentUser) return <Loading />;
-  if (!currentUser) return null; // Redirecionamento é tratado no PrivateRoute geralmente
+  if (!currentUser) return null; 
 
   return (
     <PageContainer>
@@ -146,7 +147,7 @@ export function Profile() {
                     <td>{user.email}</td>
                     <td>
                       <span 
-                        className={`role-tag ${user.permissions?.includes('super_admin') ? 'super' : ''}`}
+                        className={`role-tag ${user.permissions?.includes(USER_ROLES.SUPER_ADMIN) ? 'super' : ''}`}
                       >
                         {getRoleName(user.permissions)}
                       </span>

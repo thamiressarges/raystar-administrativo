@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "../services/supabase";
+import { USER_ROLES } from "../utils/constants";
 
 const AuthContext = createContext({});
 
@@ -8,11 +9,7 @@ export function AuthProvider({ children }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // -----------------------
-  //        LOGIN
-  // -----------------------
   async function login(email, password) {
-    // 1. Login no Supabase Auth
     const { data: sessionData, error: sessionError } =
       await supabase.auth.signInWithPassword({
         email,
@@ -28,7 +25,6 @@ export function AuthProvider({ children }) {
       throw new Error("Erro inesperado: usuário não retornado.");
     }
 
-    // 2. Buscar no banco (tabela users)
     const { data: profile, error: profileError } = await supabase
       .from("users")
       .select("*")
@@ -40,29 +36,21 @@ export function AuthProvider({ children }) {
       throw new Error("Perfil não encontrado.");
     }
 
-    // 3. VALIDAÇÕES DO NOVO SCHEMA
     if (profile.status !== "active") {
       await supabase.auth.signOut();
       throw new Error("Sua conta está inativa.");
     }
 
-    // Tudo certo → logar
     setUser(authUser);
     setUserProfile(profile);
   }
 
-  // -----------------------
-  //        LOGOUT
-  // -----------------------
   async function logout() {
     await supabase.auth.signOut();
     setUser(null);
     setUserProfile(null);
   }
 
-  // -----------------------
-  //    PERSISTÊNCIA LOGIN
-  // -----------------------
   useEffect(() => {
     async function loadUser() {
       const {
@@ -110,10 +98,9 @@ export function AuthProvider({ children }) {
       value={{
         user,
         userProfile,
-        // permissões agora são ENUMS: 'admin', 'super_admin', 'client'
-        isSuperAdmin: userProfile?.permissions?.includes("super_admin"),
-        isAdmin: userProfile?.permissions?.includes("admin"),
-        isClient: userProfile?.permissions?.includes("client"),
+        isSuperAdmin: userProfile?.permissions?.includes(USER_ROLES.SUPER_ADMIN),
+        isAdmin: userProfile?.permissions?.includes(USER_ROLES.ADMIN),
+        isClient: userProfile?.permissions?.includes(USER_ROLES.CLIENT),
 
         login,
         logout,

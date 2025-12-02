@@ -28,3 +28,9 @@ export const USER_ROLES = {
 export const STORAGE_BUCKETS = {
   PRODUCTS: 'product-images'
 };
+
+export const PAYMENT_METHODS = {
+  CREDIT_CARD: 'cartao_credito',
+  PIX: 'pix',
+  BOLETO: 'boleto'
+};
