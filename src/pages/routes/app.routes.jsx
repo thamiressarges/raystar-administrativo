@@ -1,16 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-
-// Layout
 import { DefaultLayout } from "../../layouts/DefaultLayout";
-
-// Autenticação
 import { SignIn } from "../SignIn";
 import { ResetPassword } from "../ResetPassword";
-
-// Componente de Proteção
 import { PrivateRoute } from "../../components/PrivateRoute/PrivateRoute";
-
-// Páginas
 import { Profile } from "../Profile";
 import { Settings } from "../Settings";
 import { Order } from "../Order";
