@@ -9,7 +9,7 @@ export const Overlay = styled.div`
   justify-content: center;
   z-index: 999;
   padding: 20px;
-  backdrop-filter: blur(2px); /* Efeito moderno de desfoque */
+  backdrop-filter: blur(2px); 
 `;
 
 export const ModalContent = styled.div`
@@ -42,7 +42,7 @@ export const FormRow = styled.div`
   display: flex;
   flex-wrap: wrap; 
   gap: 16px; 
-  align-items: flex-start; /* Alinhamento corrigido para evitar esticar inputs */
+  align-items: flex-start; 
 `;
 
 export const FormGroup = styled.div`
@@ -52,7 +52,7 @@ export const FormGroup = styled.div`
   flex: 1 1 200px;
 
   &.small {
-    flex: 0 1 140px; /* Largura fixa melhorada para campos pequenos */
+    flex: 0 1 140px; 
   }
   
   label {
@@ -85,7 +85,7 @@ export const FormGroup = styled.div`
 
 export const Footer = styled.div`
   display: flex;
-  justify-content: flex-end; /* Botões alinhados à direita é padrão UX melhor */
+  justify-content: flex-end;
   gap: 12px;
   margin-top: 16px;
   padding-top: 24px;

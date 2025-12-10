@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from 'react-toastify'; 
-import { validateVariationForm } from "../../utils/validators"; // Importando nosso validador
+import { validateVariationForm } from "../../utils/validators";
 
 import { 
   Overlay, 
@@ -36,8 +36,8 @@ export function AddVariationModal({ isOpen, onClose, onSubmit }) {
                 id: `temp-${Date.now()}`,
                 tamanho: tamanho.trim(), 
                 cor: cor.trim(), 
-                estoque: Number(estoque), 
-                preco: Number(preco)
+                quantity: Number(estoque), 
+                price: Number(preco)
             };
             
             if (onSubmit) {
