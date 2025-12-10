@@ -1,22 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
-import { FiPlus, FiTrash2, FiImage, FiX, FiSave, FiAlertCircle } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiImage, FiX } from 'react-icons/fi';
 
 import { productSchema } from '../../utils/schemas';
-import { useImageUpload } from '../../hooks/useImageUpload'; // Novo hook
+import { useImageUpload } from '../../hooks/useImageUpload';
 import { Switch } from '../Switch';
 import { Loading } from '../Loading';
+import { AddVariationModal } from '../AddVariationModal'; 
+import { formatCurrency } from '../../utils/format';
 
 import {
-    FormContainer, MainGrid, LeftColumn, RightColumn, Section, FormGroup,
-    Input, Select, Textarea, ImageUploadArea, ImagePreviewGrid, ImageBox,
-    UploadButton, VariationsTable, ActionsBar, SaveButton, CancelButton,
-    AddVariationButton, SwitchWrapper
+    FormContainer,
+    LayoutGrid,
+    LeftColumn,
+    RightColumn,
+    Card,
+    ImagePreviewArea,
+    MainImagePlaceholder,
+    ThumbnailsList,
+    AddImageButton,
+    ThumbnailItem,
+    FormGroup,
+    Label,
+    Input,
+    Select,
+    Textarea,
+    VariationsSection,
+    VariationsHeader,
+    EmptyVariationsBox,
+    VariationsTable,
+    AddVariationButton,
+    RemoveButton
 } from './styles';
 
-export function ProductForm({ initialData, categories, onSubmit, onCancel }) {
+export function ProductForm({ initialData, categories, onSubmit, onCancel, formId }) {
     const { 
         previews, 
         uploading, 
@@ -24,12 +43,16 @@ export function ProductForm({ initialData, categories, onSubmit, onCancel }) {
         removeImage 
     } = useImageUpload(initialData?.photos || []);
 
+    const [isVariationModalOpen, setIsVariationModalOpen] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
     const { 
         register, 
         control, 
         handleSubmit, 
         watch,
-        formState: { errors, isSubmitting } 
+        setValue,
+        formState: { errors } 
     } = useForm({
         resolver: zodResolver(productSchema),
         defaultValues: {
@@ -55,6 +78,7 @@ export function ProductForm({ initialData, categories, onSubmit, onCancel }) {
     });
 
     const hasVariations = watch("hasVariations");
+    const variations = watch("variations");
 
     const submitHandler = (data) => {
         if (previews.length === 0) {
@@ -63,92 +87,135 @@ export function ProductForm({ initialData, categories, onSubmit, onCancel }) {
         onSubmit({ ...data, photos: previews });
     };
 
-    return (
-        <FormContainer onSubmit={handleSubmit(submitHandler)}>
-            {uploading && <Loading />}
-            
-            <MainGrid>
-                <LeftColumn>
-                    <Section>
-                        <h2>Imagens do Produto</h2>
-                        <ImageUploadArea>
-                            <ImagePreviewGrid>
-                                {previews.map((url, idx) => (
-                                    <ImageBox key={idx}>
-                                        <img src={url} alt={`Preview ${idx}`} />
-                                        <button type="button" onClick={() => removeImage(url)}>
-                                            <FiX />
-                                        </button>
-                                    </ImageBox>
-                                ))}
-                                <UploadButton>
-                                    <FiImage size={24} />
-                                    <span>Adicionar</span>
-                                    <input type="file" multiple accept="image/*" onChange={handleImageUpload} />
-                                </UploadButton>
-                            </ImagePreviewGrid>
-                        </ImageUploadArea>
-                    </Section>
-                </LeftColumn>
+    const onError = (errors) => {
+        console.error(errors);
+        toast.warn("Verifique os campos obrigatórios.");
+    };
 
-                <RightColumn>
-                    <Section>
-                        <h2>Informações Gerais</h2>
-                        
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+    const handleAddVariation = (newVariation) => {
+        append({
+            tamanho: newVariation.tamanho,
+            cor: newVariation.cor,
+            quantity: newVariation.quantity,
+            price: newVariation.price
+        });
+    };
+
+    return (
+        <>
+            <FormContainer id={formId} onSubmit={handleSubmit(submitHandler, onError)}>
+                {uploading && <Loading />}
+                
+                <LayoutGrid>
+                    <LeftColumn>
+                        <Card>
+                            <h3 className="card-title">Imagens do Produto</h3>
+                            
+                            <ImagePreviewArea>
+                                {previews.length > 0 ? (
+                                    <img 
+                                        src={previews[selectedImageIndex] || previews[0]} 
+                                        alt="Preview Principal" 
+                                    />
+                                ) : (
+                                    <MainImagePlaceholder>
+                                        <FiImage size={48} />
+                                        <span>Nenhuma imagem adicionada</span>
+                                    </MainImagePlaceholder>
+                                )}
+                            </ImagePreviewArea>
+
+                            <ThumbnailsList>
+                                {previews.map((url, idx) => (
+                                    <ThumbnailItem 
+                                        key={idx} 
+                                        $active={selectedImageIndex === idx}
+                                        onClick={() => setSelectedImageIndex(idx)}
+                                    >
+                                        <img src={url} alt={`Thumb ${idx}`} />
+                                        <button type="button" onClick={(e) => { e.stopPropagation(); removeImage(url); }}>
+                                            <FiX size={12}/>
+                                        </button>
+                                    </ThumbnailItem>
+                                ))}
+                                
+                                <AddImageButton>
+                                    <FiPlus size={24} />
+                                    <input type="file" multiple accept="image/*" onChange={handleImageUpload} />
+                                </AddImageButton>
+                            </ThumbnailsList>
+                            
+                            <p className="hint">Clique no + para adicionar imagens do produto</p>
+                        </Card>
+                    </LeftColumn>
+
+                    <RightColumn>
+                        <Card>
                             <FormGroup>
-                                <label>Nome do Produto *</label>
-                                <Input placeholder="Ex: Camiseta Básica" {...register("name")} />
+                                <Label>Nome *</Label>
+                                <Input placeholder="Ex: Camiseta Premium Oversized" {...register("name")} />
                                 {errors.name && <span className="error">{errors.name.message}</span>}
                             </FormGroup>
 
                             <FormGroup>
-                                <label>Categoria *</label>
+                                <Label>Categoria *</Label>
                                 <Select {...register("categoryId")}>
-                                    <option value="">Selecione...</option>
+                                    <option value="">Selecione uma categoria</option>
                                     {categories.map(c => (
                                         <option key={c.id} value={c.id}>{c.name}</option>
                                     ))}
                                 </Select>
                                 {errors.categoryId && <span className="error">{errors.categoryId.message}</span>}
                             </FormGroup>
-                        </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <FormGroup>
-                                <label>Preço Base (R$) *</label>
+                                <Label>Preço Base *</Label>
                                 <Input type="number" step="0.01" placeholder="0.00" {...register("price")} />
                                 {errors.price && <span className="error">{errors.price.message}</span>}
                             </FormGroup>
 
+                            {!hasVariations && (
+                                <FormGroup>
+                                    <Label>Estoque Disponível *</Label>
+                                    <Input 
+                                        type="number" 
+                                        placeholder="0" 
+                                        {...register("simpleStock")} 
+                                    />
+                                    {errors.simpleStock && <span className="error">{errors.simpleStock.message}</span>}
+                                </FormGroup>
+                            )}
+
+                            <div className="availability-row">
+                                <label className="checkbox-label">
+                                    <input type="checkbox" {...register("isAvailable")} />
+                                    Produto disponível
+                                </label>
+                                
+                                {!hasVariations && (
+                                    <span className="stock-info">
+                                        Estoque total: {watch("simpleStock") || 0} unidades
+                                    </span>
+                                )}
+                            </div>
+
                             <FormGroup>
-                                <label>Disponibilidade</label>
-                                <div style={{ marginTop: '10px' }}>
-                                    <SwitchWrapper>
-                                        <span>Produto visível na loja?</span>
-                                        <Controller
-                                            name="isAvailable"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Switch checked={field.value} onChange={field.onChange} />
-                                            )}
-                                        />
-                                    </SwitchWrapper>
-                                </div>
+                                <Label>Descrição *</Label>
+                                <Textarea 
+                                    placeholder="Descreva as características..." 
+                                    rows={5}
+                                    {...register("description")} 
+                                />
                             </FormGroup>
-                        </div>
+                        </Card>
+                    </RightColumn>
+                </LayoutGrid>
 
-                        <FormGroup>
-                            <label>Descrição</label>
-                            <Textarea placeholder="Detalhes do produto..." {...register("description")} />
-                        </FormGroup>
-                    </Section>
-
-                    <Section>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                            <h2 style={{ border: 'none', padding: 0, margin: 0 }}>Estoque e Variações</h2>
-                            <SwitchWrapper>
-                                <span style={{ marginRight: 8 }}>Este produto tem variações?</span>
+                <VariationsSection>
+                    <Card>
+                        <VariationsHeader>
+                            <h3>Variações do Produto</h3>
+                            <div className="toggle-wrapper">
                                 <Controller
                                     name="hasVariations"
                                     control={control}
@@ -156,65 +223,37 @@ export function ProductForm({ initialData, categories, onSubmit, onCancel }) {
                                         <Switch checked={field.value} onChange={field.onChange} />
                                     )}
                                 />
-                            </SwitchWrapper>
-                        </div>
+                            </div>
+                        </VariationsHeader>
 
                         {!hasVariations ? (
-                            <FormGroup>
-                                <label>Quantidade em Estoque</label>
-                                <Input 
-                                    type="number" 
-                                    placeholder="0" 
-                                    style={{ maxWidth: '150px' }}
-                                    {...register("simpleStock")} 
-                                />
-                                {errors.simpleStock && <span className="error">{errors.simpleStock.message}</span>}
-                            </FormGroup>
+                            <EmptyVariationsBox>
+                                <p>Produto cadastrado com preço único. Para adicionar variações, ative a chave acima.</p>
+                            </EmptyVariationsBox>
                         ) : (
-                            <>
-                                {fields.length === 0 && (
-                                    <div style={{ padding: '20px', textAlign: 'center', color: '#666', background: '#F9FAFB', borderRadius: '8px' }}>
-                                        <FiAlertCircle size={24} style={{ marginBottom: 8, display: 'block', margin: '0 auto' }} />
-                                        Nenhuma variação adicionada. Clique no botão abaixo.
-                                    </div>
-                                )}
-                                
+                            <div style={{ marginTop: 20 }}>
                                 {fields.length > 0 && (
                                     <VariationsTable>
                                         <thead>
                                             <tr>
-                                                <th style={{ width: '25%' }}>Tamanho</th>
-                                                <th style={{ width: '25%' }}>Cor</th>
-                                                <th style={{ width: '20%' }}>Estoque</th>
-                                                <th style={{ width: '20%' }}>Preço (Opcional)</th>
-                                                <th style={{ width: '10%' }}></th>
+                                                <th>Tamanho</th>
+                                                <th>Cor</th>
+                                                <th>Estoque</th>
+                                                <th>Preço</th>
+                                                <th style={{ width: 50 }}>Ações</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {fields.map((field, index) => (
                                                 <tr key={field.id}>
+                                                    <td>{field.tamanho}</td>
+                                                    <td>{field.cor}</td>
+                                                    <td>{field.quantity}</td>
+                                                    <td>{field.price ? formatCurrency(field.price) : '—'}</td>
                                                     <td>
-                                                        <Input placeholder="Ex: M" {...register(`variations.${index}.tamanho`)} />
-                                                        {errors.variations?.[index]?.tamanho && <span className="error">Obrigatório</span>}
-                                                    </td>
-                                                    <td>
-                                                        <Input placeholder="Ex: Azul" {...register(`variations.${index}.cor`)} />
-                                                        {errors.variations?.[index]?.cor && <span className="error">Obrigatório</span>}
-                                                    </td>
-                                                    <td>
-                                                        <Input type="number" placeholder="0" {...register(`variations.${index}.quantity`)} />
-                                                    </td>
-                                                    <td>
-                                                        <Input type="number" step="0.01" placeholder="Igual base" {...register(`variations.${index}.price`)} />
-                                                    </td>
-                                                    <td style={{ textAlign: 'center' }}>
-                                                        <button 
-                                                            type="button" 
-                                                            onClick={() => remove(index)}
-                                                            style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer' }}
-                                                        >
-                                                            <FiTrash2 size={18} />
-                                                        </button>
+                                                        <RemoveButton type="button" onClick={() => remove(index)}>
+                                                            <FiTrash2 />
+                                                        </RemoveButton>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -222,27 +261,20 @@ export function ProductForm({ initialData, categories, onSubmit, onCancel }) {
                                     </VariationsTable>
                                 )}
 
-                                <AddVariationButton 
-                                    type="button" 
-                                    onClick={() => append({ tamanho: "", cor: "", quantity: 0, price: "" })}
-                                >
-                                    <FiPlus /> Adicionar Variação
+                                <AddVariationButton type="button" onClick={() => setIsVariationModalOpen(true)}>
+                                    + Adicionar Variação
                                 </AddVariationButton>
-                            </>
+                            </div>
                         )}
-                    </Section>
-                </RightColumn>
-            </MainGrid>
+                    </Card>
+                </VariationsSection>
+            </FormContainer>
 
-            <ActionsBar>
-                <CancelButton type="button" onClick={onCancel}>
-                    Cancelar
-                </CancelButton>
-                <SaveButton type="submit" disabled={isSubmitting}>
-                    <FiSave />
-                    {isSubmitting ? "Salvando..." : "Salvar Produto"}
-                </SaveButton>
-            </ActionsBar>
-        </FormContainer>
+            <AddVariationModal 
+                isOpen={isVariationModalOpen} 
+                onClose={() => setIsVariationModalOpen(false)}
+                onSubmit={handleAddVariation}
+            />
+        </>
     );
 }

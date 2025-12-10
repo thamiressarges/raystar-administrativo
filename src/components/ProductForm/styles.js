@@ -4,137 +4,124 @@ export const FormContainer = styled.form`
   display: flex;
   flex-direction: column;
   gap: 24px;
+  width: 100%;
 `;
 
-export const MainGrid = styled.div`
-  display: flex;
+export const LayoutGrid = styled.div`
+  display: grid;
+  grid-template-columns: 380px 1fr;
   gap: 24px;
   align-items: flex-start;
 
   @media (max-width: 1024px) {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 `;
 
 export const LeftColumn = styled.div`
-  flex: 0 0 350px;
-  width: 350px;
-
-  @media (max-width: 1024px) {
-    width: 100%;
-    flex: 1;
-  }
+  width: 100%;
 `;
 
 export const RightColumn = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
   width: 100%;
 `;
 
-export const Section = styled.section`
-  background: ${({ theme }) => theme.COLORS.WHITE};
-  border-radius: 16px;
+export const Card = styled.div`
+  background: #FFFFFF;
+  border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border: 1px solid ${({ theme }) => theme.COLORS.BORDER || '#E5E7EB'};
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 
-  > h2 {
-    font-size: 18px;
-    margin: 0 0 16px 0;
-    color: ${({ theme }) => theme.COLORS.GRAY_900};
-    border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
-    padding-bottom: 12px;
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #111827;
+  }
+
+  .hint {
+    font-size: 13px;
+    color: #9CA3AF;
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  .availability-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    margin-top: 8px;
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      cursor: pointer;
+
+      input {
+        width: 16px;
+        height: 16px;
+        accent-color: #000;
+        cursor: pointer;
+      }
+    }
+
+    .stock-info {
+      font-size: 13px;
+      color: #6B7280;
+    }
   }
 `;
 
-export const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-
-  label {
-    font-weight: 600;
-    font-size: 14px;
-    color: ${({ theme }) => theme.COLORS.GRAY_700};
-  }
-
-  span.error {
-    color: ${({ theme }) => theme.COLORS.DANGER};
-    font-size: 12px;
-  }
-`;
-
-export const Input = styled.input`
-  height: 48px;
-  padding: 0 16px;
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.COLORS.GRAY_300};
-  background: ${({ theme }) => theme.COLORS.WHITE};
-  color: ${({ theme }) => theme.COLORS.GRAY_900};
-  font-size: 15px;
+export const ImagePreviewArea = styled.div`
   width: 100%;
-  transition: border-color 0.2s;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.COLORS.BLACK};
-  }
-`;
-
-export const Select = styled.select`
-  height: 48px;
-  padding: 0 16px;
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.COLORS.GRAY_300};
-  background: ${({ theme }) => theme.COLORS.WHITE};
-  color: ${({ theme }) => theme.COLORS.GRAY_900};
-  font-size: 15px;
-  width: 100%;
-  appearance: none; 
-  
-  &:focus {
-    border-color: ${({ theme }) => theme.COLORS.BLACK};
-  }
-`;
-
-export const Textarea = styled.textarea`
-  min-height: 120px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.COLORS.GRAY_300};
-  background: ${({ theme }) => theme.COLORS.WHITE};
-  color: ${({ theme }) => theme.COLORS.GRAY_900};
-  font-size: 15px;
-  width: 100%;
-  resize: vertical;
-  font-family: inherit;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.COLORS.BLACK};
-  }
-`;
-
-export const ImageUploadArea = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-export const ImagePreviewGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 8px;
-`;
-
-export const ImageBox = styled.div`
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 8px;
+  height: 300px;
+  border: 1px dashed #D1D5DB;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F9FAFB;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+`;
+
+export const MainImagePlaceholder = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #9CA3AF;
+
+  span {
+    font-size: 14px;
+  }
+`;
+
+export const ThumbnailsList = styled.div`
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+`;
+
+export const ThumbnailItem = styled.div`
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  border: 2px solid ${({ $active }) => $active ? '#000' : '#E5E7EB'};
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
 
   img {
     width: 100%;
@@ -144,147 +131,195 @@ export const ImageBox = styled.div`
 
   button {
     position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 20px;
-    height: 20px;
-    background: ${({ theme }) => theme.COLORS.DANGER};
+    top: 2px;
+    right: 2px;
+    background: rgba(255, 0, 0, 0.8);
     color: white;
     border: none;
     border-radius: 50%;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 12px;
-    
-    &:hover {
-      background: ${({ theme }) => theme.COLORS.DANGER_HOVER};
-    }
+    display: none;
+  }
+
+  &:hover button {
+    display: flex;
   }
 `;
 
-export const UploadButton = styled.label`
-  aspect-ratio: 1;
+export const AddImageButton = styled.label`
+  width: 70px;
+  height: 70px;
   border-radius: 8px;
-  border: 2px dashed ${({ theme }) => theme.COLORS.GRAY_300};
-  background: ${({ theme }) => theme.COLORS.GRAY_50};
+  border: 1px dashed #D1D5DB;
+  background-color: #F9FAFB;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: ${({ theme }) => theme.COLORS.GRAY_500};
+  color: #6B7280;
   transition: all 0.2s;
 
   &:hover {
-    background: ${({ theme }) => theme.COLORS.GRAY_100};
-    border-color: ${({ theme }) => theme.COLORS.GRAY_400};
+    background-color: #F3F4F6;
+    border-color: #9CA3AF;
   }
 
-  input {
-    display: none;
+  input { display: none; }
+`;
+
+export const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+
+  .error {
+    font-size: 12px;
+    color: #EF4444;
+  }
+`;
+
+export const Label = styled.label`
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+`;
+
+export const Input = styled.input`
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #D1D5DB;
+  font-size: 14px;
+  background: #FFFFFF;
+  width: 100%;
+  
+  &:focus {
+    outline: none;
+    border-color: #000;
+  }
+`;
+
+export const Select = styled.select`
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #D1D5DB;
+  font-size: 14px;
+  background: #FFFFFF;
+  width: 100%;
+  
+  &:focus {
+    outline: none;
+    border-color: #000;
+  }
+`;
+
+export const Textarea = styled.textarea`
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #D1D5DB;
+  font-size: 14px;
+  background: #FFFFFF;
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+  
+  &:focus {
+    outline: none;
+    border-color: #000;
+  }
+`;
+
+export const VariationsSection = styled.div`
+  width: 100%;
+`;
+
+export const VariationsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: #111827;
+  }
+`;
+
+export const EmptyVariationsBox = styled.div`
+  background-color: #F9FAFB;
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+  
+  p {
+    color: #6B7280;
+    font-style: italic;
+    font-size: 14px;
+    margin: 0;
   }
 `;
 
 export const VariationsTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  margin-top: 12px;
+  margin-bottom: 20px;
 
   th {
     text-align: left;
     font-size: 13px;
-    color: ${({ theme }) => theme.COLORS.GRAY_500};
-    padding-bottom: 8px;
-    border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
+    color: #6B7280;
+    font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #E5E7EB;
   }
 
   td {
-    padding: 12px 0;
-    border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
-  }
-
-  input {
-    height: 40px;
+    padding: 16px 0;
+    border-bottom: 1px solid #F3F4F6;
     font-size: 14px;
+    color: #1F2937;
   }
-`;
 
-export const ActionsBar = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
-`;
-
-export const ButtonBase = styled.button`
-  height: 48px;
-  padding: 0 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: filter 0.2s;
-  border: none;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-export const SaveButton = styled(ButtonBase)`
-  background: ${({ theme }) => theme.COLORS.SUCCESS};
-  color: ${({ theme }) => theme.COLORS.WHITE};
-
-  &:hover {
-    filter: brightness(0.9);
-  }
-`;
-
-export const CancelButton = styled(ButtonBase)`
-  background: ${({ theme }) => theme.COLORS.GRAY_200};
-  color: ${({ theme }) => theme.COLORS.GRAY_800};
-
-  &:hover {
-    background: ${({ theme }) => theme.COLORS.GRAY_300};
+  tr:last-child td {
+    border-bottom: none;
   }
 `;
 
 export const AddVariationButton = styled.button`
-  margin-top: 16px;
-  background: ${({ theme }) => theme.COLORS.BLACK};
+  background-color: #000;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 10px 16px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
-  font-size: 14px;
+  transition: opacity 0.2s;
 
   &:hover {
     opacity: 0.9;
   }
 `;
 
-export const SwitchWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+export const RemoveButton = styled.button`
+  background: transparent;
+  border: none;
+  color: #EF4444;
+  cursor: pointer;
   
-  > span {
-    font-size: 14px;
-    font-weight: 500;
-    color: ${({ theme }) => theme.COLORS.GRAY_700};
+  &:hover {
+    color: #DC2626;
   }
 `;
