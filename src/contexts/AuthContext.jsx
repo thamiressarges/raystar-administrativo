@@ -36,9 +36,9 @@ export function AuthProvider({ children }) {
       throw new Error("Perfil não encontrado.");
     }
 
-    if (profile.status !== "active") {
+    if (profile.status !== "active" || profile.is_deleted) {
       await supabase.auth.signOut();
-      throw new Error("Sua conta está inativa.");
+      throw new Error("Sua conta foi desativada ou excluída.");
     }
 
     setUser(authUser);
@@ -64,7 +64,7 @@ export function AuthProvider({ children }) {
           .eq("uid", session.user.id)
           .single();
 
-        if (profile?.status === "active") {
+        if (profile && profile.status === "active" && !profile.is_deleted) {
           setUser(session.user);
           setUserProfile(profile);
         } else {
