@@ -51,3 +51,34 @@ export const BackLink = styled.button`
     font-size: 24px;
   }
 `;
+
+export const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto; 
+`;
+
+export const SaveButtonHeader = styled.button`
+  background-color: #10B981; 
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: filter 0.2s;
+
+  &:hover {
+    filter: brightness(0.9);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
