@@ -1,13 +1,15 @@
-import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { FiEdit2, FiPlus, FiTrash2, FiChevronLeft } from 'react-icons/fi';
 import { useSettings } from '../../hooks/useSettings';
 import { Input } from '../../components/Input';
 import { Loading } from '../../components/Loading';
-import { PageContainer } from '../../styles/commonStyles';
+import { PageContainer, BackButton } from '../../styles/commonStyles';
 
 import {
     Content,
     Form,
     HeaderContainer,
+    TitleWrapper,
     InputWrapper,
     InfoDisplay,
     InfoGroup,
@@ -20,7 +22,6 @@ import {
     SaveButton,
 } from './styles';
 
-// Componente auxiliar para evitar repetição de código
 const SettingsField = ({ label, isEditing, register, name, value, error, ...props }) => (
     <InputWrapper>
         <label>{label}</label>
@@ -34,6 +35,7 @@ const SettingsField = ({ label, isEditing, register, name, value, error, ...prop
 );
 
 export function Settings() {
+    const navigate = useNavigate();
     const {
         form, 
         phoneFields,
@@ -58,7 +60,12 @@ export function Settings() {
             <Content>
                 <Form onSubmit={handleSave}>
                     <HeaderContainer>
-                        <h2>Configurações da Loja</h2>
+                        <TitleWrapper>
+                            <BackButton onClick={() => navigate(-1)}>
+                                <FiChevronLeft />
+                            </BackButton>
+                            <h2>Configurações da Loja</h2>
+                        </TitleWrapper>
                         <ActionButtons>
                             {isEditing ? (
                                 <>
@@ -73,7 +80,6 @@ export function Settings() {
                         </ActionButtons>
                     </HeaderContainer>
 
-                    {/* --- DADOS GERAIS --- */}
                     <SettingsField 
                         label="Nome da Loja" 
                         isEditing={isEditing} 
@@ -102,7 +108,6 @@ export function Settings() {
                         />
                     </InfoGroup>
 
-                    {/* --- ENDEREÇO --- */}
                     <SectionHeader>
                         <h4>Endereço</h4>
                     </SectionHeader>
@@ -155,7 +160,6 @@ export function Settings() {
                         error={errors.address?.cidade} 
                     />
 
-                    {/* --- TELEFONES --- */}
                     <SectionHeader>
                         <h4>Telefones</h4>
                         {isEditing && (
@@ -183,7 +187,6 @@ export function Settings() {
                         </ContactRow>
                     ))}
 
-                    {/* --- REDES SOCIAIS --- */}
                     <SectionHeader>
                         <h4>Redes Sociais</h4>
                     </SectionHeader>

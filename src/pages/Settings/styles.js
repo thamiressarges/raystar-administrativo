@@ -30,6 +30,12 @@ export const HeaderContainer = styled.div`
     margin-bottom: 32px;
     padding-bottom: 16px;
     border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
+`;
+
+export const TitleWrapper = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 16px;
 
     h2 {
         font-size: 24px;
