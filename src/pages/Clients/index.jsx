@@ -5,9 +5,8 @@ import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
-import { formatPhone } from '../../utils/format'; // Importando o formatador
+import { formatPhone } from '../../utils/format'; 
 
-// Importando estilos locais (apenas o que é específico) e compartilhados
 import { Container, SearchArea, EmptyState, PaginationWrapper } from './styles';
 import { PageContainer } from '../../styles/commonStyles';
 
@@ -29,7 +28,7 @@ export function Clients() {
 
   const formattedClients = clients.map(client => ({
       ...client,
-      formattedPhone: formatPhone(client.phones?.main || client.phones?.[0])
+      formattedPhone: formatPhone(client.phone || client.phones?.main || client.phones?.[0])
   }));
 
   const handleDetailsClick = (client) => {
