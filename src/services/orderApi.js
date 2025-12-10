@@ -1,11 +1,13 @@
-import { supabase } from "./supabase"; 
+import { supabase } from "./supabase";
 import { ORDER_STATUS } from "../utils/constants";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 export const orderApi = {
-  
+
   async getStoreConfig() {
     const { data, error } = await supabase.from("stores").select("*").single();
-    if (error) { console.error("Erro store:", error); return null; }
+    if (error) return null;
     return data;
   },
 
@@ -25,11 +27,11 @@ export const orderApi = {
       .range(from, to);
 
     if (error) throw error;
-    
+
     const normalizedData = data.map(o => ({
-        ...o,
-        payment: Array.isArray(o.payment) ? o.payment[0] : o.payment,
-        delivery: Array.isArray(o.delivery) ? o.delivery[0] : o.delivery
+      ...o,
+      payment: Array.isArray(o.payment) ? o.payment[0] : o.payment,
+      delivery: Array.isArray(o.delivery) ? o.delivery[0] : o.delivery
     }));
 
     return { data: normalizedData, count };
@@ -48,48 +50,62 @@ export const orderApi = {
 
     return {
       ...order,
-      status: order.status || deliveryRes.data?.status, 
+      status: order.status || deliveryRes.data?.status,
       client: clientRes.data || {},
       delivery: deliveryRes.data || {},
       payment: paymentRes.data || {},
       items: itemsRes.data || []
     };
   },
-  
+
   async updateDeliveryStatus(deliveryId, orderId, newStatus) {
     const { error: deliveryError } = await supabase
-        .from("deliveries")
-        .update({ status: newStatus })
-        .eq("id", deliveryId);
+      .from("deliveries")
+      .update({ status: newStatus })
+      .eq("id", deliveryId);
 
     if (deliveryError) throw deliveryError;
 
     const { error: orderError } = await supabase
-        .from("orders")
-        .update({ status: newStatus, updated_at: new Date() })
-        .eq("id", orderId);
+      .from("orders")
+      .update({ status: newStatus, updated_at: new Date() })
+      .eq("id", orderId);
 
     if (orderError) throw orderError;
 
+    if (newStatus === ORDER_STATUS.OUT_FOR_DELIVERY) {
+      try {
+        console.log(`Notificando backend em: ${API_BASE_URL}/api/admin/notify-dispatch`); // Log para debug
+        
+        await fetch(`${API_BASE_URL}/api/admin/notify-dispatch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId })
+        });
+      } catch (err) {
+        console.error("Falha ao notificar backend:", err);
+      }
+    }
+
     return true;
   },
-  
+
   async saveTrackingUrl(deliveryId, url) {
     const { data, error } = await supabase
-        .from("deliveries")
-        .update({ tracking_url: url })
-        .eq("id", deliveryId)
-        .select();
+      .from("deliveries")
+      .update({ tracking_url: url })
+      .eq("id", deliveryId)
+      .select();
 
     if (error) throw error;
     return data;
   },
-  
+
   async cancelOrder(orderId, deliveryId) {
     const CANCELED_STATUS = ORDER_STATUS.CANCELED_PT;
 
     if (deliveryId) {
-        await supabase.from("deliveries").update({ status: CANCELED_STATUS }).eq("id", deliveryId);
+      await supabase.from("deliveries").update({ status: CANCELED_STATUS }).eq("id", deliveryId);
     }
     const { error } = await supabase.from("orders").update({ status: CANCELED_STATUS, is_canceled: true }).eq("id", orderId);
     if (error) throw error;

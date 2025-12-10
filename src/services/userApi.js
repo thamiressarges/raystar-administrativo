@@ -15,7 +15,7 @@ export const UserApi = {
 
     let query = supabase
       .from('users')
-      .select('uid, name, email, phones, cpf', { count: 'exact' })
+      .select('uid, name, email, phones, phone, cpf', { count: 'exact' })
       .eq('is_deleted', false)
       .contains('permissions', `{${USER_ROLES.CLIENT}}`);
 
@@ -36,10 +36,27 @@ export const UserApi = {
   },
 
   async deleteClient(uid) {
+    const { data: client, error: fetchError } = await supabase
+        .from('users')
+        .select('email, cpf')
+        .eq('uid', uid)
+        .single();
+
+    if (fetchError) throw fetchError;
+
+    const timestamp = Date.now();
+    const deletedEmail = `deleted_${timestamp}_${client.email}`;
+    const deletedCpf = client.cpf ? `del_${timestamp}_${client.cpf.slice(0,10)}` : null; 
+
     const { error } = await supabase
         .from('users')
-        .update({ is_deleted: true, status: 'deleted' })
+        .update({ 
+            is_deleted: true,
+            email: deletedEmail,
+            cpf: deletedCpf
+        }) 
         .eq('uid', uid);
+
     if (error) throw error;
     return true;
   },

@@ -14,7 +14,6 @@ export const CategoryApi = {
         const { data, error } = await query;
         if (error) throw error;
 
-        // Retornamos dados puros. A formatação visual fica no componente.
         return data.map(c => ({
             id: c.id,
             name: c.name,
@@ -24,8 +23,12 @@ export const CategoryApi = {
     },
 
     async getDetails({ categoryId }) {
-        // Se você usar RPC ou query direta, mantenha o retorno simples
-        const { data, error } = await supabase.from('categories').select('*').eq('id', categoryId).single();
+        const { data, error } = await supabase
+            .from('categories')
+            .select('*, products(id, title)') 
+            .eq('id', categoryId)
+            .single();
+
         if (error) throw error;
         return data;
     },
