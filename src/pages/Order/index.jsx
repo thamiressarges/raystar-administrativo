@@ -6,7 +6,7 @@ import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
-import { translateOrderStatus, formatDate } from '../../utils/format'; // Importando formatadores
+import { translateOrderStatus, formatDate } from '../../utils/format'; 
 import { PageContainer } from '../../styles/commonStyles';
 import { Container, SearchArea, FilterButton, EmptyState, PaginationWrapper } from './styles';
 
