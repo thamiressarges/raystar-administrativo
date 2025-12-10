@@ -36,6 +36,7 @@ export function useImageUpload(initialUrls = []) {
 
     return {
         previews,
+        setPreviews, 
         uploading,
         handleImageUpload,
         removeImage

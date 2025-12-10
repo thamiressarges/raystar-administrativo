@@ -4,6 +4,15 @@ import { orderApi } from '../services/orderApi';
 import { getPaymentMethodName } from '../utils/format';
 import { ORDER_STATUS } from '../utils/constants';
 
+const formatCEP = (value) => {
+    if (!value) return "—";
+    const clean = String(value).replace(/\D/g, "");
+    if (clean.length === 8) {
+        return clean.replace(/(\d{5})(\d{3})/, "$1-$2");
+    }
+    return value;
+};
+
 export function useOrderDetails(orderId) {
     const [order, setOrder] = useState(null);
     const [store, setStore] = useState(null);
@@ -19,7 +28,38 @@ export function useOrderDetails(orderId) {
                 orderApi.getStoreConfig()
             ]);
 
+            if (storeData?.address?.cep) {
+                try {
+                    const cleanCep = storeData.address.cep.replace(/\D/g, '');
+                    if (cleanCep.length === 8) {
+                        const response = await fetch(`https://brasilapi.com.br/api/cep/v1/${cleanCep}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            storeData.address = {
+                                ...storeData.address,
+                                street: storeData.address.street || data.street,
+                                neighborhood: storeData.address.neighborhood || data.neighborhood,
+                                city: storeData.address.city || data.city,
+                                state: storeData.address.state || data.state
+                            };
+                        }
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar endereço da loja:", error);
+                }
+            }
+
             const deliveryData = orderData.delivery || {};
+            const clientAddress = orderData.client?.address || {}; 
+
+            const rawClientCep = clientAddress.zip || 
+                                 clientAddress.cep || 
+                                 clientAddress.CEP || 
+                                 clientAddress.postal_code;
+
+            const isPickup = (deliveryData.type || "").toLowerCase().includes(ORDER_STATUS.PICKUP) || 
+                             (deliveryData.type || "").toLowerCase().includes("retirada");
+
             const fullOrder = {
                 ...orderData,
                 paymentInfo: { 
@@ -28,8 +68,16 @@ export function useOrderDetails(orderId) {
                 },
                 deliveryInfo: {
                     ...deliveryData,
-                    isPickup: (deliveryData.type || "").toLowerCase().includes(ORDER_STATUS.PICKUP) || (deliveryData.type || "").toLowerCase().includes("retirada"),
-                    status: orderData.status 
+                    isPickup: isPickup,
+                    status: orderData.status,
+                    
+                    street: clientAddress.street || clientAddress.rua || clientAddress.logradouro,
+                    number: clientAddress.number || clientAddress.numero,
+                    neighborhood: clientAddress.neighborhood || clientAddress.bairro,
+                    city: clientAddress.city || clientAddress.cidade,
+                    state: clientAddress.state || clientAddress.estado || clientAddress.uf,
+                    
+                    zip: formatCEP(rawClientCep)
                 },
                 financials: {
                     subtotal: (orderData.items || []).reduce((acc, curr) => acc + (Number(curr.unit_price) * Number(curr.quantity)), 0),
@@ -43,6 +91,7 @@ export function useOrderDetails(orderId) {
             calculateNextStep(fullOrder);
 
         } catch (err) {
+            console.error(err);
             toast.error("Erro ao carregar pedido.");
         } finally {
             setLoading(false);

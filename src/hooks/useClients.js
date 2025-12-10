@@ -38,7 +38,6 @@ export function useClients() {
         fetchClients();
     }, [fetchClients]);
 
-    // Reseta para página 1 se mudar a busca
     useEffect(() => {
         setCurrentPage(1);
     }, [debouncedSearchTerm]);
