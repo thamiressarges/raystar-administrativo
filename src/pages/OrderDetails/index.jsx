@@ -3,17 +3,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { 
   FiChevronLeft, FiTag, FiMapPin, FiTruck, FiBox, 
-  FiDollarSign, FiCreditCard, FiShoppingBag, FiCheck, FiMap, FiX, FiClock, FiAlertCircle
+  FiDollarSign, FiCreditCard, FiShoppingBag, FiCheck, FiX, FiClock, FiAlertCircle
 } from "react-icons/fi";
+import { FaUber } from "react-icons/fa"; 
 
 import { useOrderDetails } from "../../hooks/useOrderDetails";
 import { orderApi } from "../../services/orderApi";
 import { Loading } from "../../components/Loading";
 import { formatCurrency, formatDate, formatBirthDate, translateOrderStatus } from "../../utils/format";
+import { getCoordinates } from "../../utils/geo"; 
 import { theme } from "../../styles/theme";
 import { ORDER_STATUS } from "../../utils/constants";
 
-import { PageContainer, PageHeader, PageTitle, BackButton } from "../../styles/commonStyles";
+import { PageContainer, PageTitle, BackButton } from "../../styles/commonStyles";
 import * as S from "./styles";
 
 export function OrderDetails() {
@@ -50,20 +52,43 @@ export function OrderDetails() {
   const buttonStyle = getButtonConfig(nextStep.actionType);
 
   async function handleGenerateUberRoute() {
-    if (!order) return;
-    if (order.deliveryInfo.trackingUrl) {
-      setQrSrc(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(order.deliveryInfo.trackingUrl)}`);
-      setQrOpen(true);
-      return;
+    if (!order || !store) {
+        toast.warn("Aguarde os dados carregarem.");
+        return;
     }
+
     try {
       setLoadingRoute(true);
-      const mockUrl = `https://m.uber.com/`; 
-      await orderApi.saveTrackingUrl(order.deliveryInfo.id, mockUrl);
+
+      const storeSt = store.address?.street || store.address?.rua || "";
+      const storeNum = store.address?.number || store.address?.numero || "";
+      const storeNeigh = store.address?.neighborhood || store.address?.bairro || "";
+      const storeCity = store.address?.city || store.address?.cidade || "";
+      const storeState = store.address?.state || store.address?.uf || "";
+      const storeAddressText = `${storeSt}, ${storeNum} - ${storeNeigh}, ${storeCity} - ${storeState}`;
+      const originEncoded = encodeURIComponent(storeAddressText);
+      const clientSt = order.deliveryInfo.street || "";
+      const clientNum = order.deliveryInfo.number || "";
+      const clientNeigh = order.deliveryInfo.neighborhood || "";
+      const clientCity = order.deliveryInfo.city || "";
+      const clientState = order.deliveryInfo.state || "";
+      const clientAddressText = `${clientSt}, ${clientNum} - ${clientNeigh}, ${clientCity} - ${clientState}`;
+      const coords = await getCoordinates(clientAddressText);
+
+      if (!coords) {
+         toast.error("Não foi possível converter o endereço do cliente.");
+         return;
+      }
       
-      setQrSrc(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(mockUrl)}`);
+      const uberLink = `https://m.uber.com/ul/?action=setPickup&client_id=RayStar&pickup[formatted_address]=${originEncoded}&dropoff[latitude]=${coords.lat}&dropoff[longitude]=${coords.lng}&dropoff[nickname]=${encodeURIComponent(clientAddressText)}`;
+
+      await orderApi.saveTrackingUrl(order.deliveryInfo.id, uberLink);
+      
+      setQrSrc(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(uberLink)}`);
       setQrOpen(true);
+
     } catch (error) {
+      console.error(error);
       toast.error("Erro ao gerar rota.");
     } finally {
       setLoadingRoute(false);
@@ -72,8 +97,8 @@ export function OrderDetails() {
 
   if (loading || !order) return <Loading />;
 
-  const storeAddress = store?.address 
-      ? `${store.address.street || ""}, ${store.address.number || ""} - ${store.address.neighborhood || ""}`
+  const storeAddressDisplay = store?.address 
+      ? `${store.address.street || store.address.rua || ""}, ${store.address.number || store.address.numero || ""} - ${store.address.neighborhood || store.address.bairro || ""}`
       : "Endereço não disponível";
 
   const isDelivered = [ORDER_STATUS.DELIVERED, ORDER_STATUS.DELIVERED_PT].includes(order.deliveryInfo.status);
@@ -82,7 +107,7 @@ export function OrderDetails() {
 
   return (
     <PageContainer>
-        <PageHeader>
+        <S.Header>
           <PageTitle>
             <BackButton onClick={() => navigate("/order")}>
                 <FiChevronLeft /> 
@@ -98,7 +123,7 @@ export function OrderDetails() {
             <small>Data do Pedido</small>
             <strong>{formatDate(order.created_at)}</strong>
           </S.DateInfo>
-        </PageHeader>
+        </S.Header>
         
         <S.ContentGrid>
             <S.Section>
@@ -158,7 +183,7 @@ export function OrderDetails() {
                     <S.Divider />
                     <div>
                       <small style={{ color: theme.COLORS.GRAY_500, fontSize: '12px', marginBottom: '4px', display:'block' }}>Endereço da Loja (Origem)</small>
-                      <div style={{ fontWeight: 600, color: theme.COLORS.GRAY_800 }}>{storeAddress}</div>
+                      <div style={{ fontWeight: 600, color: theme.COLORS.GRAY_800 }}>{storeAddressDisplay}</div>
                     </div>
                   </>
                 )}
@@ -200,9 +225,9 @@ export function OrderDetails() {
 
                 <S.ButtonsRow>
                   {!order.deliveryInfo.isPickup && (isOutForDelivery || isDelivered) && (
-                    <S.RouteButton onClick={handleGenerateUberRoute} disabled={loadingRoute}>
-                      <FiMap /> 
-                      {loadingRoute ? "Gerando..." : "Ver Rota (QR)"}
+                    <S.RouteButton onClick={handleGenerateUberRoute} disabled={loadingRoute} style={{backgroundColor: '#000'}}>
+                      <FaUber /> 
+                      {loadingRoute ? "Calculando..." : "Uber com Geolocalização"}
                     </S.RouteButton>
                   )}
                   
@@ -226,8 +251,8 @@ export function OrderDetails() {
         {qrOpen && (
           <S.QrModalOverlay onClick={() => setQrOpen(false)}>
             <S.QrModal onClick={e => e.stopPropagation()}>
-              <h3>Rota de Entrega</h3>
-              <p>Escaneie para abrir a rota.</p>
+              <h3>Rota Uber</h3>
+              <p>Endereço do cliente convertido para coordenadas com sucesso!</p>
               {qrSrc && <img src={qrSrc} alt="QR Code" style={{width:'250px', height:'250px'}} />}
               <div style={{marginTop:'20px'}}>
                 <S.SecondaryButton style={{padding:'8px 24px', width:'auto', margin:'0 auto', fontSize:'14px'}} onClick={() => setQrOpen(false)}>

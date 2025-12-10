@@ -1,5 +1,12 @@
 import styled, { css } from "styled-components";
 import { ORDER_STATUS } from '../../utils/constants';
+import { PageHeader } from '../../styles/commonStyles';
+
+export const Header = styled(PageHeader)`
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
 
 export const DateInfo = styled.div`
   text-align: right;
@@ -70,7 +77,9 @@ export const ItemsList = styled.div`
   width: 100%;
   .itemsHead {
     display: grid;
-    grid-template-columns: 2fr 100px 150px 150px;
+    /* Ajustado para aproximar as colunas */
+    grid-template-columns: 4fr 70px 100px 100px; 
+    gap: 16px;
     padding: 0 0 12px 0;
     color: ${({ theme }) => theme.COLORS.GRAY_500};
     font-size: 13px;
@@ -82,7 +91,9 @@ export const ItemsList = styled.div`
 
 export const ItemRow = styled.div`
   display: grid;
-  grid-template-columns: 2fr 100px 150px 150px;
+  /* Ajustado para aproximar as colunas (mesmo valor do header) */
+  grid-template-columns: 4fr 70px 100px 100px;
+  gap: 16px;
   padding: 16px 0;
   border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_100};
   align-items: center;
