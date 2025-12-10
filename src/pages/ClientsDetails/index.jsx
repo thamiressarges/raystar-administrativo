@@ -147,7 +147,7 @@ export function ClientsDetails() {
         <InfoGrid>
           <InfoItem>
             <InfoLabel>Telefone</InfoLabel>
-            <InfoValue>{formatPhone(client.phones?.main || client.phones?.[0]) || '—'}</InfoValue>
+            <InfoValue>{formatPhone(client.phone || client.phones?.main || client.phones?.[0]) || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>E-mail</InfoLabel>
@@ -164,27 +164,27 @@ export function ClientsDetails() {
         <InfoGrid>
           <InfoItem>
             <InfoLabel>CEP</InfoLabel>
-            <InfoValue>{client.address?.cep || '—'}</InfoValue>
+            <InfoValue>{client.address?.zip || client.address?.cep || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Rua/Avenida</InfoLabel>
-            <InfoValue>{client.address?.street || '—'}</InfoValue>
+            <InfoValue>{client.address?.street || client.address?.rua || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Número</InfoLabel>
-            <InfoValue>{client.address?.number || '—'}</InfoValue>
+            <InfoValue>{client.address?.number || client.address?.numero || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Bairro</InfoLabel>
-            <InfoValue>{client.address?.neighborhood || '—'}</InfoValue>
+            <InfoValue>{client.address?.neighborhood || client.address?.bairro || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Cidade</InfoLabel>
-            <InfoValue>{client.address?.city || '—'}</InfoValue>
+            <InfoValue>{client.address?.city || client.address?.cidade || '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Estado</InfoLabel>
-            <InfoValue>{client.address?.state || '—'}</InfoValue>
+            <InfoValue>{client.address?.state || client.address?.estado || '—'}</InfoValue>
           </InfoItem>
         </InfoGrid>
       </Card>
