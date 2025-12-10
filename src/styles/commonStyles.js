@@ -5,8 +5,6 @@ export const PageContainer = styled.div`
   padding: 24px 64px 48px;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
 
   @media (max-width: 768px) {
     padding: 20px;
