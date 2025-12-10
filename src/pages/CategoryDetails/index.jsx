@@ -68,10 +68,12 @@ export function CategoryDetails() {
         if (!category) return;
         try {
             setLoading(true);
+            
             await CategoryApi.update({
-                categoryId: categoryId,
+                id: categoryId, 
                 ...payload
             });
+
             setIsEditOpen(false);
             await loadDetails();
             toast.success("Categoria atualizada com sucesso!");
@@ -88,7 +90,7 @@ export function CategoryDetails() {
         
         try {
             setLoading(true);
-            await CategoryApi.delete({ categoryId: category.id });
+            await CategoryApi.delete(category.id); 
             toast.success(`Categoria deletada com sucesso!`);
             navigate("/category");
         } catch (err) {
