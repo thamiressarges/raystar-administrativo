@@ -10,15 +10,18 @@ import {
 export function CategoryModal({ isOpen, onClose, type = "create", data = null, onSubmit }) {
     const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(categorySchema),
-        defaultValues: { name: "", is_active: true }
+        defaultValues: { name: "", is_active: "true" }
     });
 
     useEffect(() => {
         if (isOpen && data) {
             setValue("name", data.name);
-            setValue("is_active", data.is_active);
+            setValue("is_active", String(data.is_active)); 
         } else {
-            reset();
+            reset({
+                name: "",
+                is_active: "true"
+            });
         }
     }, [isOpen, data, setValue, reset]);
 

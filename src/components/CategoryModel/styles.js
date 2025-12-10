@@ -14,7 +14,7 @@ export const Overlay = styled.div`
 export const ModalContent = styled.div`
   background: ${({ theme }) => theme.COLORS.WHITE};
   width: 100%;
-  max-width: 500px; /* Largura mais contida para forms pequenos */
+  max-width: 500px; 
   padding: 32px;
   border-radius: 16px;
   display: flex;
@@ -79,7 +79,7 @@ export const FormGroup = styled.div`
 
 export const Footer = styled.div`
   display: flex;
-  justify-content: flex-end; /* Padrão de botões à direita */
+  justify-content: flex-end; 
   gap: 12px;
   margin-top: 16px;
   padding-top: 24px;
@@ -110,7 +110,7 @@ export const SaveButton = styled.button`
   padding: 12px;
   border-radius: 8px;
   border: none;
-  background: ${({ theme }) => theme.COLORS.SUCCESS}; /* Verde do tema */
+  background: ${({ theme }) => theme.COLORS.SUCCESS}; 
   color: ${({ theme }) => theme.COLORS.WHITE};
   font-weight: 600;
   cursor: pointer;
