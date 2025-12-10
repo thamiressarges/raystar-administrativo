@@ -18,7 +18,6 @@ export function Table({ data, headers, dataKeys, onDetailsClick, loading }) {
             {headers.map((header, index) => (
                <th key={index}>{header}</th>
             ))}
-            {/* Coluna vazia para o botão de ações */}
             <th></th>
           </tr>
         </thead>
