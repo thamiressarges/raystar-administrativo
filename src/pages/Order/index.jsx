@@ -8,11 +8,34 @@ import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
 import { translateOrderStatus, formatDate } from '../../utils/format';
 import { PageContainer } from '../../styles/commonStyles';
-import { Container, SearchArea, FilterButton, EmptyState, PaginationWrapper } from './styles';
+
+import { 
+    Container, 
+    SearchArea, 
+    FilterWrapper,
+    FilterButton,
+    HiddenSelect,
+    EmptyState, 
+    PaginationWrapper 
+} from './styles';
+
+const statusOptions = [
+    { value: "", label: "Todos" },
+    { value: "aguardando_pagamento", label: "Aguardando Pagamento" },
+    { value: "paid", label: "Pago / Aprovado" },
+    { value: "preparing", label: "Em Preparação" },
+    { value: "shipped", label: "Enviado" },
+    { value: "out_for_delivery", label: "Saiu para Entrega" },
+    { value: "delivered", label: "Entregue" },
+    { value: "canceled", label: "Cancelado" },
+];
 
 export function Order() {
     const navigate = useNavigate();
-    const { orders, loading, totalPages, currentPage, setCurrentPage, searchTerm, setSearchTerm } = useOrders();
+    const { 
+        orders, loading, totalPages, currentPage, setCurrentPage, 
+        searchTerm, setSearchTerm, statusFilter, setStatusFilter 
+    } = useOrders();
 
     const orderHeader = ["Id", "Status", "Data"];
     const orderDataKeys = ["displayId", "formattedStatus", "formattedDate"];
@@ -33,9 +56,22 @@ export function Order() {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <FilterButton>
-                        <FiFilter size={22} />
-                    </FilterButton>
+                    
+                    <FilterWrapper>
+                        <FilterButton title="Filtrar por Status">
+                            <FiFilter size={22} />
+                        </FilterButton>
+                        <HiddenSelect 
+                            value={statusFilter} 
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            {statusOptions.map(opt => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </HiddenSelect>
+                    </FilterWrapper>
                 </div>
             </SearchArea>
 
@@ -44,7 +80,11 @@ export function Order() {
 
                 {!loading && orders.length === 0 && (
                     <EmptyState>
-                        <p>{searchTerm ? "Nenhum pedido encontrado com esse ID." : "Nenhum pedido encontrado."}</p>
+                        <p>
+                            {statusFilter || searchTerm 
+                                ? "Nenhum pedido encontrado com esses filtros." 
+                                : "Nenhum pedido encontrado."}
+                        </p>
                     </EmptyState>
                 )}
 

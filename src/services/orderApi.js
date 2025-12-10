@@ -11,7 +11,7 @@ export const orderApi = {
     return data;
   },
 
-  async getOrders(page, limit, searchTerm = "") {
+  async getOrders(page, limit, searchTerm = "", status = "") {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -26,6 +26,10 @@ export const orderApi = {
 
     if (searchTerm) {
       query = query.ilike('id::text', `%${searchTerm}%`);
+    }
+
+    if (status) {
+        query = query.eq('status', status);
     }
 
     const { data, count, error } = await query
@@ -81,7 +85,6 @@ export const orderApi = {
 
     if (newStatus === ORDER_STATUS.OUT_FOR_DELIVERY) {
       try {
-        console.log(`Notificando backend em: ${API_BASE_URL}/api/admin/notify-dispatch`);
         await fetch(`${API_BASE_URL}/api/admin/notify-dispatch`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

@@ -23,12 +23,24 @@ export const SearchArea = styled.div`
 
     @media (max-width: 768px) {
         padding: 20px 20px 0;
+        
+        .search-wrapper {
+            flex-direction: column;
+            align-items: stretch;
+        }
     }
 `;
 
-export const FilterButton = styled.button`
+export const FilterWrapper = styled.div`
+    position: relative;
     width: 48px;
     height: 48px;
+    flex-shrink: 0;
+`;
+
+export const FilterButton = styled.button`
+    width: 100%;
+    height: 100%;
     border: none;
     border-radius: 8px;
     background-color: ${({ theme }) => theme.COLORS.BLACK};
@@ -45,6 +57,19 @@ export const FilterButton = styled.button`
     &:hover {
         background-color: ${({ theme }) => theme.COLORS.PRIMARY_HOVER};
     }
+`;
+
+export const HiddenSelect = styled.select`
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    appearance: none;
+    z-index: 10;
+    padding: 0 16px;
 `;
 
 export const PaginationWrapper = styled.div`
