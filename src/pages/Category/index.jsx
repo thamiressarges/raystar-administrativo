@@ -62,7 +62,7 @@ export function Category() {
                             onDetailsClick={(item) => navigate(`/categoryDetails/${item.id}`)} 
                             loading={loading}
                         />
-                        {totalPages > 1 && (
+                        {totalPages >= 1 && (
                             <PaginationContainer>
                                 <Pagination
                                     totalPages={totalPages}
