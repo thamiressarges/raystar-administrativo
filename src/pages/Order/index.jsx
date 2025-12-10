@@ -6,13 +6,13 @@ import { SearchInput } from '../../components/SearchInput';
 import { Table } from '../../components/Table';
 import { Pagination } from '../../components/Pagination';
 import { Loading } from '../../components/Loading';
-import { translateOrderStatus, formatDate } from '../../utils/format'; 
+import { translateOrderStatus, formatDate } from '../../utils/format';
 import { PageContainer } from '../../styles/commonStyles';
 import { Container, SearchArea, FilterButton, EmptyState, PaginationWrapper } from './styles';
 
 export function Order() {
     const navigate = useNavigate();
-    const { orders, loading, totalPages, currentPage, setCurrentPage } = useOrders();
+    const { orders, loading, totalPages, currentPage, setCurrentPage, searchTerm, setSearchTerm } = useOrders();
 
     const orderHeader = ["Id", "Status", "Data"];
     const orderDataKeys = ["displayId", "formattedStatus", "formattedDate"];
@@ -28,7 +28,11 @@ export function Order() {
         <Container>
             <SearchArea>
                 <div className="search-wrapper">
-                    <SearchInput placeholder="Pesquise por ID do pedido" />
+                    <SearchInput 
+                        placeholder="Pesquise por ID do pedido" 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                     <FilterButton>
                         <FiFilter size={22} />
                     </FilterButton>
@@ -40,7 +44,7 @@ export function Order() {
 
                 {!loading && orders.length === 0 && (
                     <EmptyState>
-                        <p>Nenhum pedido encontrado.</p>
+                        <p>{searchTerm ? "Nenhum pedido encontrado com esse ID." : "Nenhum pedido encontrado."}</p>
                     </EmptyState>
                 )}
 

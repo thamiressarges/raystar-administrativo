@@ -11,18 +11,24 @@ export const orderApi = {
     return data;
   },
 
-  async getOrders(page, limit) {
+  async getOrders(page, limit, searchTerm = "") {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    const { data, count, error } = await supabase
+    let query = supabase
       .from("orders")
       .select(`
         *,
         client:users!orders_client_id_fkey (name, email, cpf, phone),
         delivery:deliveries!orders_delivery_id_fkey (status, type, tracking_url), 
         payment:payments!orders_payment_id_fkey (status, value, form)
-      `, { count: 'exact' })
+      `, { count: 'exact' });
+
+    if (searchTerm) {
+      query = query.ilike('id::text', `%${searchTerm}%`);
+    }
+
+    const { data, count, error } = await query
       .order("created_at", { ascending: false })
       .range(from, to);
 
@@ -75,8 +81,7 @@ export const orderApi = {
 
     if (newStatus === ORDER_STATUS.OUT_FOR_DELIVERY) {
       try {
-        console.log(`Notificando backend em: ${API_BASE_URL}/api/admin/notify-dispatch`); // Log para debug
-        
+        console.log(`Notificando backend em: ${API_BASE_URL}/api/admin/notify-dispatch`);
         await fetch(`${API_BASE_URL}/api/admin/notify-dispatch`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
