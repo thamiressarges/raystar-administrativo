@@ -14,7 +14,8 @@ export const ProductApi = {
                 is_available,
                 quantity,
                 categories(name),
-                photos
+                photos,
+                variations(stock)
             `, { count: 'exact' }); 
 
         if (searchTerm) {
@@ -27,14 +28,22 @@ export const ProductApi = {
 
         if (error) throw new Error(error.message);
 
-        const formattedData = data.map(product => ({
-            id: product.id,
-            title: product.title,
-            category_name: product.categories?.name || 'Sem Categoria',
-            is_available: product.is_available, 
-            quantity: product.quantity ?? 0,
-            photo: product.photos?.[0] || null
-        }));
+        const formattedData = data.map(product => {
+            let totalStock = product.quantity ?? 0;
+
+            if (product.variations && product.variations.length > 0) {
+                totalStock = product.variations.reduce((acc, v) => acc + (v.stock || 0), 0);
+            }
+
+            return {
+                id: product.id,
+                title: product.title,
+                category_name: product.categories?.name || 'Sem Categoria',
+                is_available: product.is_available, 
+                quantity: totalStock,
+                photo: product.photos?.[0] || null
+            };
+        });
 
         return { data: formattedData, count };
     },
