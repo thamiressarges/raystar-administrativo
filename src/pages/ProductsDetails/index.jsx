@@ -144,6 +144,10 @@ export function ProductsDetails() {
         const updated = variationsData.filter((_, idx) => idx !== indexToRemove);
         setVariationsData(updated);
         setValue("variations", updated, { shouldValidate: true });
+        
+        if (updated.length === 0) {
+            setValue("hasVariations", false);
+        }
     };
 
     const onSubmit = async (data) => {
@@ -161,10 +165,10 @@ export function ProductsDetails() {
                 }
             });
 
-            if (data.hasVariations) {
+            if (data.hasVariations || variationsData.length > 0) {
                 await ProductApi.syncVariations({
                     productId: id,
-                    variations: variationsData 
+                    variations: data.hasVariations ? variationsData : [] 
                 });
             }
 
@@ -180,6 +184,11 @@ export function ProductsDetails() {
                 quantity: data.hasVariations ? 0 : data.simpleStock,
                 photos: previews
             }));
+            
+            if (!data.hasVariations) {
+                setVariationsData([]);
+            }
+            
             setIsEditing(false);
 
         } catch (error) {
