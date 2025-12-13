@@ -151,11 +151,10 @@ export function OrderDetails() {
                               <img src={item.product?.photos?.[0] || "/placeholder.png"} alt={item.product?.title} />
                               <div>
                                 <strong>{item.product?.title}</strong>
-                                {/* CORREÇÃO: Mostrando variação no admin */}
-                                {item.variation && (
+                                {(item.variation || item.size_snapshot || item.color_snapshot) && (
                                     <span style={{ fontSize: '12px', color: '#666', display: 'block', marginTop: '2px' }}>
-                                        {item.variation.tamanho && `Tam: ${item.variation.tamanho} `}
-                                        {item.variation.cor && `| Cor: ${item.variation.cor}`}
+                                        {(item.variation?.tamanho || item.size_snapshot) && `Tam: ${item.variation?.tamanho || item.size_snapshot} `}
+                                        {(item.variation?.cor || item.color_snapshot) && `| Cor: ${item.variation?.cor || item.color_snapshot}`}
                                     </span>
                                 )}
                               </div>
