@@ -185,8 +185,10 @@ export const ProductApi = {
                 .in('id', toDeleteIds);
             
             if (delError) {
-                console.error("Erro ao deletar variações antigas:", delError);
-                throw new Error("Não é possível excluir variações que já possuem pedidos vinculados.");
+                await supabase
+                    .from('variations')
+                    .update({ stock: 0 }) 
+                    .in('id', toDeleteIds);
             }
         }
 
