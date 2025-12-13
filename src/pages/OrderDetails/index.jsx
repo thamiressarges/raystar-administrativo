@@ -149,7 +149,16 @@ export function OrderDetails() {
                         <S.ItemRow key={item.id}>
                             <S.ItemDetails>
                               <img src={item.product?.photos?.[0] || "/placeholder.png"} alt={item.product?.title} />
-                              <strong>{item.product?.title}</strong>
+                              <div>
+                                <strong>{item.product?.title}</strong>
+                                {/* CORREÇÃO: Mostrando variação no admin */}
+                                {item.variation && (
+                                    <span style={{ fontSize: '12px', color: '#666', display: 'block', marginTop: '2px' }}>
+                                        {item.variation.tamanho && `Tam: ${item.variation.tamanho} `}
+                                        {item.variation.cor && `| Cor: ${item.variation.cor}`}
+                                    </span>
+                                )}
+                              </div>
                             </S.ItemDetails>
                             <div className="qty">{item.quantity}</div>
                             <div className="price">{formatCurrency(item.unit_price)}</div>

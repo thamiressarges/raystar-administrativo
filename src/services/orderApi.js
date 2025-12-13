@@ -55,7 +55,7 @@ export const orderApi = {
       supabase.from("users").select("*").eq("uid", order.client_id).single(),
       supabase.from("deliveries").select("*").eq("order_id", orderId).maybeSingle(),
       supabase.from("payments").select("*").eq("order_id", orderId).maybeSingle(),
-      supabase.from("order_items").select("*, product:products(*)").eq("order_id", orderId)
+      supabase.from("order_items").select("*, product:products(*), variation:variations(*)").eq("order_id", orderId)
     ]);
 
     return {
