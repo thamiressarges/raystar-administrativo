@@ -502,17 +502,15 @@ export function ProductsDetails() {
                                                         key={index}
                                                         fill={index < (r.rating || 0) ? "#F59E0B" : "none"}
                                                         color={index < (r.rating || 0) ? "#F59E0B" : "#D1D5DB"}
-                                                        size={14}
+                                                        size={16}
                                                     />
                                                 ))}
                                             </div>
                                         </ReviewHeader>
                                         
-                                        {/* Renderiza o Título se existir */}
                                         {r.title && <span className="review-title">{r.title}</span>}
                                         
-                                        {/* Renderiza o Texto (campo 'text' no banco) */}
-                                        <p>{r.text || r.comment || "—"}</p>
+                                        <p>{r.text || r.comment || r.content || "—"}</p>
                                     </ReviewItem>
                                 ))}
                             </ReviewContainer>

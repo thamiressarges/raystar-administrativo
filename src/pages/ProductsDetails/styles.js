@@ -471,12 +471,48 @@ export const VariationsWrapper = styled.div`
 export const ReviewContainer = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 0;
 `;
 
 export const ReviewItem = styled.div`
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
+    border-bottom: 1px solid ${({ theme }) => theme.COLORS.GRAY_200};
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+
+    .review-title {
+        font-weight: 700;
+        font-size: 14px;
+        color: ${({ theme }) => theme.COLORS.GRAY_800};
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    p {
+      font-size: 15px;
+      color: ${({ theme }) => theme.COLORS.GRAY_600};
+      line-height: 1.5;
+      margin: 0;
+    }
+`;
+
+export const ReviewHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    
+    strong {
+      color: ${({ theme }) => theme.COLORS.GRAY_900};
+      font-size: 15px;
+    }
+
+    .stars {
+      display: flex;
+      gap: 2px;
+      
+      svg {
+      }
+    }
 `;
 
 export const AddVariationBtn = styled.button`
