@@ -104,7 +104,7 @@ export const ProductApi = {
 
         const { data: reviews, error: revError } = await supabase
             .from('reviews')
-            .select('*')
+            .select('*, users(name)')
             .eq('product_id', productId);
 
         return {
@@ -113,7 +113,10 @@ export const ProductApi = {
                 ...v,
                 quantity: v.stock
             })),
-            reviews: reviews || []
+            reviews: reviews ? reviews.map(r => ({
+                ...r,
+                user_name: r.users?.name || "Cliente"
+            })) : []
         };
     },
 
@@ -124,7 +127,6 @@ export const ProductApi = {
             .eq('id', productId);
 
         if (error) {
-            console.error("ERRO AO ATUALIZAR:", error);
             throw new Error(error.message);
         }
         return true;
@@ -188,7 +190,6 @@ export const ProductApi = {
                 .rpc('soft_delete_variations', { variation_ids: toDeleteIds });
             
             if (rpcError) {
-                console.error("Erro RPC:", rpcError);
                 throw rpcError;
             }
         }
