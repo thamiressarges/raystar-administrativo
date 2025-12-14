@@ -52,6 +52,7 @@ import {
     VariationsWrapper,
     ReviewContainer,
     ReviewItem,
+    ReviewHeader,
     AddVariationBtn,
     RemoveVarButton
 } from './styles';
@@ -105,7 +106,6 @@ export function ProductsDetails() {
                 setCategories(cats);
                 setProduct(prodDetails.product);
                 
-                // BLINDAGEM: Filtra apenas o que NÃO foi deletado
                 const activeVariations = (prodDetails.variations || []).filter(v => !v.is_deleted);
                 setVariationsData(activeVariations);
                 
@@ -364,7 +364,7 @@ export function ProductsDetails() {
                         ) : (
                             <>
                                 <div className="rating">
-                                    {[1,2,3,4,5].map(n => <FiStar key={n} />)}
+                                    {[1,2,3,4,5].map(n => <FiStar key={n} color="#E5E7EB" fill="#E5E7EB" />)}
                                     <span>{reviews.length} avaliações</span>
                                 </div>
 
@@ -494,8 +494,25 @@ export function ProductsDetails() {
                             <ReviewContainer>
                                 {reviews.map(r => (
                                     <ReviewItem key={r.id}>
-                                        <strong>{r.user_name || "Cliente"}</strong>
-                                        <p>{r.comment}</p>
+                                        <ReviewHeader>
+                                            <strong>{r.user_name || "Cliente"}</strong>
+                                            <div className="stars">
+                                                {Array.from({ length: 5 }).map((_, index) => (
+                                                    <FiStar
+                                                        key={index}
+                                                        fill={index < (r.rating || 0) ? "#F59E0B" : "none"}
+                                                        color={index < (r.rating || 0) ? "#F59E0B" : "#D1D5DB"}
+                                                        size={14}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </ReviewHeader>
+                                        
+                                        {/* Renderiza o Título se existir */}
+                                        {r.title && <span className="review-title">{r.title}</span>}
+                                        
+                                        {/* Renderiza o Texto (campo 'text' no banco) */}
+                                        <p>{r.text || r.comment || "—"}</p>
                                     </ReviewItem>
                                 ))}
                             </ReviewContainer>
