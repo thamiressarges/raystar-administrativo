@@ -96,7 +96,8 @@ export const ProductApi = {
         const { data: variations, error: varError } = await supabase
             .from('variations')
             .select('*')
-            .eq('product_id', productId);
+            .eq('product_id', productId)
+            .eq('is_deleted', false);
 
         if (varError) throw new Error(varError.message);
 
@@ -142,7 +143,8 @@ export const ProductApi = {
         const { data: existingVars, error: fetchError } = await supabase
             .from('variations')
             .select('id')
-            .eq('product_id', productId);
+            .eq('product_id', productId)
+            .eq('is_deleted', false);
 
         if (fetchError) throw fetchError;
 
@@ -162,7 +164,8 @@ export const ProductApi = {
                         tamanho: v.tamanho,
                         cor: v.cor,
                         stock: Number(v.quantity),
-                        price: Number(v.price)
+                        price: Number(v.price),
+                        is_deleted: false
                     });
                 } else {
                     toInsert.push({
@@ -170,7 +173,8 @@ export const ProductApi = {
                         tamanho: v.tamanho,
                         cor: v.cor,
                         stock: Number(v.quantity),
-                        price: Number(v.price)
+                        price: Number(v.price),
+                        is_deleted: false
                     });
                 }
             });
@@ -179,17 +183,15 @@ export const ProductApi = {
         const toDeleteIds = existingIds.filter(id => !incomingIds.includes(id));
 
         if (toDeleteIds.length > 0) {
-            const { error: delError } = await supabase
+            const { error: softDeleteError } = await supabase
                 .from('variations')
-                .delete()
+                .update({ 
+                    is_deleted: true, 
+                    stock: 0 
+                })
                 .in('id', toDeleteIds);
             
-            if (delError) {
-                await supabase
-                    .from('variations')
-                    .update({ stock: 0 }) 
-                    .in('id', toDeleteIds);
-            }
+            if (softDeleteError) throw softDeleteError;
         }
 
         if (toInsert.length > 0) {
