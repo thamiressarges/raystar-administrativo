@@ -104,7 +104,11 @@ export function ProductsDetails() {
                 
                 setCategories(cats);
                 setProduct(prodDetails.product);
-                setVariationsData(prodDetails.variations || []);
+                
+                // BLINDAGEM: Filtra apenas o que NÃO foi deletado
+                const activeVariations = (prodDetails.variations || []).filter(v => !v.is_deleted);
+                setVariationsData(activeVariations);
+                
                 setReviews(prodDetails.reviews || []);
                 setPreviews(prodDetails.product.photos || []);
 
