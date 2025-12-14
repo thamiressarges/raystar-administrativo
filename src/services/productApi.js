@@ -71,7 +71,8 @@ export const ProductApi = {
                 tamanho: v.tamanho,
                 cor: v.cor,
                 stock: Number(v.quantity),
-                price: Number(v.price)
+                price: Number(v.price),
+                is_deleted: false
             }));
 
             const { error: varError } = await supabase
@@ -148,7 +149,7 @@ export const ProductApi = {
 
         if (fetchError) throw fetchError;
 
-        const existingIds = existingVars.map(v => v.id);
+        const existingIds = existingVars.map(v => String(v.id));
 
         const toInsert = [];
         const toUpdate = [];
@@ -157,7 +158,7 @@ export const ProductApi = {
         if (variations && variations.length > 0) {
             variations.forEach(v => {
                 if (v.id && !String(v.id).startsWith('temp-')) {
-                    incomingIds.push(v.id);
+                    incomingIds.push(String(v.id));
                     toUpdate.push({
                         id: v.id,
                         product_id: productId,
@@ -183,15 +184,13 @@ export const ProductApi = {
         const toDeleteIds = existingIds.filter(id => !incomingIds.includes(id));
 
         if (toDeleteIds.length > 0) {
-            const { error: softDeleteError } = await supabase
-                .from('variations')
-                .update({ 
-                    is_deleted: true, 
-                    stock: 0 
-                })
-                .in('id', toDeleteIds);
+            const { error: rpcError } = await supabase
+                .rpc('soft_delete_variations', { variation_ids: toDeleteIds });
             
-            if (softDeleteError) throw softDeleteError;
+            if (rpcError) {
+                console.error("Erro RPC:", rpcError);
+                throw rpcError;
+            }
         }
 
         if (toInsert.length > 0) {
