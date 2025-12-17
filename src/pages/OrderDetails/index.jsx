@@ -190,7 +190,7 @@ export function OrderDetails() {
                     </S.DeliveryGrid>
                     <S.Divider />
                     <div>
-                      <small style={{ color: theme.COLORS.GRAY_500, fontSize: '12px', marginBottom: '4px', display:'block' }}>Endereço da Loja (Origem)</small>
+                      <small style={{ color: theme.COLORS.GRAY_500, fontSize: '12px', marginBottom: '4px', display:'block' }}>Endereço da Loja</small>
                       <div style={{ fontWeight: 600, color: theme.COLORS.GRAY_800 }}>{storeAddressDisplay}</div>
                     </div>
                   </>
